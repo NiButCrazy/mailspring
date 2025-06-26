@@ -19,7 +19,7 @@ const config = {
   description: 'Mailspring',
   version: version,
   title: 'Mailspring',
-  authors: 'Foundry 376, LLC',
+  authors: 'Foundry 376, LLC, Ni But Crazy',
   setupIcon: path.join(appDir, 'build', 'resources', 'win', 'mailspring.ico'),
   setupExe: 'MailspringSetup.exe',
   exe: 'mailspring.exe',
@@ -27,17 +27,17 @@ const config = {
 };
 
 console.log(config);
-console.log('---> Starting');
+console.log('---> 开始创建安装程序');
 
 // avoid logging the certificate password
 config.certificatePassword = process.env.WINDOWS_CODESIGN_CERT_PASSWORD;
 
 createWindowsInstaller(config)
   .then(() => {
-    console.log('createWindowsInstaller succeeded.');
+    console.log('windows 安装包已创建成功.');
     process.exit(0);
   })
   .catch(e => {
-    console.error(`createWindowsInstaller failed: ${e.message}`);
+    console.error(`windows 安装包已创建失败: ${e.message}`);
     process.exit(1);
   });

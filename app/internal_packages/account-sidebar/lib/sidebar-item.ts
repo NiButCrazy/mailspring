@@ -123,7 +123,7 @@ export default class SidebarItem {
     return Object.assign(
       {
         id,
-        name: perspective.name,
+        name: localized(perspective.name),
         contextMenuLabel: perspective.name,
         count: countForItem(perspective),
         iconName: perspective.iconName,

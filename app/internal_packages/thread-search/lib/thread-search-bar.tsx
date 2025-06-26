@@ -316,7 +316,7 @@ class ThreadSearchBar extends Component<ThreadSearchBarProps, ThreadSearchBarSta
         return localized('Search all mailboxes');
       }
     }
-    return localized(`Search`) + ' ' + this.props.perspective.name || '';
+    return localized(`Search`) + ' ' + localized(this.props.perspective.name) || '';
   };
 
   render() {
@@ -384,7 +384,7 @@ class ThreadSearchBar extends Component<ThreadSearchBarProps, ThreadSearchBarSta
                   key={idx}
                 >
                   {s.token && <span className="suggestion-token">{s.token}: </span>}
-                  {s.description}
+                  {localized(s.description)}
                 </div>
               ))}
               {suggestions === TokenSuggestionsForEmpty && (

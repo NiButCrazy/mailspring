@@ -56,6 +56,10 @@ class SidebarSection {
     const items = _.reject(cats, cat => ['drafts', 'snoozed'].includes(cat.role)).map(cat =>
       SidebarItem.forCategories([cat], { editable: false, deletable: false })
     );
+    const sentItem = items[1];
+    const junkItem = items[2];
+    items[1] = junkItem;
+    items[2] = sentItem;
 
     const unreadItem = SidebarItem.forUnread([account.id]);
     const starredItem = SidebarItem.forStarred([account.id]);
@@ -63,7 +67,6 @@ class SidebarSection {
 
     // Order correctly: Inbox, Unread, Starred, rest... , Drafts
     items.splice(1, 0, unreadItem, starredItem);
-    items.push(draftsItem);
 
     ExtensionRegistry.AccountSidebar.extensions()
       .filter(ext => ext.sidebarItem != null)
@@ -76,11 +79,12 @@ class SidebarSection {
           return items.push(item);
         }
       });
-
+    items.splice(2, 0, draftsItem);
     return {
       title: account.label,
       items,
     };
+
   }
 
   static standardSectionForAccounts(accounts?: Account[]): ISidebarSection {

@@ -68,6 +68,7 @@ export default class WindowLauncher {
     let win;
     if (this._mustUseColdWindow(opts)) {
       win = new MailspringWindow(opts);
+
     } else {
       // Check if the hot window has been deleted. This may happen when we are
       // relaunching the app

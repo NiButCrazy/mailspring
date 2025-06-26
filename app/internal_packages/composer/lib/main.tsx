@@ -11,6 +11,7 @@ import {
 } from 'mailspring-exports';
 import ComposeButton from './compose-button';
 import ComposerView from './composer-view';
+import RefreshButton from './refresh-button';
 
 const ComposerViewForDraftClientId = InflatesDraftClientId(ComposerView);
 
@@ -86,6 +87,9 @@ export function activate() {
       role: 'Composer',
     });
     ComponentRegistry.register(ComposeButton, {
+      location: WorkspaceStore.Location.RootSidebar.Toolbar,
+    });
+    ComponentRegistry.register(RefreshButton, {
       location: WorkspaceStore.Location.RootSidebar.Toolbar,
     });
   } else if (AppEnv.isThreadWindow()) {

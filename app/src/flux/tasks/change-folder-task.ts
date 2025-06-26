@@ -90,7 +90,7 @@ export class ChangeFolderTask extends ChangeMailTask {
     } else if (this.messageIds.length > 1) {
       return localized(`Moved %@ messages to %@`, this.messageIds.length, this.folder.displayName);
     }
-    return localized(`Moved to %@`, this.folder.displayName);
+    return localized(`Moved to %@`, " - " + localized(this.folder.displayName));
   }
 
   willBeQueued() {

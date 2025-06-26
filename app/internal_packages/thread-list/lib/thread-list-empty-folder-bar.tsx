@@ -59,7 +59,7 @@ class ThreadListEmptyFolderBar extends React.Component<ThreadListEmptyFolderBarP
           </div>
         ) : (
           <div className="btn" onClick={this._onClick}>
-            {localized(`Empty %@ now`, role)}
+            {localized(`Empty %@ now`, localized(role))}
           </div>
         )}
       </div>

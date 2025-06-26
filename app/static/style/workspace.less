@@ -61,8 +61,12 @@ mailspring-workspace {
 
 .toolbar-window-controls {
   margin-top: 7px;
-  margin-left: @spacing-half /*rtl:ignore */;
-  order: -1000 /*rtl: 1000*/;
+  margin-left: @spacing-half
+    /*rtl:ignore */
+  ;
+  order: -1000
+    /*rtl: 1000*/
+  ;
   min-width: 72px;
   width: 72px;
   flex-grow: 0;
@@ -80,25 +84,32 @@ mailspring-workspace {
     width: 12px;
     height: 12px;
     margin: 4px;
-    float: left /*rtl:left */;
+    float: left
+      /*rtl:left */
+    ;
     background-color: transparent;
     background-repeat: no-repeat;
     background-position: 0 0;
     background-size: 12px 48px;
     border: 0;
+
     &:active {
       background-position: 0 -24px;
     }
   }
+
   .close {
     background-image: url('images/application-frame/close@1x.png');
   }
+
   .minimize {
     background-image: url('images/application-frame/minimize@1x.png');
   }
+
   .maximize {
     background-image: url('images/application-frame/fullscreen@1x.png');
   }
+
   &.alt-true {
     .maximize {
       background-image: url('images/application-frame/maximize@1x.png');
@@ -111,12 +122,15 @@ mailspring-workspace {
     .close {
       background-image: url('images/application-frame/close@2x.png');
     }
+
     .minimize {
       background-image: url('images/application-frame/minimize@2x.png');
     }
+
     .maximize {
       background-image: url('images/application-frame/fullscreen@2x.png');
     }
+
     &.alt-true {
       .maximize {
         background-image: url('images/application-frame/maximize@2x.png');
@@ -131,21 +145,22 @@ body.is-blurred {
       background-position: 0 -36px;
     }
   }
+
   .sheet-toolbar-container {
-    background-image: linear-gradient(
-      to bottom,
-      lighten(@toolbar-background-color, 14%),
-      lighten(@toolbar-background-color, 14%)
-    );
+    background-image: linear-gradient(to bottom,
+        lighten(@toolbar-background-color, 14%),
+        lighten(@toolbar-background-color, 14%));
 
     .btn.btn-toolbar {
       background: none;
       box-shadow: 0 0.5px 0 rgba(0, 0, 0, 0.15), 0 -0.5px 0 rgba(0, 0, 0, 0.15),
         0.5px 0 0 rgba(0, 0, 0, 0.15), -0.5px 0 0 rgba(0, 0, 0, 0.15);
+
       img {
         opacity: 0.5;
       }
     }
+
     .item-container {
       .window-title {
         opacity: 0.5;
@@ -155,12 +170,10 @@ body.is-blurred {
 }
 
 .sheet-toolbar-container {
-  background-image: -webkit-linear-gradient(
-    lighten(@toolbar-background-color, 10%) 0%,
-    lighten(@toolbar-background-color, 10%) 1.9%,
-    lighten(@toolbar-background-color, 9%) 2%,
-    @toolbar-background-color 100%
-  );
+  background-image: -webkit-linear-gradient(lighten(@toolbar-background-color, 10%) 0%,
+      lighten(@toolbar-background-color, 10%) 1.9%,
+      lighten(@toolbar-background-color, 9%) 2%,
+      @toolbar-background-color 100%);
   color: @text-color-heading;
 }
 
@@ -180,9 +193,10 @@ body.is-blurred {
   // to be one continuous bar.
   z-index: 10;
 
-  .item-container > * {
+  .item-container>* {
     -webkit-app-region: no-drag;
   }
+
   .item-spacer {
     -webkit-app-region: drag;
   }
@@ -199,6 +213,7 @@ body.is-blurred {
       transform: translateX(-50%);
       -webkit-app-region: drag;
       line-height: 34px;
+
       &:hover {
         cursor: default;
       }
@@ -207,9 +222,11 @@ body.is-blurred {
 
   .item-back {
     order: -999;
+
     img.content-mask {
       background-color: @text-color-heading;
     }
+
     flex-grow: 0;
     flex-shrink: 0;
 
@@ -222,10 +239,12 @@ body.is-blurred {
       vertical-align: middle;
       display: inline-block;
     }
+
     &:active {
       .item-back-title {
         color: mix(@text-color-heading, @black, 30%);
       }
+
       img.content-mask {
         background-color: mix(@text-color-heading, @black, 30%);
       }
@@ -240,15 +259,18 @@ body.is-blurred {
     line-height: 1.75em;
     height: 1.75em;
     box-shadow: 0 0.5px 0.05px rgba(0, 0, 0, 0.4), 0 -0.5px 0 rgba(0, 0, 0, 0.12);
+
     img.content-mask {
       background-color: fade(@text-color-heading, 80%);
     }
   }
+
   .btn-toolbar:active {
     img.content-mask {
       background-color: fade(@text-color-heading, 90%);
     }
   }
+
   .btn-toolbar:only-of-type {
     margin-right: 6px;
   }
@@ -256,6 +278,7 @@ body.is-blurred {
   .button-group {
     display: flex;
     margin-left: @spacing-three-quarters;
+
     .btn.btn-toolbar {
       margin-left: 0;
       margin-right: 0;
@@ -267,10 +290,12 @@ body.is-blurred {
         border-top-right-radius: 0;
         border-bottom-right-radius: 0;
       }
+
       &:not(:first-child) {
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
       }
+
       &:last-child {
         border-left: 0;
         border-top-left-radius: 0;
@@ -305,6 +330,7 @@ body.is-blurred {
   z-index: 2;
   position: absolute;
   cursor: col-resize;
+
   div {
     height: 100%;
     box-shadow: 0.5px 0 0 @border-color-divider;
@@ -314,6 +340,7 @@ body.is-blurred {
     right: -4px;
     padding-right: 4px;
   }
+
   &.flexbox-handle-left {
     left: -4px;
     padding-right: 4px;
@@ -328,13 +355,16 @@ body.is-blurred {
   z-index: 2;
   position: absolute;
   cursor: row-resize;
+
   div {
     width: 100%;
   }
+
   &.flexbox-handle-top {
     top: -3px;
     padding-right: 3px;
   }
+
   &.flexbox-handle-bottom {
     bottom: 0;
     padding-right: 2px;
@@ -344,6 +374,7 @@ body.is-blurred {
 .display-deferrable {
   opacity: 1;
   transition: opacity 220ms;
+
   &.deferred {
     opacity: 0;
   }
@@ -354,7 +385,8 @@ body.is-blurred {
   margin: 2px;
   position: relative;
   min-height: 1.5em;
-  > .name {
+
+  >.name {
     background-color: rgba(255, 180, 180, 0.9);
     position: absolute;
     color: black;
@@ -366,6 +398,7 @@ body.is-blurred {
     -webkit-transform: translate(-50%, -50%);
     user-select: text;
   }
+
   &:hover {
     border: 1px dashed rgba(255, 0, 0, 1);
   }
@@ -378,11 +411,15 @@ body.platform-linux,
 body.platform-win32.window-type-default {
   .toolbar-menu-control {
     display: inherit;
-    order: 10000 /*rtl: -10000 */;
+    order: 10000
+      /*rtl: -10000 */
+    ;
+
     .btn-toolbar {
       margin-left: 0;
       padding: 0 17px;
       line-height: 36px;
+
       img.content-mask {
         vertical-align: middle;
       }
@@ -418,27 +455,34 @@ body.platform-linux {
         background-position: 0 0;
       }
     }
+
     button {
       width: 15px;
       height: 15px;
       margin: 4px;
       background-size: 15px 60px;
+
       &:hover {
         background-position: 0 -15px;
       }
+
       &:active {
         background-position: 0 -30px;
       }
     }
+
     .close {
       background-image: url('images/application-frame/close-linux.png');
     }
+
     .minimize {
       background-image: url('images/application-frame/minimize-linux.png');
     }
+
     .maximize {
       background-image: url('images/application-frame/maximize-linux.png');
     }
+
     &.alt-true {
       .maximize {
         background-image: url('images/application-frame/maximize-linux.png');
@@ -456,6 +500,7 @@ body.platform-linux {
     .sheet-toolbar-container {
       background-image: none;
       background: @background-primary;
+
       .btn-toolbar {
         box-shadow: none;
       }
@@ -482,6 +527,7 @@ body.platform-win32 {
   .flexbox-handle-vertical {
     cursor: ns-resize;
   }
+
   .flexbox-handle-horizontal {
     cursor: ew-resize;
   }
@@ -489,6 +535,7 @@ body.platform-win32 {
   .sheet-toolbar-container {
     background-image: none;
     background: @background-primary;
+
     .btn-toolbar {
       transition: background 300ms;
       margin: 0 0 0 1px;
@@ -498,6 +545,7 @@ body.platform-win32 {
       border: 0;
       box-shadow: none;
       background: none;
+
       &:hover {
         background: darken(@list-hover-bg, 5%);
       }
@@ -508,6 +556,7 @@ body.platform-win32 {
     .sheet-toolbar-container {
       background-image: none;
       background: @background-primary;
+
       .btn-toolbar {
         box-shadow: none;
       }

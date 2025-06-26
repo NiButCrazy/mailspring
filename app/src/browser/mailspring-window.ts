@@ -92,7 +92,7 @@ export default class MailspringWindow extends EventEmitter {
     const browserWindowOptions: GetConstructorArgs<typeof BrowserWindow> = {
       show: false,
       title: title || 'Mailspring',
-      frame,
+      frame: false,
       width,
       height,
       resizable,

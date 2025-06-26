@@ -5,7 +5,7 @@ const util = require('util');
 
 // TODO: Remove when upgrading to Electron 4
 const fs = require('fs');
-fs.statSyncNoException = function(...args) {
+fs.statSyncNoException = function (...args) {
   try {
     return fs.statSync.apply(fs, args);
   } catch (e) {
@@ -21,6 +21,14 @@ console.inspect = function consoleInspect(val) {
 const { app, session } = require('electron');
 const path = require('path');
 const mkdirp = require('mkdirp');
+
+// on windows
+// const reactDevToolsPath = 'C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/6.1.1_0'
+// app.whenReady().then(async () => {
+//   console.log('Extension ready')
+//   const Extension = await session.defaultSession.loadExtension(reactDevToolsPath)
+//   console.log(Extension.name)
+// })
 
 if (typeof process.setFdLimit === 'function') {
   process.setFdLimit(1024);
@@ -334,6 +342,14 @@ const start = () => {
     const filter = {
       urls: ['*://login.microsoftonline.com/*'],
     };
+    // const ext_path = 'C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/6.1.1_0'
+    // session.defaultSession
+    //   .loadExtension(
+    //     ext_path,
+    //     { allowFileAccess: true }
+    //   )
+
+
 
     session.defaultSession
       .loadExtension(
@@ -375,6 +391,7 @@ const start = () => {
 
     if (!options.specMode) {
       console.log(`App load time: ${Date.now() - global.shellStartTime}ms`);
+      console.log('应用已加载完成')
     }
   });
 };

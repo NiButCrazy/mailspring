@@ -99,16 +99,16 @@ export default class EmailFrame extends React.Component<EmailFrameProps> {
     if (message.plaintext) {
       doc.write(
         `<!DOCTYPE html>` +
-          (styles ? `<style>${styles}</style>` : '') +
-          `<div id='inbox-plain-wrapper' class="${process.platform}"></div>`
+        (styles ? `<style>${styles}</style>` : '') +
+        `<div id='inbox-plain-wrapper' class="${process.platform}"></div>`
       );
       doc.close();
       doc.getElementById('inbox-plain-wrapper').innerText = content;
     } else {
       doc.write(
         `<!DOCTYPE html>` +
-          (styles ? `<style>${styles}</style>` : '') +
-          `<div id='inbox-html-wrapper' class="${process.platform}">${content}</div>`
+        (styles ? `<style>${styles}</style>` : '') +
+        `<div id='inbox-html-wrapper' class="${process.platform}">${content}</div>`
       );
       doc.close();
     }

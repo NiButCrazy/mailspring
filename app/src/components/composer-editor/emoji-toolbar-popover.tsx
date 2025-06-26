@@ -212,9 +212,11 @@ export default class EmojiToolbarPopover extends React.Component<
   calcPosition(event) {
     const rect = event.target.getBoundingClientRect();
     const position = {
-      x: event.pageX - rect.left / 2,
-      y: event.pageY - rect.top / 2,
+      x: event.pageX - rect.left,
+      y: event.pageY - rect.top,
     };
+    // console.log(position.x, position.y)
+    // console.log(position.x, position.y)
     return position;
   }
 
@@ -225,6 +227,7 @@ export default class EmojiToolbarPopover extends React.Component<
       const EMOJI_WIDTH = 24.5;
       const EMOJI_HEIGHT = 24;
       const EMOJI_PER_ROW = 8;
+      // console.log(position.x, position.y)
       if (
         position.x >= LEFT_BOUNDARY &&
         position.x <= RIGHT_BOUNDARY &&
@@ -356,7 +359,7 @@ export default class EmojiToolbarPopover extends React.Component<
             onMouseDown={this.onMouseDown}
             onMouseOut={this.onMouseOut}
             onMouseMove={this.onHover}
-            style={{ zoom: '0.5' }}
+            style={{ zoom: 0.5 }}
           />
         </ScrollRegion>
         <div className="emoji-name">{this.state.emojiName}</div>

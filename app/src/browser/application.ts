@@ -233,7 +233,7 @@ export default class Application extends EventEmitter {
   // we close windows and log out, we need to wait for these processes to completely
   // exit and then delete the file. It's hard to tell when this happens, so we just
   // retry the deletion a few times.
-  deleteFileWithRetry(filePath, callback = () => {}, retries = 5) {
+  deleteFileWithRetry(filePath, callback = () => { }, retries = 5) {
     const callbackWithRetry = err => {
       if (err && err.message.indexOf('no such file') === -1) {
         console.log(`File Error: ${err.message} - retrying in 150msec`);
@@ -425,6 +425,15 @@ export default class Application extends EventEmitter {
       const main = this.windowManager.get(WindowManager.MAIN_WINDOW);
       if (main) {
         main.sendMessage('open-preferences');
+      }
+    });
+
+    this.on('application:sync-new-mails', () => {
+      // 这是后端向前端通信通信中转站
+      const main = this.windowManager.get(WindowManager.MAIN_WINDOW);
+      if (main) {
+        main.sendMessage('sync-new-mails');
+        this.systemTrayManager.loading()
       }
     });
 
@@ -895,3 +904,6 @@ export default class Application extends EventEmitter {
     this.windowManager.ensureWindow(WindowManager.SPEC_WINDOW, specWindowOptions);
   }
 }
+
+
+

@@ -104,13 +104,13 @@ export const TokenSuggestions = [
   {
     token: 'is',
     term: '',
-    description: 'unread, starred',
+    description: localized('unread, starred'),
     termSuggestions: ['unread', 'starred'],
   },
   {
     token: 'has',
     term: '',
-    description: 'attachment',
+    description: localized('attachment'),
     termSuggestions: ['attachment'],
   },
   {

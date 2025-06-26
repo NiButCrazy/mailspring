@@ -166,6 +166,21 @@ class ToolbarMenuControl extends React.Component {
     applicationMenu.menu.popup({});
   };
 
+  _onMaximize = event => {
+    if (process.platform === 'darwin' && !event.altKey) {
+      AppEnv.setFullScreen(!AppEnv.isFullScreen());
+    } else {
+      const win = AppEnv.getCurrentWindow();
+      if (win.isMaximized()) {
+        win.unmaximize();
+        console.log('unmaximize');
+      } else {
+        win.maximize();
+        console.log('maximize');
+      }
+    }
+  };
+
   render() {
     const enabled =
       process.platform === 'win32' ||
@@ -177,9 +192,18 @@ class ToolbarMenuControl extends React.Component {
     }
 
     return (
-      <div className="toolbar-menu-control">
+      <div className="toolbar-menu-control" style={{ order: 1000, display: 'flex' }}>
         <button tabIndex={-1} className="btn btn-toolbar" onClick={this._onOpenMenu}>
           <RetinaImg name="windows-menu-icon.png" mode={RetinaImg.Mode.ContentIsMask} />
+        </button>
+        <button tabIndex={-1} className="btn btn-toolbar" onClick={() => AppEnv.minimize()}>
+          <RetinaImg name="window-min.png" mode={RetinaImg.Mode.ContentIsMask} />
+        </button>
+        <button tabIndex={-1} className="btn btn-toolbar" onClick={this._onMaximize}>
+          <RetinaImg name="window-max.png" mode={RetinaImg.Mode.ContentIsMask} />
+        </button>
+        <button tabIndex={-1} className="btn btn-toolbar" onClick={() => AppEnv.close()}>
+          <RetinaImg name="window-close.png" mode={RetinaImg.Mode.ContentIsMask} />
         </button>
       </div>
     );

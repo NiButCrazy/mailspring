@@ -72,6 +72,9 @@ class DraftStore extends MailspringStore {
 
     ipcRenderer.on('mailto', this._onHandleMailtoLink);
     ipcRenderer.on('mailfiles', this._onHandleMailFiles);
+    ipcRenderer.on('sync-new-mails', () => {
+      AppEnv.mailsyncBridge.sendSyncMailNow()
+    });
 
     setInterval(() => {
       // Slate is unable to properly clear it's caches, so we help it out
@@ -242,11 +245,11 @@ class DraftStore extends MailspringStore {
       threadId: threadId,
       message: message,
       messageId: messageId,
-      popout: popout 
+      popout: popout
     });
   };
 
-  _onComposeAndSendForward = async({
+  _onComposeAndSendForward = async ({
     thread,
     threadId,
     message,
@@ -262,7 +265,7 @@ class DraftStore extends MailspringStore {
     Actions.sendDraft(headerMessageId);
   }
 
-  _composeForward = async ({ 
+  _composeForward = async ({
     thread,
     threadId,
     message,
@@ -277,7 +280,7 @@ class DraftStore extends MailspringStore {
     }
     return this._finalizeAndPersistNewMessage(draft, { popout });
   };
-  
+
 
   _modelifyContext({
     thread,

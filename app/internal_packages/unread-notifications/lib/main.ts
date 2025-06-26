@@ -72,7 +72,7 @@ export class Notifier {
     }
 
     if (!AppEnv.inSpecMode()) {
-      await new Promise(resolve => {
+      await new Promise<void>(resolve => {
         // wait a couple hundred milliseconds and collect any updates to these
         // new messages. This gets us message bodies, messages impacted by mail rules, etc.
         // while ensuring notifications are never too delayed.
@@ -112,6 +112,7 @@ export class Notifier {
   _notifyAll() {
     NativeNotifications.displayNotification({
       title: `${this.unnotifiedQueue.length} ${localized('Unread Messages')}`,
+      // title: `${this.unnotifiedQueue.length} ${"未读邮件"}`,
       tag: 'unread-update',
       onActivate: () => {
         AppEnv.displayWindow();

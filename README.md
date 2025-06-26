@@ -8,6 +8,10 @@
 
 Mailspring - 修改版，仅个人自用
 
+[项目源地址](https://github.com/Foundry376/Mailspring)
+
+
+
 ## 更新日志
 
 [点我查看](https://github.com/NiButCrazy/mailspring/blob/CHANGELOG.md)

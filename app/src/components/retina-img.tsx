@@ -135,6 +135,12 @@ export class RetinaImg extends React.Component<RetinaImgProps & React.HTMLProps<
       case 'ic-emptystate-草稿.png':
         path = 'images/empty-state/ic-emptystate-drafts@1x.png'
         break;
+      case 'ic-emptystate-设置提醒.png':
+        path = 'images/empty-state/ic-emptystate-reminders@1x.png'
+        break;
+      case 'ic-emptystate-已设推迟.png':
+        path = 'images/empty-state/ic-emptystate-snoozed@1x.png'
+        break;
       default:
         break
     }

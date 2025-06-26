@@ -118,6 +118,7 @@ export function deactivate() {
   if (AppEnv.isMainWindow()) {
     ComponentRegistry.unregister(ComposerViewForDraftClientId);
     ComponentRegistry.unregister(ComposeButton);
+    ComponentRegistry.unregister(RefreshButton);
   } else {
     ComponentRegistry.unregister(ComposerWithWindowProps);
   }

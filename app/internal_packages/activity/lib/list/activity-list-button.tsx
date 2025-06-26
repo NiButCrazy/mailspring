@@ -54,6 +54,7 @@ class ActivityListButton extends React.Component<
         className="toolbar-activity"
         title={localized('View activity')}
         onClick={this.onClick}
+        style={{ opacity: 0.3 }}
       >
         <div className={unreadCountClass}>{this.state.unreadCount}</div>
         <RetinaImg

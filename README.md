@@ -28,4 +28,4 @@ Mailspring - 修改版，仅个人自用
 
 ### 修改版
 
-![修改版](screenshots/p2.png)
+![修改版](screenshots/p1.png)

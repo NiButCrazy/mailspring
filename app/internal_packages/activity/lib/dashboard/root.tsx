@@ -326,7 +326,7 @@ class RootWithTimespan extends React.Component<
           title: localized('Export Failed'),
           message: localized(
             `Mailspring was unable to write to the file location you specified (%@).` +
-              `Try choosing another location.\n\n%@`,
+            `Try choosing another location.\n\n%@`,
             filepath,
             err.toString()
           ),
@@ -379,9 +379,9 @@ class RootWithTimespan extends React.Component<
   render() {
     const { metrics, metricsBySubjectLine, version, loading } = this.state;
     const lowTrackingUsage = !loading && metrics.percentUsingTracking < 75;
-    let lowTrackingPhrase = `only enabled on ${metrics.percentUsingTracking}%`;
+    let lowTrackingPhrase = `只能在 ${metrics.percentUsingTracking}%`;
     if (metrics.percentUsingTracking <= 1) {
-      lowTrackingPhrase = `not enabled on any`;
+      lowTrackingPhrase = `没有启用`;
     }
 
     return (
@@ -413,9 +413,7 @@ class RootWithTimespan extends React.Component<
         {lowTrackingUsage && (
           <div className="usage-note">
             {localizedReactFragment(
-              `These features were %@ of the messages you sent
-            in this time period, so these numbers do not reflect all of your activity. To enable
-            read receipts and link tracking on emails you send, click the %@ or link tracking %@ icons in the composer.`,
+              `These features were %@ of the messages you sent in this time period, so these numbers do not reflect all of your activity. To enable read receipts and link tracking on emails you send, click the %@ or link tracking %@ icons in the composer.`,
               lowTrackingPhrase,
               <RetinaImg
                 name="icon-activity-mailopen.png"

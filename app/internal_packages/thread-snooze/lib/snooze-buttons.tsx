@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
-import { Actions, FocusedPerspectiveStore, Thread } from 'mailspring-exports';
+import { Actions, FocusedPerspectiveStore, localized, Thread } from 'mailspring-exports';
 import { RetinaImg, BindGlobalCommands } from 'mailspring-component-kit';
 import SnoozePopover from './snooze-popover';
 
@@ -45,7 +45,7 @@ class SnoozeButton extends Component<SnoozeButtonProps> {
   render() {
     return (
       <button
-        title="Snooze"
+        title={localized("Snooze")}
         tabIndex={-1}
         className={`snooze-button ${this.props.className}`}
         onClick={this.onClick}

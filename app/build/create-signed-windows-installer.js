@@ -19,7 +19,7 @@ const config = {
   description: 'Mailspring',
   version: version,
   title: 'Mailspring',
-  authors: 'Foundry 376, LLC, Ni But Crazy',
+  authors: 'Ni But Crazy',
   setupIcon: path.join(appDir, 'build', 'resources', 'win', 'mailspring.ico'),
   setupExe: 'MailspringSetup.exe',
   exe: 'mailspring.exe',

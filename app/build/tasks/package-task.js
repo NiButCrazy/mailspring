@@ -150,7 +150,7 @@ module.exports = grunt => {
         win32: 'Mailspring',
         linux: 'mailspring',
       }[platform],
-      appCopyright: `Copyright (C) 2014-${new Date().getFullYear()} Foundry 376, LLC. All rights reserved.`,
+      appCopyright: `Copyright (C) 2014-${new Date().getFullYear()} Ni But Crazy. All rights reserved.`,
       derefSymlinks: false,
       asar: {
         unpack:
@@ -220,37 +220,37 @@ module.exports = grunt => {
        */
       osxSign: process.env.SIGN_BUILD
         ? {
-            platform: 'darwin',
-            version: '4.2.2',
-            hardenedRuntime: true,
-            entitlements: path.resolve(
-              grunt.config('appDir'),
-              'build',
-              'resources',
-              'mac',
-              'entitlements.plist'
-            ),
-            'entitlements-inherit': path.resolve(
-              grunt.config('appDir'),
-              'build',
-              'resources',
-              'mac',
-              'entitlements.inherit.plist'
-            ),
-          }
+          platform: 'darwin',
+          version: '4.2.2',
+          hardenedRuntime: true,
+          entitlements: path.resolve(
+            grunt.config('appDir'),
+            'build',
+            'resources',
+            'mac',
+            'entitlements.plist'
+          ),
+          'entitlements-inherit': path.resolve(
+            grunt.config('appDir'),
+            'build',
+            'resources',
+            'mac',
+            'entitlements.inherit.plist'
+          ),
+        }
         : undefined,
       osxNotarize: process.env.APPLE_ID
         ? {
-            appleId: process.env.APPLE_ID,
-            appleIdPassword: process.env.APPLE_ID_PASSWORD,
-            ascProvider: process.env.APPLE_ID_ASC_PROVIDER,
-            teamId: process.env.APPLE_TEAM_ID,
-          }
+          appleId: process.env.APPLE_ID,
+          appleIdPassword: process.env.APPLE_ID_PASSWORD,
+          ascProvider: process.env.APPLE_ID_ASC_PROVIDER,
+          teamId: process.env.APPLE_TEAM_ID,
+        }
         : undefined,
       win32metadata: {
-        CompanyName: 'Foundry 376, LLC',
+        CompanyName: 'Ni But Crazy',
         FileDescription: 'Mailspring',
-        LegalCopyright: `Copyright (C) 2014-${new Date().getFullYear()} Foundry 376, LLC. All rights reserved.`,
+        LegalCopyright: `Copyright (C) 2014-${new Date().getFullYear()} Ni But Crazy`,
         ProductName: 'Mailspring',
       },
       // NOTE: The following plist keys can NOT be set in the

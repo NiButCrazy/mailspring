@@ -20,8 +20,8 @@ Mailspring - 修改版，仅个人自用
 
 ### 原版
 
-![原版](screenshots\p2.png)
+![原版](screenshots/p2.png)
 
 ### 修改版
 
-![修改版](screenshots\p2.png)
+![修改版](screenshots/p2.png)

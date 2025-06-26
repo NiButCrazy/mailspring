@@ -16,6 +16,12 @@ Mailspring - 修改版，仅个人自用
 
 >1.15.2
 
-## 贡献者
+## 对比
 
-![https://github.com/NiButCrazy/mailspring/graphs/contributors](https://contrib.rocks/image?repo=NiButCrazy/mailspring)
+### 原版
+
+![原版](screenshots\p2.png)
+
+### 修改版
+
+![修改版](screenshots\p2.png)

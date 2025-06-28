@@ -724,6 +724,9 @@ export default class Application extends EventEmitter {
       sourceWindow.webContents.send('remote-run-results', params);
       delete this._sourceWindows[params.taskId];
     });
+    ipcMain.on('sync-new-mails', (event, params) => {
+      this.emit('application:sync-new-mails')
+    })
 
     ipcMain.on('report-error', (event, params: { extra?: string; errorJSON?: string } = {}) => {
       try {

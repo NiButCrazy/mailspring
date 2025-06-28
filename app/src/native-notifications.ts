@@ -111,7 +111,7 @@ class NativeNotifications {
     body,
     tag,
     canReply,
-    onActivate = args => {},
+    onActivate = args => { },
   }: INotificationOptions = {}) {
     let notif = null;
 

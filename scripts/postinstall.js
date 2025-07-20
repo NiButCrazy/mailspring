@@ -68,6 +68,7 @@ function getMailsyncURL(callback) {
   callback(
     `https://mailspring-builds.s3.amazonaws.com/mailsync/${hash}/${distDir}/mailsync.tar.gz`
   );
+  console.log(`\n下载地址 https://mailspring-builds.s3.amazonaws.com/mailsync/${hash}/${distDir}/mailsync.tar.gz`);
 }
 
 function downloadMailsync() {
@@ -168,8 +169,8 @@ async function run() {
   } else {
     console.log(
       `\n-- You have the Mailspring mailsync submodule. If you'd prefer ` +
-        `to develop with a pre-built binary, remove the submodule and re-run ` +
-        `'npm run postinstall' to download the latest binary for your machine. --`
+      `to develop with a pre-built binary, remove the submodule and re-run ` +
+      `'npm run postinstall' to download the latest binary for your machine. --`
     );
   }
 }

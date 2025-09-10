@@ -14,11 +14,11 @@ Mailspring - 修改版，仅个人自用
 
 ## 更新日志
 
-[点我查看](https://github.com/NiButCrazy/mailspring/blob/CHANGELOG.md)
+[点我查看](https://github.com/NiButCrazy/mailspring/blob/master/CHANGELOG.md)
 
 ## 版本
 
->1.15.2
+>1.16.0
 
 ## 对比
 

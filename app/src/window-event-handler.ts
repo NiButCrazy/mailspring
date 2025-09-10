@@ -38,6 +38,11 @@ export default class WindowEventHandler {
   constructor() {
     setTimeout(() => this.showDevModeMessages(), 1);
 
+    ipcRenderer.on('change-theme', (e, theme) => {
+      AppEnv.themes.setActiveTheme(theme)
+      console.log('主题自动切换至', theme);
+    });
+
     ipcRenderer.on('update-available', (event, detail) => AppEnv.updateAvailable(detail));
 
     ipcRenderer.on('browser-window-focus', () => {
@@ -358,7 +363,7 @@ export default class WindowEventHandler {
     hasSelectedText,
     {
       onCorrect,
-      onRestoreSelection = () => {},
+      onRestoreSelection = () => { },
     }: { onCorrect?: (correction: string) => void; onRestoreSelection?: () => void }
   ) {
     const { Menu, MenuItem } = require('@electron/remote');
@@ -412,11 +417,11 @@ export default class WindowEventHandler {
     if (!AppEnv.inDevMode()) {
       console.log(
         "%c Welcome to Mailspring! If you're exploring the source or building a " +
-          "plugin, you should enable debug flags. It's slower, but " +
-          'gives you better exceptions, the debug version of React, ' +
-          'and more. Choose %c Developer > Run with Debug Flags %c ' +
-          'from the menu. Also, check out http://Foundry376.github.io/Mailspring/ ' +
-          'for documentation and sample code!',
+        "plugin, you should enable debug flags. It's slower, but " +
+        'gives you better exceptions, the debug version of React, ' +
+        'and more. Choose %c Developer > Run with Debug Flags %c ' +
+        'from the menu. Also, check out http://Foundry376.github.io/Mailspring/ ' +
+        'for documentation and sample code!',
         'background-color: antiquewhite;',
         'background-color: antiquewhite; font-weight:bold;',
         'background-color: antiquewhite; font-weight:normal;'

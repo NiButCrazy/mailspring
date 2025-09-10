@@ -8,7 +8,7 @@
 @gray-lighter: darken(@gray-base, 92.5%);
 @white: #0a0a0a;
 
-@accent-primary: #58b660;
+@accent-primary: #416dd2;
 @accent-primary-dark: darken(@accent-primary, 10%);
 
 @background-primary: #212121;
@@ -55,9 +55,11 @@
 .thread-icon:not(.thread-icon-unread):not(.thread-icon-star) {
   filter: invert(100%);
 }
+
 img.content-dark {
   filter: invert(100%);
 }
+
 img.content-light {
   filter: invert(100%);
 }
@@ -79,6 +81,7 @@ img.content-light {
 
   &.unread {
     background-color: #312856;
+
     &:not(.focused):not(.selected) {
       background-color: #312856;
     }

@@ -9,7 +9,6 @@
     "url": "git+https://github.com/Foundry376/Mailspring.git"
   },
   "engines": {
-    "node": "^16.17",
     "npm": ">=8"
   },
   "dependencies": {

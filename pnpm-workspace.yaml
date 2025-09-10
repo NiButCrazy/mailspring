@@ -1,0 +1,4 @@
+onlyBuiltDependencies:
+  - electron
+  - electron-winstaller
+  - highlight.js

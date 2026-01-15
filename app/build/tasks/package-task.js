@@ -133,6 +133,7 @@ module.exports = grunt => {
       tmpdir: tmpdir,
       arch: {
         win32: 'x64',
+        darwin: process.env.OVERRIDE_TO_INTEL ? 'x64' : process.arch,
       }[platform],
       icon: {
         darwin: path.resolve(
@@ -171,7 +172,6 @@ module.exports = grunt => {
             '**/static/all_licenses.html',
             '**/static/extensions/**',
             '**/node_modules/spellchecker/**',
-            '**/node_modules/windows-shortcuts/**',
           ].join(',') +
           '}',
       },
@@ -222,22 +222,22 @@ module.exports = grunt => {
       osxSign: process.env.SIGN_BUILD
         ? {
           platform: 'darwin',
-          version: '4.2.2',
-          hardenedRuntime: true,
-          entitlements: path.resolve(
-            grunt.config('appDir'),
-            'build',
-            'resources',
-            'mac',
-            'entitlements.plist'
-          ),
-          'entitlements-inherit': path.resolve(
-            grunt.config('appDir'),
-            'build',
-            'resources',
-            'mac',
-            'entitlements.inherit.plist'
-          ),
+          provisioningProfile: process.env.APPLE_PROVISIONING_PROFILE_PATH,
+          optionsForFile: filePath => {
+            // Here, we keep it simple and return a single entitlements.plist file.
+            // You can use this callback to map different sets of entitlements
+            // to specific files in your packaged app.
+            return {
+              hardenedRuntime: true,
+              entitlements: path.resolve(
+                grunt.config('appDir'),
+                'build',
+                'resources',
+                'mac',
+                'entitlements.plist'
+              ),
+            };
+          },
         }
         : undefined,
       osxNotarize: process.env.APPLE_ID

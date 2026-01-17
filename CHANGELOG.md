@@ -1,6 +1,7 @@
 # Mailspring Changelog
 
 ## 1.17.0 (1/12/2025)
+
 This is Mailspring's biggest update in a while!
 
 The "infinite sync bug" that impacted iCloud accounts has been fixed, and we reviewed and applied many other patches to Mailcore and libetpan to improve mail sync.

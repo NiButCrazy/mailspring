@@ -1,6 +1,78 @@
 # Mailspring Changelog
 
-## 1.17.0 (1/12/2025)
+## 1.17.3 (1/31/2025)
+
+- Updates the .deb package dependencies to address Ubuntu 25 (libtidy58 replaces libtidy5deb1) and Linux Mint 22 (libcurl4t64, libgtk-3-0t64 instead of libgtk-3-0) installation issues.
+
+- Fix issues sending email on Windows caused by missing SASL libraries in some scenarios.
+
+- Screenshot mode now blurs the content of your emails as well (Thanks @cheack!)
+
+- The `Spanish - Latin America` (es_419) translations have been verified (Thanks @MiguVT!) and we've used the latest LLMs to update machine translations in other language files that were many years old.
+
+### Developer:
+
+- We added Ubuntu 25 and Linux Mint to the automated installation checks in Github Actions to ensure the .deb file installs correctly on these distributions.
+
+- The Mailsync post-build checks in Github Actions (on Mac, Windows, Linux) now authenticate against smtp.gmail.com in addition to establishing an SMTP SSL connection to verify that the SASL libraries are present in the distribution. (To prevent the Windows SMTP issue from ever happening again...)
+
+## 1.17.2 (1/24/2025)
+
+Features:
+
+- Calendar now includes a Day View for more detailed scheduling. (#2573)
+
+- Calendar events can now be edited and synced back to the server. Drag events to reschedule them, or double-click to edit details. (#2574)
+
+- Mailspring now supports one-click unsubscribe using email headers (RFC 2369/8058). When an email includes unsubscribe headers, a link appears to quickly unsubscribe. (#2576)
+
+Bug Fixes:
+
+- Fixed a race condition in category pickers (folder/label selectors) that caused the search input to lock up. (#2580)
+
+- Fixed composer input lag where Enter and Backspace keys sometimes required multiple presses. (#2578)
+
+- Fixed Office365 OAuth authentication issues caused by an origin header. (#2579)
+
+- Fixed RSVP calendar event handling bugs and improved RFC 5546/6047 compliance. (#2575)
+
+- Fixed missing mailsync dependencies in Linux packages.
+
+- Fixed disappearing emails on iCloud accounts by disabling QRESYNC.
+
+- Fixed network error handling during CardDAV/CalDAV discovery.
+
+- Fixed HTTP 406 errors during CardDAV/CalDAV discovery on Yahoo accounts.
+
+- Fixed in-reply-to header parsing on iCloud accounts where spam messages contain garbage values.
+
+- Fixed Yandex account sync error handling.
+
+Improvements:
+
+- Screenshot Mode now supports non-Latin characters. (#2577) Thanks @cheack!
+
+Developer:
+
+- Added GitHub Actions checks that verify Linux artifacts install and run correctly on Ubuntu, Fedora, and Arch Linux.
+
+- Removed unused Grunt tasks and cleaned up the eslint task. (#2569)
+
+- Windows mailsync dependencies moved to vcpkg for OpenSSL 3.6, latest libcurl, iconv, libtidy, libxml2, and sasl2.
+
+- Added openSUSE Tumbleweed to mailsync CI tests.
+
+## 1.17.1 (1/15/2025)
+
+Bug Fixes:
+
+- Keyboard navigation in Mailspring's thread list has been fixed!
+
+- On Fedora, the libtidy dependency is more broadly specified to support both soname versions (libtidy.so.5 or libtidy.so.58)
+
+We're aware of issues with Wayland support for some Linux users and are investigating how to handle these scenarios better, since Wayland became the default for Electron apps in September.
+
+## 1.17.0 (1/14/2025)
 
 This is Mailspring's biggest update in a while!
 

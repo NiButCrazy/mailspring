@@ -373,9 +373,11 @@ const start = () => {
     app.removeListener('open-file', onOpenFileBeforeReady);
     app.removeListener('open-url', onOpenUrlBeforeReady);
 
-    // Setting the Origin Header to 'localhost' when logging in on Office 365
-    // Otherwise O365 will produce a 400 error on the OAuth Login Process
-    const filter = {
+    // Remove the Origin header for Microsoft OAuth requests. Native fetch in Electron
+    // adds an Origin header which causes AADSTS90023 errors because Microsoft treats
+    // it as a cross-origin request requiring SPA client-type registration. Desktop apps
+    // should not send Origin headers for OAuth token exchange.
+    const o365Filter = {
       urls: ['*://login.microsoftonline.com/*'],
     };
     // const ext_path = 'C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/6.1.1_0'
@@ -396,9 +398,8 @@ const start = () => {
       )
       .catch(err => console.error(`Error loading language detection extension: ${err}`));
 
-    session.defaultSession.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
-      console.log(details);
-      details.requestHeaders['Origin'] = 'localhost';
+    session.defaultSession.webRequest.onBeforeSendHeaders(o365Filter, (details, callback) => {
+      delete details.requestHeaders['Origin'];
       callback({ requestHeaders: details.requestHeaders });
     });
 

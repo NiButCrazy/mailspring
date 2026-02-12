@@ -27,6 +27,7 @@ import {
   handleWindowsToastXMLProtocolAction,
   registerNotificationIPCHandlers,
 } from './notification-ipc';
+import WindowsTaskbarManager from './windows-taskbar-manager';
 
 let clipboard = null;
 
@@ -51,6 +52,7 @@ export default class Application extends EventEmitter {
   windowManager: WindowManager;
   autoUpdateManager: AutoUpdateManager;
   systemTrayManager: SystemTrayManager;
+  windowsTaskbarManager?: WindowsTaskbarManager;
 
   _sourceWindows: { [taskId: string]: BrowserWindow } = {};
   _resettingAndRelaunching: boolean;
@@ -166,6 +168,9 @@ export default class Application extends EventEmitter {
     if (process.platform === 'darwin') {
       this.touchBar = new ApplicationTouchBar(resourcePath);
     }
+    if (process.platform === 'win32') {
+      this.windowsTaskbarManager = new WindowsTaskbarManager(this);
+    }
 
     this.handleEvents();
     this.handleLaunchOptions(options);
@@ -263,7 +268,7 @@ export default class Application extends EventEmitter {
   // exit and then delete the file. It's hard to tell when this happens, so we just
   // retry the deletion a few times.
   deleteFileWithRetry(filePath, callback = () => { }, retries = 5) {
-    const callbackWithRetry = err => {
+    const callbackWithRetry = (err) => {
       if (err && err.message.indexOf('no such file') === -1) {
         console.log(`File Error: ${err.message} - retrying in 150msec`);
         setTimeout(() => {
@@ -326,7 +331,7 @@ export default class Application extends EventEmitter {
     this._deleteDatabase(done);
   };
 
-  _deleteDatabase = callback => {
+  _deleteDatabase = (callback) => {
     this.deleteFileWithRetry(path.join(this.configDirPath, 'edgehill.db'), callback);
     this.deleteFileWithRetry(path.join(this.configDirPath, 'edgehill.db-wal'));
     this.deleteFileWithRetry(path.join(this.configDirPath, 'edgehill.db-shm'));
@@ -478,7 +483,7 @@ export default class Application extends EventEmitter {
     this.on('application:toggle-dev', () => {
       let args = process.argv.slice(1);
       if (args.includes('--dev')) {
-        args = args.filter(a => a !== '--dev');
+        args = args.filter((a) => a !== '--dev');
       } else {
         args.push('--dev');
       }
@@ -732,9 +737,20 @@ export default class Application extends EventEmitter {
 
     ipcMain.on('account-setup-successful', () => {
       this.windowManager.ensureWindow(WindowManager.MAIN_WINDOW);
+      const mainWindow = this.windowManager.get(WindowManager.MAIN_WINDOW);
       const onboarding = this.windowManager.get(WindowManager.ONBOARDING_WINDOW);
       if (onboarding) {
-        onboarding.close();
+        if (mainWindow) {
+          // Wait for the main window to finish loading before closing onboarding.
+          // On Wayland, closing the onboarding window (which holds the activation
+          // context) before the main window is visible causes show() to fail
+          // silently because the activation context is lost.
+          mainWindow.waitForLoad(() => {
+            onboarding.close();
+          });
+        } else {
+          onboarding.close();
+        }
       }
     });
 
@@ -851,7 +867,7 @@ export default class Application extends EventEmitter {
 
   // Translates the command into OS X action and sends it to application's first
   // responder.
-  sendCommandToFirstResponder = command => {
+  sendCommandToFirstResponder = (command) => {
     if (process.platform !== 'darwin') {
       return false;
     }
@@ -891,6 +907,13 @@ export default class Application extends EventEmitter {
       // since Windows toast XML with activationType="background" doesn't work reliably with Electron
       if (parts.host.startsWith('notification-')) {
         handleWindowsToastXMLProtocolAction(parts);
+      } else if (parts.host === 'open-inbox') {
+        main.show();
+        main.focus();
+      } else if (parts.host === 'open-preferences') {
+        main.show();
+        main.focus();
+        main.sendMessage('open-preferences');
       } else if (parts.host === 'plugins') {
         main.sendMessage('changePluginStateFromUrl', urlToOpen);
       } else {

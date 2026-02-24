@@ -18,7 +18,7 @@ const config = {
   outputDirectory: path.join(appDir, 'dist'),
   appDirectory: path.join(appDir, 'dist', 'mailspring-win32-x64'),
   loadingGif: path.join(appDir, 'build', 'resources', 'win', 'loading.gif'),
-  iconUrl: 'http://mailspring-builds.s3.amazonaws.com/assets/mailspring.ico',
+  iconUrl: path.join(appDir, 'build', 'resources', 'win', 'mailspring.ico'),
   description: 'Mailspring',
   version: version,
   title: 'Mailspring',

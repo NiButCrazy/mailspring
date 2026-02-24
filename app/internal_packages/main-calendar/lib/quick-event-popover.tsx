@@ -79,6 +79,7 @@ export class QuickEventPopover extends React.Component<
       start: start.toDate(),
       end: end.toDate(),
       isAllDay: false,
+      timezone: DateUtils.timeZone,
     });
 
     const event = new Event({

@@ -286,6 +286,7 @@
   "In order to send mail through Mailspring, your email account must have a Sent Mail folder. You can specify a Sent folder manually by visiting Preferences > Folders and choosing a folder name from the dropdown menu.": "要通过Mailspring发送邮件，您的电子邮件帐户必须具有“已发送邮件”文件夹。您可以通过访问“首选项”>“文件夹”并从下拉菜单中选择文件夹名称来手动指定“已发送”文件夹。",
   "In order to send mail through Mailspring, your email account must have a Trash folder. You can specify a Trash folder manually by visiting Preferences > Folders and choosing a folder name from the dropdown menu.": "要通过Mailspring发送邮件，您的电子邮件帐户必须具有“废纸篓”文件夹。您可以通过访问“首选项”>“文件夹”并从下拉菜单中选择文件夹名称来手动指定“废纸篓”文件夹。",
   "Inbox": "收件箱",
+  "Application menu":"应用菜单",
   "Incoming Mail": "接收邮件",
   "Indent": "缩进",
   "Information": "信息",

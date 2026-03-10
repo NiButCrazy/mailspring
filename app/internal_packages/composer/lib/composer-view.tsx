@@ -20,6 +20,7 @@ import {
   ComposerEditor,
   ComposerEditorPlaintext,
   ComposerSupport,
+  RovingTabIndexToolbar,
 } from 'mailspring-component-kit';
 import { ComposerHeader } from './composer-header';
 import { SendActionButton } from './send-action-button';
@@ -476,9 +477,12 @@ export default class ComposerView extends React.Component<ComposerViewProps, Com
                 />
               </div>
 
-              <div className="composer-action-bar-wrap" data-tooltips-anchor>
+              <footer className="composer-action-bar-wrap" data-tooltips-anchor>
                 <div className="tooltips-container" />
-                <div className="composer-action-bar-content">
+                <RovingTabIndexToolbar
+                  label={localized('Composer Actions')}
+                  className="composer-action-bar-content"
+                >
                   <ActionBarPlugins
                     draft={this.props.draft}
                     session={this.props.session}
@@ -496,8 +500,8 @@ export default class ComposerView extends React.Component<ComposerViewProps, Com
                     draft={this.props.draft}
                     isValidDraft={this._isValidDraft}
                   />
-                </div>
-              </div>
+                </RovingTabIndexToolbar>
+              </footer>
             </DropZone>
           </TabGroupRegion>
         </KeyCommandsRegion>
@@ -538,3 +542,5 @@ const DeleteButton = (props: { onClick: () => void }) => (
     <RetinaImg name="icon-composer-trash.png" mode={RetinaImg.Mode.ContentIsMask} />
   </button>
 );
+// Note: tabIndex={-1} on individual buttons is intentional - the RovingTabIndexToolbar
+// wrapper manages which button has tabIndex={0} at any given time.

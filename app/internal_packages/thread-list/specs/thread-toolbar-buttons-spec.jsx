@@ -33,7 +33,7 @@ describe('ThreadToolbarButtons', function() {
     spyOn(Actions, 'queueTask');
     spyOn(Actions, 'queueTasks');
     spyOn(TaskFactory, 'taskForInvertingStarred').andCallThrough();
-    spyOn(TaskFactory, 'taskForInvertingUnread').andCallThrough();
+    spyOn(TaskFactory, 'taskForSettingUnread').andCallThrough();
   });
 
   describe('Starring', function() {
@@ -72,14 +72,14 @@ describe('ThreadToolbarButtons', function() {
     });
 
     it('queues a task to change unread status to true', function() {
-      ReactTestUtils.Simulate.click(ReactDOM.findDOMNode(markUnreadBtn).childNodes[0]);
-      expect(TaskFactory.taskForInvertingUnread.mostRecentCall.args[0].threads).toEqual([thread]);
+      ReactTestUtils.Simulate.click(ReactDOM.findDOMNode(markUnreadBtn));
+      expect(TaskFactory.taskForSettingUnread.mostRecentCall.args[0].threads).toEqual([thread]);
       expect(Actions.queueTask).toHaveBeenCalled();
     });
 
     it('returns to the thread list', function() {
       spyOn(Actions, 'popSheet');
-      ReactTestUtils.Simulate.click(ReactDOM.findDOMNode(markUnreadBtn).childNodes[0]);
+      ReactTestUtils.Simulate.click(ReactDOM.findDOMNode(markUnreadBtn));
       expect(Actions.popSheet).toHaveBeenCalled();
     });
   });

@@ -170,7 +170,7 @@ export default class SignaturePhotoPicker extends React.Component<
 
     return (
       <div className="field photo-picker">
-        <label>Picture</label>
+        <label htmlFor="photoURL">Picture</label>
         <div style={{ display: 'flex' }}>
           {isUploadEnabled && (
             <div>
@@ -219,13 +219,18 @@ export default class SignaturePhotoPicker extends React.Component<
                   {localized('Remove')}
                 </a>
               ) : (
-                <input
-                  type="url"
-                  id="photoURL"
-                  placeholder="http://"
-                  value={data.photoURL === 'custom' ? '' : data.photoURL}
-                  onChange={this.props.onChange}
-                />
+                <>
+                  <label htmlFor="photoURL" className="sr-only">
+                    {localized('Photo URL')}
+                  </label>
+                  <input
+                    type="url"
+                    id="photoURL"
+                    placeholder="http://"
+                    value={data.photoURL === 'custom' ? '' : data.photoURL}
+                    onChange={this.props.onChange}
+                  />
+                </>
               ))}
           </div>
         </div>

@@ -66,7 +66,8 @@ export default class OpenTrackingMessageStatus extends React.Component<{ message
             url="mailspring://open-tracking/assets/InMessage-opened@2x.png"
             mode={RetinaImg.Mode.ContentIsMask}
           />
-        }&nbsp;&nbsp;{text}
+        }
+        &nbsp;&nbsp;{text}
       </span>
     );
   }

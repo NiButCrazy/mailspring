@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import * as Immutable from 'immutable';
-import { Editor, Value, Operation, Range } from 'slate';
+import { Editor, Value, Operation, Range, Block, Text } from 'slate';
 import { Editor as SlateEditorComponent, EditorProps, Plugin } from 'slate-react';
 import { clipboard as ElectronClipboard } from 'electron';
 import { InlineStyleTransformer } from 'mailspring-exports';
@@ -12,8 +12,30 @@ import { debounce } from 'underscore';
 import { KeyCommandsRegion } from '../key-commands-region';
 import ComposerEditorToolbar from './composer-editor-toolbar';
 import { schema, plugins, convertFromHTML, convertToHTML, convertToPlainText } from './conversion';
-import { lastUnquotedNode, removeQuotedText } from './base-block-plugins';
+import { lastUnquotedNode, removeQuotedText, isQuoteNode } from './base-block-plugins';
+import { UNEDITABLE_TYPE } from './uneditable-plugins';
 import { changes as InlineAttachmentChanges } from './inline-attachment-plugins';
+
+// Returns a reason string if the document needs recovery, or null if it's fine.
+function getDocumentBrokenReason(value: Value): string | null {
+  const { document } = value;
+  const firstText = document.getFirstText();
+
+  // Case 1: no text nodes at all (e.g. user deleted all content before schema normalization ran)
+  if (!firstText) {
+    return 'document has no text nodes';
+  }
+
+  // Case 2: every text node is inside quoted or uneditable content (e.g. user deleted all
+  // their own text and only the collapsed quoted-text blockquote remains). Placing the cursor
+  // inside those nodes would land in hidden/read-only content.
+  const ancestors = document.getAncestors(firstText.key);
+  if (ancestors.some(a => a.object === 'block' && (isQuoteNode(a) || a.type === UNEDITABLE_TYPE))) {
+    return 'first text node is inside quoted/uneditable content';
+  }
+
+  return null;
+}
 
 const AEditor = (SlateEditorComponent as any) as React.ComponentType<
   EditorProps & { ref: any; propsForPlugins: any }
@@ -235,6 +257,29 @@ export class ComposerEditor extends React.Component<ComposerEditorProps, Compose
     // This needs to be here because some composer plugins defer their calls to onChange
     // (like spellcheck and the context menu).
     if (!this._mounted) return;
+
+    // If the incoming value is broken, apply the recovery operation directly to
+    // change.value before forwarding to the parent. This emits a single onChange with
+    // the already-corrected value rather than emitting the broken value and then a
+    // second onChange from a deferred microtask (which is what would happen if we called
+    // editor.insertNodeByPath here). The parent therefore never sees the broken state,
+    // and the insert_node operation is included in the operations list so the parent
+    // knows the document changed and doesn't skip saving.
+    const reason = getDocumentBrokenReason(change.value);
+    if (reason) {
+      console.warn(`ComposerEditor: ${reason}, inserting empty paragraph to recover.`);
+      const op = require('slate').Operation.create({
+        type: 'insert_node',
+        path: Immutable.List([0]),
+        node: Block.create({ type: 'div', nodes: Immutable.List([Text.create('')]) }),
+      });
+      this.props.onChange({
+        operations: change.operations.push(op),
+        value: op.apply(change.value),
+      });
+      return;
+    }
+
     this.props.onChange(change);
   };
 
@@ -327,13 +372,11 @@ export function handleFilePasted(event: ClipboardEvent, onFileReceived: (path: s
     new RegExp(String.fromCharCode(0), 'g'),
     ''
   );
-  const xdgCopiedFiles = (
-    (ElectronClipboard.read('text/uri-list') || '')
-      .split('\r\n') // yes, really
-      .filter(path => path.startsWith('file://'))
-      .map(path => path.replace('file://', ''))
-      .filter(path => path.length)
-  )
+  const xdgCopiedFiles = (ElectronClipboard.read('text/uri-list') || '')
+    .split('\r\n') // yes, really
+    .filter(path => path.startsWith('file://'))
+    .map(path => path.replace('file://', ''))
+    .filter(path => path.length);
   if (macCopiedFile.length || winCopiedFile.length) {
     onFileReceived(macCopiedFile || winCopiedFile);
     return true;

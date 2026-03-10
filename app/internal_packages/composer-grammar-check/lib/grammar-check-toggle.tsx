@@ -95,16 +95,27 @@ export class GrammarCheckToggle extends React.Component<{
     }
 
     return (
-      <button tabIndex={-1} className={className} onClick={this._onClick} title={title}>
+      <button
+        tabIndex={-1}
+        className={className}
+        onClick={this._onClick}
+        title={title}
+        aria-label={title}
+      >
         {onByDefaultButUsedUp && (
           <div style={{ position: 'absolute', zIndex: 2, transform: 'translate(14px, -4px)' }}>
-            <RetinaImg name="tiny-warning-sign.png" mode={RetinaImg.Mode.ContentPreserve} />
+            <RetinaImg
+              name="tiny-warning-sign.png"
+              mode={RetinaImg.Mode.ContentPreserve}
+              aria-hidden="true"
+            />
           </div>
         )}
         <span className="grammar-check-icon-wrap">
           <RetinaImg
             url="mailspring://composer-grammar-check/assets/icon-composer-grammar@2x.png"
             mode={RetinaImg.Mode.ContentIsMask}
+            aria-hidden="true"
           />
           {checking && <span className="grammar-check-spinner" />}
         </span>

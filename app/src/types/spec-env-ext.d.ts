@@ -14,7 +14,7 @@ declare global {
 
   const waitsForPromise: (
     a: { shouldReject?: boolean; timeout?: number } | (() => Promise<any>),
-    b?: (() => Promise<any>)
+    b?: () => Promise<any>
   ) => Promise<any>;
 
   export const advanceClock: (delta?: number) => void;

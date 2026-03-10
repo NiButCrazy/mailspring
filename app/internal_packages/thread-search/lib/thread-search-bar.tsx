@@ -326,9 +326,14 @@ class ThreadSearchBar extends Component<ThreadSearchBarProps, ThreadSearchBarSta
     const showPlaceholder = !this.state.focused && !query;
     const showX = this.state.focused || !!(perspective as any).searchQuery;
 
+    const suggestionsVisible = this.state.suggestions.length > 0 && this.state.focused;
+
     return (
       <KeyCommandsRegion
         className={`thread-search-bar ${showPlaceholder ? 'placeholder' : ''}`}
+        role="combobox"
+        aria-expanded={suggestionsVisible}
+        aria-haspopup="listbox"
         globalHandlers={{
           'core:focus-search': () => {
             // If the user is in list mode, we need to clear the selection because the
@@ -362,6 +367,9 @@ class ThreadSearchBar extends Component<ThreadSearchBarProps, ThreadSearchBarSta
           onFocus={this._onFocus}
           onBlur={this._onBlur}
           onChange={this._onSearchQueryChanged}
+          aria-label={this._placeholder()}
+          role="searchbox"
+          aria-autocomplete="list"
         />
         {showX && (
           <RetinaImg
@@ -371,42 +379,43 @@ class ThreadSearchBar extends Component<ThreadSearchBarProps, ThreadSearchBarSta
             onMouseDown={this._onClearSearchQuery}
           />
         )}
-        {this.state.suggestions.length > 0 &&
-          this.state.focused && (
-            <div className="suggestions">
-              {suggestions.map((s, idx) => (
-                <div
+        {suggestionsVisible && (
+          <div className="suggestions" role="listbox">
+            {suggestions.map((s, idx) => (
+              <div
+                onMouseDown={e => {
+                  this._onChooseSuggestion(s);
+                  e.preventDefault();
+                }}
+                className={`suggestion ${selectedIdx === idx ? 'selected' : ''}`}
+                role="option"
+                aria-selected={selectedIdx === idx}
+                key={idx}
+              >
+                {s.token && <span className="suggestion-token">{s.token}: </span>}
+                {s.description}
+              </div>
+            ))}
+            {suggestions === TokenSuggestionsForEmpty && (
+              <div className="footer">
+                {localized(
+                  'Pro tip: Combine search terms with AND and OR to create complex queries.'
+                )}{' '}
+                <a
                   onMouseDown={e => {
-                    this._onChooseSuggestion(s);
+                    AppEnv.windowEventHandler.openLink({
+                      href: LearnMoreURL,
+                      metaKey: e.metaKey,
+                    });
                     e.preventDefault();
                   }}
-                  className={`suggestion ${selectedIdx === idx ? 'selected' : ''}`}
-                  key={idx}
                 >
-                  {s.token && <span className="suggestion-token">{s.token}: </span>}
-                  {localized(s.description)}
-                </div>
-              ))}
-              {suggestions === TokenSuggestionsForEmpty && (
-                <div className="footer">
-                  {localized(
-                    'Pro tip: Combine search terms with AND and OR to create complex queries.'
-                  )}{' '}
-                  <a
-                    onMouseDown={e => {
-                      AppEnv.windowEventHandler.openLink({
-                        href: LearnMoreURL,
-                        metaKey: e.metaKey,
-                      });
-                      e.preventDefault();
-                    }}
-                  >
-                    {localized('Learn more')} &gt;
-                  </a>
-                </div>
-              )}
-            </div>
-          )}
+                  {localized('Learn more')} &gt;
+                </a>
+              </div>
+            )}
+          </div>
+        )}
       </KeyCommandsRegion>
     );
   }

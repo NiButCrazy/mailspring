@@ -342,8 +342,15 @@ export default class MessageItem extends React.Component<MessageItemProps, Messa
   }
 
   _renderFull() {
+    const senderName =
+      this.props.message.from && this.props.message.from[0]
+        ? this.props.message.from[0].displayName()
+        : localized('Unknown');
     return (
-      <div className={this.props.className}>
+      <article
+        className={this.props.className}
+        aria-label={localized('Message from %@', senderName)}
+      >
         <div className="message-item-white-wrap">
           <div className="message-item-area">
             {this._renderHeader()}
@@ -352,7 +359,7 @@ export default class MessageItem extends React.Component<MessageItemProps, Messa
             {this._renderFooterStatus()}
           </div>
         </div>
-      </div>
+      </article>
     );
   }
 

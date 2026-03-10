@@ -1,5 +1,5 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render, fireEvent, cleanup } from '@testing-library/react';
 import { ContactStore, Contact } from 'mailspring-exports';
 
 import { ParticipantsTextField } from 'mailspring-component-kit';
@@ -20,7 +20,9 @@ const participant3 = new Contact({
 });
 
 xdescribe('ParticipantsTextField', function ParticipantsTextFieldSpecs() {
-  beforeEach(() => {
+  afterEach(cleanup);
+
+  beforeEach(function() {
     spyOn(AppEnv, 'isMainWindow').andReturn(true);
     this.propChange = jasmine.createSpy('change');
 
@@ -31,7 +33,7 @@ xdescribe('ParticipantsTextField', function ParticipantsTextFieldSpecs() {
       bcc: [],
     };
 
-    this.renderedField = mount(
+    const { container } = render(
       <ParticipantsTextField
         field={this.fieldName}
         label={this.fieldName}
@@ -42,7 +44,7 @@ xdescribe('ParticipantsTextField', function ParticipantsTextFieldSpecs() {
         change={this.propChange}
       />
     );
-    this.renderedInput = this.renderedField.find('input');
+    this.container = container;
 
     this.expectInputToYield = (input, expected) => {
       const reviver = function reviver(k, v) {
@@ -52,9 +54,10 @@ xdescribe('ParticipantsTextField', function ParticipantsTextFieldSpecs() {
         return v;
       };
       runs(() => {
-        this.renderedInput.simulate('change', { target: { value: input } });
+        const inputEl = this.container.querySelector('input');
+        fireEvent.change(inputEl, { target: { value: input } });
         advanceClock(100);
-        return this.renderedInput.simulate('keyDown', { key: 'Enter', keyCode: 9 });
+        return fireEvent.keyDown(inputEl, { key: 'Enter', keyCode: 9 });
       });
       waitsFor(() => {
         return this.propChange.calls.length > 0;
@@ -74,12 +77,12 @@ xdescribe('ParticipantsTextField', function ParticipantsTextFieldSpecs() {
     };
   });
 
-  it('renders into the document', () => {
-    expect(this.renderedField.find(ParticipantsTextField).length).toBe(1);
+  it('renders into the document', function() {
+    expect(this.container.querySelector('input') !== null).toBe(true);
   });
 
   describe('inserting participant text', () => {
-    it('should fire onChange with an updated participants hash', () => {
+    it('should fire onChange with an updated participants hash', function() {
       this.expectInputToYield('abc@abc.com', {
         to: [
           participant1,
@@ -91,7 +94,7 @@ xdescribe('ParticipantsTextField', function ParticipantsTextFieldSpecs() {
       });
     });
 
-    it('should remove added participants from other fields', () => {
+    it('should remove added participants from other fields', function() {
       this.expectInputToYield(participant3.email, {
         to: [
           participant1,
@@ -103,7 +106,7 @@ xdescribe('ParticipantsTextField', function ParticipantsTextFieldSpecs() {
       });
     });
 
-    it('should use the name of an existing contact in the ContactStore if possible', () => {
+    it('should use the name of an existing contact in the ContactStore if possible', function() {
       spyOn(ContactStore, 'searchContacts').andCallFake(val => {
         if (val === participant3.name) {
           return Promise.resolve([participant3]);
@@ -118,7 +121,7 @@ xdescribe('ParticipantsTextField', function ParticipantsTextFieldSpecs() {
       });
     });
 
-    it("should use the plain email if that's what's entered", () => {
+    it("should use the plain email if that's what's entered", function() {
       spyOn(ContactStore, 'searchContacts').andCallFake(val => {
         if (val === participant3.name) {
           return Promise.resolve([participant3]);
@@ -133,7 +136,7 @@ xdescribe('ParticipantsTextField', function ParticipantsTextFieldSpecs() {
       });
     });
 
-    it('should not have the same contact auto-picked multiple times', () => {
+    it('should not have the same contact auto-picked multiple times', function() {
       spyOn(ContactStore, 'searchContacts').andCallFake(val => {
         if (val === participant2.name) {
           return Promise.resolve([participant2]);
@@ -153,7 +156,7 @@ xdescribe('ParticipantsTextField', function ParticipantsTextFieldSpecs() {
     });
 
     describe('when text contains Name (Email) formatted data', () => {
-      it('should correctly parse it into named Contact objects', () => {
+      it('should correctly parse it into named Contact objects', function() {
         const newContact1 = new Contact({
           id: 'b1',
           name: 'Ben Imposter',
@@ -179,7 +182,7 @@ xdescribe('ParticipantsTextField', function ParticipantsTextFieldSpecs() {
     });
 
     describe('when text contains emails mixed with garbage text', () => {
-      it('should still parse out emails into Contact objects', () => {
+      it('should still parse out emails into Contact objects', function() {
         const newContact1 = new Contact({
           id: 'gm',
           name: 'garbage-man@mailspring.com',

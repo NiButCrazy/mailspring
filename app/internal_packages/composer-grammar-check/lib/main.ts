@@ -1,14 +1,11 @@
 import {
   localized,
   Actions,
-  PreferencesUIStore,
   ComponentRegistry,
-  ExtensionRegistry,
   GrammarCheckPluginAPI,
 } from 'mailspring-exports';
 import { HasTutorialTip } from 'mailspring-component-kit';
 import { GrammarCheckToggle } from './grammar-check-toggle';
-import GrammarCheckComposerExtension from './grammar-check-extension';
 import { GrammarCheckStore } from './grammar-check-store';
 
 const { setGrammarCheckStore, clearGrammarCheckStore, cleanupDraft, clearAllGrammarDecorations } =
@@ -32,12 +29,6 @@ export function activate(state = {}) {
   GrammarCheckStore.activate();
   setGrammarCheckStore(GrammarCheckStore);
 
-  this.preferencesTab = new PreferencesUIStore.TabItem({
-    tabId: 'Grammar',
-    displayName: localized('Grammar'),
-    componentClassFn: () => require('./preferences-grammar').default,
-  });
-
   this._actionDisposables = [
     Actions.sendDraft.listen((headerMessageId: string) => _onDraftClosed(headerMessageId)),
     Actions.destroyDraft.listen((draft: any) => {
@@ -56,8 +47,6 @@ export function activate(state = {}) {
   );
 
   ComponentRegistry.register(GrammarCheckToggleWithTip, { role: 'Composer:ActionButton' });
-  PreferencesUIStore.registerPreferencesTab(this.preferencesTab);
-  ExtensionRegistry.Composer.register(GrammarCheckComposerExtension);
 }
 
 export function deactivate() {
@@ -82,8 +71,6 @@ export function deactivate() {
 
   GrammarCheckStore.deactivate();
   ComponentRegistry.unregister(GrammarCheckToggleWithTip);
-  PreferencesUIStore.unregisterPreferencesTab(this.preferencesTab.tabId);
-  ExtensionRegistry.Composer.unregister(GrammarCheckComposerExtension);
 }
 
 export function serialize() {

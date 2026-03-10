@@ -1,4 +1,4 @@
-import { mount } from 'enzyme';
+import { render, fireEvent, cleanup } from '@testing-library/react';
 import proxyquire from 'proxyquire';
 import React from 'react';
 
@@ -13,28 +13,28 @@ const patched = proxyquire('../lib/items/update-notification', {
         ipcSendArgs = args;
       },
     },
-    remote: {
-      getGlobal: () => {
-        return {
-          autoUpdateManager: {
-            releaseVersion: stubUpdaterReleaseVersion,
-            getState: () => stubUpdaterState,
-            getReleaseDetails: () => {
-              return {
-                releaseVersion: stubUpdaterReleaseVersion,
-                releaseNotes: 'A new version is available!',
-              };
-            },
-          },
-        };
+  },
+  '@electron/remote': {
+    getGlobal: () => ({
+      autoUpdateManager: {
+        get releaseVersion() {
+          return stubUpdaterReleaseVersion;
+        },
+        getState: () => stubUpdaterState,
+        getReleaseDetails: () => ({
+          releaseVersion: stubUpdaterReleaseVersion,
+          releaseNotes: 'A new version is available!',
+        }),
       },
-    },
+    }),
   },
 });
 
 const UpdateNotification = patched.default;
 
 describe('UpdateNotification', function describeBlock() {
+  afterEach(cleanup);
+
   beforeEach(() => {
     stubUpdaterState = 'idle';
     stubUpdaterReleaseVersion = undefined;
@@ -44,19 +44,19 @@ describe('UpdateNotification', function describeBlock() {
   describe('mounting', () => {
     it('should display a notification immediately if one is available', () => {
       stubUpdaterState = 'update-available';
-      const notif = mount(<UpdateNotification />);
-      expect(notif.find('.notification').exists()).toEqual(true);
+      const { container } = render(<UpdateNotification />);
+      expect(container.querySelector('.notification') !== null).toEqual(true);
     });
 
     it('should not display a notification if no update is avialable', () => {
       stubUpdaterState = 'no-update-available';
-      const notif = mount(<UpdateNotification />);
-      expect(notif.find('.notification').exists()).toEqual(false);
+      const { container } = render(<UpdateNotification />);
+      expect(container.querySelector('.notification') !== null).toEqual(false);
     });
 
     it('should listen for `window:update-available`', () => {
       spyOn(AppEnv, 'onUpdateAvailable').andCallThrough();
-      mount(<UpdateNotification />);
+      render(<UpdateNotification />);
       expect(AppEnv.onUpdateAvailable).toHaveBeenCalled();
     });
   });
@@ -65,29 +65,26 @@ describe('UpdateNotification', function describeBlock() {
     it('should include the version if one is provided', () => {
       stubUpdaterState = 'update-available';
       stubUpdaterReleaseVersion = '0.515.0-123123';
-      const notif = mount(<UpdateNotification />);
-      expect(
-        notif
-          .find('.title')
-          .text()
-          .indexOf('0.515.0-123123') >= 0
-      ).toBe(true);
+      const { container } = render(<UpdateNotification />);
+      expect(container.querySelector('.title').textContent.indexOf('0.515.0-123123') >= 0).toBe(
+        true
+      );
     });
 
     describe('when the action is taken', () => {
       it('should fire the `application:install-update` IPC event', () => {
         stubUpdaterState = 'update-available';
-        const notif = mount(<UpdateNotification />);
-        notif.find('#action-0').simulate('click'); // Expects the first action to be the install action
+        const { container } = render(<UpdateNotification />);
+        fireEvent.click(container.querySelector('#action-0'));
         expect(ipcSendArgs).toEqual(['command', 'application:install-update']);
       });
 
       it('should dismiss the update notification prompt', () => {
         stubUpdaterState = 'update-available';
-        const notif = mount(<UpdateNotification />);
-        expect(notif.find('.notification').exists()).toEqual(true);
-        notif.find('#action-1').simulate('click'); // Expects the second action to be the dismiss action
-        expect(notif.find('.notification').exists()).toEqual(false);
+        const { container } = render(<UpdateNotification />);
+        expect(container.querySelector('.notification') !== null).toEqual(true);
+        fireEvent.click(container.querySelector('#action-1'));
+        expect(container.querySelector('.notification') !== null).toEqual(false);
       });
     });
   });

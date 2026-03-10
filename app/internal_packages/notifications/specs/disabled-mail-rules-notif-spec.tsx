@@ -1,57 +1,63 @@
-import { mount } from 'enzyme';
+import { render, fireEvent, cleanup } from '@testing-library/react';
 import React from 'react';
 import { AccountStore, Account, Actions, MailRulesStore } from 'mailspring-exports';
 import DisabledMailRulesNotification from '../lib/items/disabled-mail-rules-notif';
 
 describe('DisabledMailRulesNotification', function DisabledMailRulesNotifTests() {
+  afterEach(cleanup);
+
   beforeEach(() => {
     spyOn(AccountStore, 'accounts').andReturn([
       new Account({ id: 'A', syncState: Account.SYNC_STATE_OK, emailAddress: '123@gmail.com' }),
     ]);
   });
+
   describe('When there is one disabled mail rule', () => {
+    let container;
     beforeEach(() => {
       spyOn(MailRulesStore, 'disabledRules').andReturn([{ accountId: 'A' }]);
-      this.notif = mount(<DisabledMailRulesNotification />);
+      ({ container } = render(<DisabledMailRulesNotification />));
     });
     it('displays a notification', () => {
-      expect(this.notif.find('.notification').exists()).toEqual(true);
+      expect(container.querySelector('.notification') !== null).toEqual(true);
     });
 
     it('allows users to open the preferences', () => {
       spyOn(Actions, 'switchPreferencesTab');
       spyOn(Actions, 'openPreferences');
-      this.notif.find('#action-0').simulate('click');
+      fireEvent.click(container.querySelector('#action-0'));
       expect(Actions.switchPreferencesTab).toHaveBeenCalledWith('Mail Rules', { accountId: 'A' });
       expect(Actions.openPreferences).toHaveBeenCalled();
     });
   });
 
   describe('When there are multiple disabled mail rules', () => {
+    let container;
     beforeEach(() => {
       spyOn(MailRulesStore, 'disabledRules').andReturn([{ accountId: 'A' }, { accountId: 'A' }]);
-      this.notif = mount(<DisabledMailRulesNotification />);
+      ({ container } = render(<DisabledMailRulesNotification />));
     });
     it('displays a notification', () => {
-      expect(this.notif.find('.notification').exists()).toEqual(true);
+      expect(container.querySelector('.notification') !== null).toEqual(true);
     });
 
     it('allows users to open the preferences', () => {
       spyOn(Actions, 'switchPreferencesTab');
       spyOn(Actions, 'openPreferences');
-      this.notif.find('#action-0').simulate('click');
+      fireEvent.click(container.querySelector('#action-0'));
       expect(Actions.switchPreferencesTab).toHaveBeenCalledWith('Mail Rules', { accountId: 'A' });
       expect(Actions.openPreferences).toHaveBeenCalled();
     });
   });
 
   describe('When there are no disabled mail rules', () => {
+    let container;
     beforeEach(() => {
       spyOn(MailRulesStore, 'disabledRules').andReturn([]);
-      this.notif = mount(<DisabledMailRulesNotification />);
+      ({ container } = render(<DisabledMailRulesNotification />));
     });
     it('does not display a notification', () => {
-      expect(this.notif.find('.notification').exists()).toEqual(false);
+      expect(container.querySelector('.notification') !== null).toEqual(false);
     });
   });
 });

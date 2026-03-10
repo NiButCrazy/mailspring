@@ -20,7 +20,11 @@ const LanguageSection = ({ config }) => {
       <h6>{localized('Interface Language')}</h6>
 
       <div className="item">
+        <label htmlFor="interface-language" className="sr-only">
+          {localized('Interface Language')}
+        </label>
         <select
+          id="interface-language"
           onChange={onChangeValue}
           value={configValue}
           style={{ marginLeft: 0, marginRight: 0 }}
@@ -52,6 +56,7 @@ const LanguageSection = ({ config }) => {
             className="btn btn-small"
             style={{ marginLeft: 9, marginRight: 9 }}
             onClick={() => {
+              console.log('lang section relaunch');
               require('@electron/remote').app.relaunch();
               require('@electron/remote').app.quit();
             }}

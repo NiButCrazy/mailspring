@@ -120,8 +120,11 @@ export class ComposerEditorPlaintext extends React.Component<ComposerEditorPlain
 
     if (value !== wrapped.value) {
       event.target.value = wrapped.value;
-      event.target.setSelectionRange(wrapped.selectionStart, wrapped.selectionEnd, event.target
-        .selectionDirection as any);
+      event.target.setSelectionRange(
+        wrapped.selectionStart,
+        wrapped.selectionEnd,
+        event.target.selectionDirection as any
+      );
     }
     this.updateHeight();
   };

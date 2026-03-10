@@ -78,7 +78,7 @@ export default class PreferencesCategoryMapper extends React.Component<
 
   _updateContainerFolderDefault = () => {
     Actions.updateContainerFolderDefault(this.state.containerFolderDefault);
-  }
+  };
 
   _renderRoleSection = (account, role) => {
     if (!account) return false;

@@ -113,14 +113,19 @@ export class DayView extends React.Component<
       ? moment.tz([focusedMoment.year(), focusedMoment.month(), focusedMoment.date()], tz)
       : moment([focusedMoment.year(), focusedMoment.month(), focusedMoment.date()]);
 
-    const end = start.clone().add(DAYS_IN_VIEW, 'days').subtract(1, 'millisecond');
+    const end = start
+      .clone()
+      .add(DAYS_IN_VIEW, 'days')
+      .subtract(1, 'millisecond');
 
     return {
       visibleStart: start,
       visibleEnd: end,
 
       bufferedStart: start.clone().subtract(BUFFER_DAYS, 'days'),
-      bufferedEnd: moment(end).add(BUFFER_DAYS, 'days').subtract(1, 'millisecond'),
+      bufferedEnd: moment(end)
+        .add(BUFFER_DAYS, 'days')
+        .subtract(1, 'millisecond'),
     };
   }
 
@@ -234,6 +239,8 @@ export class DayView extends React.Component<
           onCalendarMouseUp={this.props.onCalendarMouseUp}
           onCalendarMouseDown={this.props.onCalendarMouseDown}
           onCalendarMouseMove={this.props.onCalendarMouseMove}
+          onCalendarClick={this.props.onCalendarClick}
+          onCalendarDoubleClick={this.props.onCalendarDoubleClick}
         >
           <div className="top-banner">
             {/* Role follows pattern: Calendar:{ViewName}:Banner (cf. WeekView's Calendar:Week:Banner) */}

@@ -1,18 +1,29 @@
-import { execFile } from 'child_process';
-import { getDoNotDisturb, clearDoNotDisturbCache } from '../src/dnd-utils-linux';
+import proxyquire from 'proxyquire';
 
-// Mock child_process.execFile
-jest.mock('child_process', () => ({
-  execFile: jest.fn(),
-}));
+// ---------------------------------------------------------------------------
+// Per-test spy and lazily-loaded module (proxyquire injects the mock before
+// the module is evaluated, so the destructured `execFile` binding is mocked).
+// ---------------------------------------------------------------------------
 
-const mockedExecFile = execFile as unknown as jest.Mock;
+let execFileSpy: jasmine.Spy;
+let getDoNotDisturb: () => Promise<boolean>;
+let clearDoNotDisturbCache: () => void;
 
-/**
- * Helper to make the mocked execFile call its callback with given stdout.
- */
+function loadModule() {
+  execFileSpy = jasmine.createSpy('execFile');
+  const mod = proxyquire('../src/dnd-utils-linux', {
+    child_process: { execFile: execFileSpy, '@noCallThru': false },
+  });
+  getDoNotDisturb = mod.getDoNotDisturb;
+  clearDoNotDisturbCache = mod.clearDoNotDisturbCache;
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
 function mockExecFileSuccess(stdout: string) {
-  mockedExecFile.mockImplementation(
+  execFileSpy.andCallFake(
     (
       _cmd: string,
       _args: string[],
@@ -24,29 +35,23 @@ function mockExecFileSuccess(stdout: string) {
   );
 }
 
-/**
- * Helper to make the mocked execFile call its callback with an error.
- */
 function mockExecFileError(code = 'ENOENT') {
-  mockedExecFile.mockImplementation(
+  execFileSpy.andCallFake(
     (
       _cmd: string,
       _args: string[],
       _opts: any,
       callback: (err: Error | null, stdout: string) => void
     ) => {
-      const error = new Error(`Command not found`) as NodeJS.ErrnoException;
+      const error = new Error('Command not found') as NodeJS.ErrnoException;
       error.code = code;
       callback(error, '');
     }
   );
 }
 
-/**
- * Helper to route different commands to different results.
- */
 function mockExecFileByCommand(routes: Record<string, { stdout?: string; error?: boolean }>) {
-  mockedExecFile.mockImplementation(
+  execFileSpy.andCallFake(
     (
       cmd: string,
       _args: string[],
@@ -65,18 +70,22 @@ function mockExecFileByCommand(routes: Record<string, { stdout?: string; error?:
   );
 }
 
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
+
 describe('Linux Do Not Disturb Detection', () => {
   const originalPlatform = process.platform;
   const originalEnv = process.env.XDG_CURRENT_DESKTOP;
 
   beforeEach(() => {
+    loadModule();
     clearDoNotDisturbCache();
-    mockedExecFile.mockReset();
-    Object.defineProperty(process, 'platform', { value: 'linux' });
+    Object.defineProperty(process, 'platform', { value: 'linux', configurable: true });
   });
 
   afterEach(() => {
-    Object.defineProperty(process, 'platform', { value: originalPlatform });
+    Object.defineProperty(process, 'platform', { value: originalPlatform, configurable: true });
     process.env.XDG_CURRENT_DESKTOP = originalEnv;
   });
 
@@ -97,13 +106,10 @@ describe('Linux Do Not Disturb Detection', () => {
 
     it('falls through to DE-specific fallback on unexpected output', async () => {
       process.env.XDG_CURRENT_DESKTOP = 'GNOME';
-      // dbus-send succeeds but returns a non-boolean type (non-conforming daemon)
       mockExecFileByCommand({
         'dbus-send': { stdout: '   variant       uint32 1' },
         gsettings: { stdout: 'false' },
       });
-      // Should not treat unexpected output as "not inhibited" — should fall
-      // through to the GNOME gsettings check which reports DND is active
       expect(await getDoNotDisturb()).toBe(true);
     });
 
@@ -111,66 +117,51 @@ describe('Linux Do Not Disturb Detection', () => {
       mockExecFileSuccess('   variant       boolean false');
       await getDoNotDisturb();
 
-      expect(mockedExecFile).toHaveBeenCalledWith(
-        'dbus-send',
-        [
-          '--session',
-          '--print-reply',
-          '--dest=org.freedesktop.Notifications',
-          '/org/freedesktop/Notifications',
-          'org.freedesktop.DBus.Properties.Get',
-          'string:org.freedesktop.Notifications',
-          'string:Inhibited',
-        ],
-        expect.objectContaining({ timeout: expect.any(Number) }),
-        expect.any(Function)
-      );
+      expect(execFileSpy.calls.length).toBe(1);
+      const [cmd, args, opts, callback] = execFileSpy.calls[0].args;
+      expect(cmd).toEqual('dbus-send');
+      expect(args).toEqual([
+        '--session',
+        '--print-reply',
+        '--dest=org.freedesktop.Notifications',
+        '/org/freedesktop/Notifications',
+        'org.freedesktop.DBus.Properties.Get',
+        'string:org.freedesktop.Notifications',
+        'string:Inhibited',
+      ]);
+      expect(typeof opts.timeout).toBe('number');
+      expect(typeof callback).toBe('function');
     });
   });
 
   describe('GNOME gsettings fallback', () => {
     it('returns true when show-banners is false', async () => {
       process.env.XDG_CURRENT_DESKTOP = 'GNOME';
-      mockExecFileByCommand({
-        'dbus-send': { error: true },
-        gsettings: { stdout: 'false' },
-      });
+      mockExecFileByCommand({ 'dbus-send': { error: true }, gsettings: { stdout: 'false' } });
       expect(await getDoNotDisturb()).toBe(true);
     });
 
     it('returns false when show-banners is true', async () => {
       process.env.XDG_CURRENT_DESKTOP = 'GNOME';
-      mockExecFileByCommand({
-        'dbus-send': { error: true },
-        gsettings: { stdout: 'true' },
-      });
+      mockExecFileByCommand({ 'dbus-send': { error: true }, gsettings: { stdout: 'true' } });
       expect(await getDoNotDisturb()).toBe(false);
     });
 
     it('works with ubuntu:GNOME desktop identifier', async () => {
       process.env.XDG_CURRENT_DESKTOP = 'ubuntu:GNOME';
-      mockExecFileByCommand({
-        'dbus-send': { error: true },
-        gsettings: { stdout: 'false' },
-      });
+      mockExecFileByCommand({ 'dbus-send': { error: true }, gsettings: { stdout: 'false' } });
       expect(await getDoNotDisturb()).toBe(true);
     });
 
     it('works with pop:GNOME desktop identifier', async () => {
       process.env.XDG_CURRENT_DESKTOP = 'pop:GNOME';
-      mockExecFileByCommand({
-        'dbus-send': { error: true },
-        gsettings: { stdout: 'false' },
-      });
+      mockExecFileByCommand({ 'dbus-send': { error: true }, gsettings: { stdout: 'false' } });
       expect(await getDoNotDisturb()).toBe(true);
     });
 
     it('works with Budgie:GNOME desktop identifier', async () => {
       process.env.XDG_CURRENT_DESKTOP = 'Budgie:GNOME';
-      mockExecFileByCommand({
-        'dbus-send': { error: true },
-        gsettings: { stdout: 'false' },
-      });
+      mockExecFileByCommand({ 'dbus-send': { error: true }, gsettings: { stdout: 'false' } });
       expect(await getDoNotDisturb()).toBe(true);
     });
   });
@@ -178,19 +169,13 @@ describe('Linux Do Not Disturb Detection', () => {
   describe('Cinnamon gsettings fallback', () => {
     it('returns true when display-notifications is false', async () => {
       process.env.XDG_CURRENT_DESKTOP = 'X-Cinnamon';
-      mockExecFileByCommand({
-        'dbus-send': { error: true },
-        gsettings: { stdout: 'false' },
-      });
+      mockExecFileByCommand({ 'dbus-send': { error: true }, gsettings: { stdout: 'false' } });
       expect(await getDoNotDisturb()).toBe(true);
     });
 
     it('returns false when display-notifications is true', async () => {
       process.env.XDG_CURRENT_DESKTOP = 'X-Cinnamon';
-      mockExecFileByCommand({
-        'dbus-send': { error: true },
-        gsettings: { stdout: 'true' },
-      });
+      mockExecFileByCommand({ 'dbus-send': { error: true }, gsettings: { stdout: 'true' } });
       expect(await getDoNotDisturb()).toBe(false);
     });
   });
@@ -198,28 +183,19 @@ describe('Linux Do Not Disturb Detection', () => {
   describe('XFCE xfconf-query fallback', () => {
     it('returns true when do-not-disturb is true', async () => {
       process.env.XDG_CURRENT_DESKTOP = 'XFCE';
-      mockExecFileByCommand({
-        'dbus-send': { error: true },
-        'xfconf-query': { stdout: 'true' },
-      });
+      mockExecFileByCommand({ 'dbus-send': { error: true }, 'xfconf-query': { stdout: 'true' } });
       expect(await getDoNotDisturb()).toBe(true);
     });
 
     it('returns false when do-not-disturb is false', async () => {
       process.env.XDG_CURRENT_DESKTOP = 'XFCE';
-      mockExecFileByCommand({
-        'dbus-send': { error: true },
-        'xfconf-query': { stdout: 'false' },
-      });
+      mockExecFileByCommand({ 'dbus-send': { error: true }, 'xfconf-query': { stdout: 'false' } });
       expect(await getDoNotDisturb()).toBe(false);
     });
 
     it('handles case-insensitive True response', async () => {
       process.env.XDG_CURRENT_DESKTOP = 'XFCE';
-      mockExecFileByCommand({
-        'dbus-send': { error: true },
-        'xfconf-query': { stdout: 'True' },
-      });
+      mockExecFileByCommand({ 'dbus-send': { error: true }, 'xfconf-query': { stdout: 'True' } });
       expect(await getDoNotDisturb()).toBe(true);
     });
   });
@@ -248,22 +224,21 @@ describe('Linux Do Not Disturb Detection', () => {
     it('returns cached result without spawning a process on second call', async () => {
       mockExecFileSuccess('   variant       boolean true');
       expect(await getDoNotDisturb()).toBe(true);
-      expect(mockedExecFile).toHaveBeenCalledTimes(1);
+      expect(execFileSpy.calls.length).toBe(1);
 
-      // Second call should use cache
       expect(await getDoNotDisturb()).toBe(true);
-      expect(mockedExecFile).toHaveBeenCalledTimes(1);
+      expect(execFileSpy.calls.length).toBe(1);
     });
 
     it('refreshes after cache is cleared', async () => {
       mockExecFileSuccess('   variant       boolean true');
       expect(await getDoNotDisturb()).toBe(true);
-      expect(mockedExecFile).toHaveBeenCalledTimes(1);
+      expect(execFileSpy.calls.length).toBe(1);
 
       clearDoNotDisturbCache();
       mockExecFileSuccess('   variant       boolean false');
       expect(await getDoNotDisturb()).toBe(false);
-      expect(mockedExecFile).toHaveBeenCalledTimes(2);
+      expect(execFileSpy.calls.length).toBe(2);
     });
   });
 
@@ -282,12 +257,10 @@ describe('Linux Do Not Disturb Detection', () => {
 
     it('prefers freedesktop standard over DE-specific method', async () => {
       process.env.XDG_CURRENT_DESKTOP = 'GNOME';
-      // freedesktop says DND is off, even though we're on GNOME
       mockExecFileSuccess('   variant       boolean false');
       expect(await getDoNotDisturb()).toBe(false);
-      // Should only have called dbus-send, not gsettings
-      expect(mockedExecFile).toHaveBeenCalledTimes(1);
-      expect(mockedExecFile.mock.calls[0][0]).toBe('dbus-send');
+      expect(execFileSpy.calls.length).toBe(1);
+      expect(execFileSpy.calls[0].args[0]).toBe('dbus-send');
     });
   });
 });

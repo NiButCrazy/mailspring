@@ -42,15 +42,19 @@ class PreferencesAccountList extends Component<PreferencesAccountListProps> {
     const label = account.label;
     const accountSub = `${account.name || localized('No name provided')} <${account.emailAddress}>`;
     const syncError = account.hasSyncStateError();
-    let style: CSSProperties = {}
+    let style: CSSProperties = {};
     if (account.color) {
-      style = { borderLeftColor: account.color, borderLeftWidth: '8px', borderLeftStyle: 'solid' }
+      style = { borderLeftColor: account.color, borderLeftWidth: '8px', borderLeftStyle: 'solid' };
     } else {
-      style = { marginLeft: '8px' }
+      style = { marginLeft: '8px' };
     }
 
     return (
-      <div style={style} className={classnames({ account: true, 'sync-error': syncError })} key={account.id}>
+      <div
+        style={style}
+        className={classnames({ account: true, 'sync-error': syncError })}
+        key={account.id}
+      >
         <Flexbox direction="row" style={{ alignItems: 'middle' }}>
           <div style={{ textAlign: 'center' }}>
             <RetinaImg

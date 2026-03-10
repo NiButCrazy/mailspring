@@ -27,6 +27,7 @@ class AutoaddressControl extends Component<AutoaddressControlProps> {
         <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 3 }}>
           {localized('When composing, automatically')}
           <select
+            aria-label={localized('Automatically CC or BCC recipients')}
             style={{ marginTop: 0, marginLeft: 8 }}
             value={autoaddress.type}
             onChange={e => onChange({ ...autoaddress, type: e.target.value as 'cc' | 'bcc' })}
@@ -39,6 +40,7 @@ class AutoaddressControl extends Component<AutoaddressControlProps> {
         </div>
         <input
           type="text"
+          aria-label={localized('Comma-separated email addresses to automatically CC or BCC')}
           value={autoaddress.value}
           onChange={e => onChange({ ...autoaddress, value: e.target.value })}
           onBlur={onSaveChanges}
@@ -68,7 +70,10 @@ class PreferencesAccountDetails extends Component<
     this.state = { account: props.account.clone() };
   }
 
-  componentDidUpdate(prevProps: { account: Account; onAccountUpdated: (account: Account, newAccount: Account) => void }) {
+  componentDidUpdate(prevProps: {
+    account: Account;
+    onAccountUpdated: (account: Account, newAccount: Account) => void;
+  }) {
     if (prevProps.account !== this.props.account) {
       this.setState({ account: this.props.account.clone() });
     }
@@ -287,15 +292,21 @@ class PreferencesAccountDetails extends Component<
     return (
       <div className="account-details">
         {this._renderSyncErrorDetails()}
-        <h6>{localized('Account Label')}</h6>
+        <label htmlFor="account-label">
+          <h6>{localized('Account Label')}</h6>
+        </label>
         <input
+          id="account-label"
           type="text"
           value={account.label}
           onBlur={this._saveChanges}
           onChange={e => this._setState({ label: e.target.value })}
         />
-        <h6>{localized('Sender Name')}</h6>
+        <label htmlFor="account-sender-name">
+          <h6>{localized('Sender Name')}</h6>
+        </label>
         <input
+          id="account-sender-name"
           type="text"
           value={account.name}
           onBlur={this._saveChanges}
@@ -336,9 +347,12 @@ class PreferencesAccountDetails extends Component<
         ) : (
           undefined
         )}
-        <h6>{localized('Account Color')}</h6>
+        <label htmlFor="account-color">
+          <h6>{localized('Account Color')}</h6>
+        </label>
         <div style={{ display: 'flex', alignItems: 'flex-end' }}>
           <input
+            id="account-color"
             type="color"
             value={account.color}
             onBlur={this._saveChanges}

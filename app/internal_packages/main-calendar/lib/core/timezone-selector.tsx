@@ -44,7 +44,10 @@ function formatTimezone(tz: string): string {
     return TIMEZONE_DISPLAY_NAMES[tz];
   }
   // Fallback: Convert "America/New_York" to "New York"
-  const name = tz.split('/').pop().replace(/_/g, ' ');
+  const name = tz
+    .split('/')
+    .pop()
+    .replace(/_/g, ' ');
   return name;
 }
 
@@ -56,11 +59,7 @@ export const TimeZoneSelector: React.FC<TimeZoneSelectorProps> = ({ value, onCha
 
   return (
     <EventPropertyRow label={localized('time zone:')}>
-      <select
-        className="timezone-select"
-        value={value}
-        onChange={e => onChange(e.target.value)}
-      >
+      <select className="timezone-select" value={value} onChange={e => onChange(e.target.value)}>
         {timezones.map(tz => (
           <option key={tz} value={tz}>
             {formatTimezone(tz)}

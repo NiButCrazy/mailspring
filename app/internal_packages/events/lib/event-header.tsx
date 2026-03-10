@@ -166,8 +166,8 @@ export class EventHeader extends React.Component<EventHeaderProps, EventHeaderSt
             {icsMethod === 'cancel'
               ? this._renderCancellation()
               : icsMethod === 'request'
-                ? this._renderRSVP()
-                : this._renderSenderResponse()}
+              ? this._renderRSVP()
+              : this._renderSenderResponse()}
           </div>
         </div>
       </div>

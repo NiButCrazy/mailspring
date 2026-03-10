@@ -35,7 +35,7 @@ const Types = {
   None: 'None',
   Enum: 'Enum',
   String: 'String',
-  InputString: 'InputString'
+  InputString: 'InputString',
 };
 
 export const Comparators = {

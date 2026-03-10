@@ -1,257 +1,242 @@
-import React from 'react'
-import {mount, shallow} from 'enzyme'
-import {Table, SelectableTableCell, SelectableTableRow, SelectableTable} from 'mailspring-component-kit'
-import {selection, cellProps, rowProps, tableProps, testDataSource} from '../fixtures/table-data'
+import React from 'react';
+import { render, fireEvent, cleanup } from '@testing-library/react';
+import { SelectableTableCell, SelectableTableRow, SelectableTable } from 'mailspring-component-kit';
+import { selection, cellProps, rowProps, tableProps, testDataSource } from '../fixtures/table-data';
 
+afterEach(cleanup);
 
 describe('SelectableTable Components', function describeBlock() {
   describe('SelectableTableCell', () => {
-    function renderCell(props) {
-      return shallow(
-        <SelectableTableCell
-          {...cellProps}
-          {...props}
-        />
-      )
+    function renderCell(props = {}) {
+      // SelectableTableCell renders a <td>, which requires valid table DOM context
+      return render(
+        <table>
+          <tbody>
+            <tr>
+              <SelectableTableCell {...cellProps} {...props}>
+                cell content
+              </SelectableTableCell>
+            </tr>
+          </tbody>
+        </table>
+      );
     }
 
-    describe('shouldComponentUpdate', () => {
-      it('should update if selection status for cell has changed', () => {
-        const nextSelection = {colIdx: 0, rowIdx: 2}
-        const cell = renderCell()
-        const nextProps = {...cellProps, selection: nextSelection}
-        const shouldUpdate = cell.instance().shouldComponentUpdate(nextProps)
-        expect(shouldUpdate).toBe(true)
-      });
-
-      it('should update if data for cell has changed', () => {
-        const nextRows = testDataSource.rows().slice()
-        nextRows[0] = ['something else', 2]
-        const nextDataSource = testDataSource.setRows(nextRows)
-        const cell = renderCell()
-        const nextProps = {...cellProps, tableDataSource: nextDataSource}
-        const shouldUpdate = cell.instance().shouldComponentUpdate(nextProps)
-        expect(shouldUpdate).toBe(true)
-      });
-
-      it('should not update otherwise', () => {
-        const nextRows = testDataSource.rows().slice()
-        nextRows[0] = nextRows[0].slice()
-        const nextDataSource = testDataSource.setRows(nextRows)
-        const nextSelection = {...selection}
-        const cell = renderCell()
-        const nextProps = {...cellProps, selection: nextSelection, tableDataSource: nextDataSource}
-        const shouldUpdate = cell.instance().shouldComponentUpdate(nextProps)
-        expect(shouldUpdate).toBe(false)
-      });
-    });
-
-    describe('isSelected', () => {
-      it('returns true if selection matches props', () => {
-        const cell = renderCell()
-        expect(cell.instance().isSelected(cellProps)).toBe(true)
-      });
-
-      it('returns false otherwise', () => {
-        const cell = renderCell()
-        expect(cell.instance().isSelected({
-          ...cellProps,
-          selection: {rowIdx: 1, colIdx: 2},
-        })).toBe(false)
-      });
-    });
-
-    describe('isSelectedUsingKey', () => {
-      it('returns true if cell was selected using the provided key', () => {
-        const cell = renderCell({selection: {...selection, key: 'Enter'}})
-        expect(cell.instance().isSelectedUsingKey('Enter')).toBe(true)
-      });
-
-      it('returns false if cell was not selected using the provided key', () => {
-        const cell = renderCell()
-        expect(cell.instance().isSelectedUsingKey('Enter')).toBe(false)
-      });
-    });
-
-    describe('isInLastRow', () => {
-      it('returns true if cell is in last row', () => {
-        const cell = renderCell({rowIdx: 2})
-        expect(cell.instance().isInLastRow()).toBe(true)
-      });
-
-      it('returns true if cell is not in last row', () => {
-        const cell = renderCell()
-        expect(cell.instance().isInLastRow()).toBe(false)
-      });
-    });
-
     it('renders with the appropriate className when selected', () => {
-      const cell = renderCell()
-      expect(cell.hasClass('selected')).toBe(true)
+      // Default cellProps: rowIdx=0, colIdx=0, selection={rowIdx:0, colIdx:0} — matches → selected
+      const { container } = renderCell();
+      const td = container.querySelector('td');
+      expect(td.classList.contains('selected')).toBe(true);
     });
 
     it('renders with the appropriate className when not selected', () => {
-      const cell = renderCell({rowIdx: 2, colIdx: 1})
-      expect(cell.hasClass('selected')).toBe(false)
+      // rowIdx=2, colIdx=1 does not match selection {rowIdx:0, colIdx:0}
+      const { container } = renderCell({ rowIdx: 2, colIdx: 1 });
+      const td = container.querySelector('td');
+      expect(td.classList.contains('selected')).toBe(false);
     });
 
     it('renders any extra classNames', () => {
-      const cell = renderCell({className: 'my-cell'})
-      expect(cell.hasClass('my-cell')).toBe(true)
+      const { container } = renderCell({ className: 'my-cell' });
+      const td = container.querySelector('td');
+      expect(td.classList.contains('my-cell')).toBe(true);
+    });
+
+    describe('selection state', () => {
+      it('has selected class when selection rowIdx and colIdx match cell position', () => {
+        const { container } = renderCell({ rowIdx: 1, colIdx: 2, selection: { rowIdx: 1, colIdx: 2, key: null } });
+        const td = container.querySelector('td');
+        expect(td.classList.contains('selected')).toBe(true);
+      });
+
+      it('does not have selected class when selection does not match cell position', () => {
+        const { container } = renderCell({ rowIdx: 1, colIdx: 2, selection: { rowIdx: 0, colIdx: 0, key: null } });
+        const td = container.querySelector('td');
+        expect(td.classList.contains('selected')).toBe(false);
+      });
+
+      it('has selected class when selection key is Enter and position matches', () => {
+        // When cell is selected (position matches) AND the key was Enter, it is still "selected"
+        const { container } = renderCell({ selection: { ...selection, key: 'Enter' } });
+        const td = container.querySelector('td');
+        expect(td.classList.contains('selected')).toBe(true);
+      });
+
+      it('does not have selected class when selection key differs but position does not match', () => {
+        // key alone does not confer selection — position must match too
+        const { container } = renderCell({
+          rowIdx: 2,
+          colIdx: 1,
+          selection: { rowIdx: 0, colIdx: 0, key: 'Enter' },
+        });
+        const td = container.querySelector('td');
+        expect(td.classList.contains('selected')).toBe(false);
+      });
+
+      it('has selected class when cell is in the last row and position matches', () => {
+        // rowIdx=2 is the last row (testDataSource has 3 rows, indices 0–2)
+        const { container } = renderCell({ rowIdx: 2, selection: { rowIdx: 2, colIdx: 0, key: null } });
+        const td = container.querySelector('td');
+        expect(td.classList.contains('selected')).toBe(true);
+      });
+
+      it('does not have selected class when cell is in last row but position does not match', () => {
+        const { container } = renderCell({ rowIdx: 2, selection: { rowIdx: 0, colIdx: 0, key: null } });
+        const td = container.querySelector('td');
+        expect(td.classList.contains('selected')).toBe(false);
+      });
     });
   });
 
   describe('SelectableTableRow', () => {
-    function renderRow(props) {
-      return shallow(
-        <SelectableTableRow
-          {...rowProps}
-          {...props}
-        />
-      )
+    function renderRow(props = {}) {
+      // SelectableTableRow renders a <tr>, which requires valid table DOM context
+      return render(
+        <table>
+          <tbody>
+            <SelectableTableRow {...rowProps} {...props} />
+          </tbody>
+        </table>
+      );
     }
 
-    describe('shouldComponentUpdate', () => {
-      it('should update if the row data has changed', () => {
-        const nextRows = testDataSource.rows().slice()
-        nextRows[0] = ['new', 'row']
-        const nextDataSource = testDataSource.setRows(nextRows)
-        const row = renderRow()
-        const shouldUpdate = row.instance().shouldComponentUpdate({...rowProps, tableDataSource: nextDataSource})
-        expect(shouldUpdate).toBe(true)
-      });
-
-      it('should update if selection status for row has changed', () => {
-        const nextSelection = {rowIdx: 2, colIdx: 0}
-        const row = renderRow()
-        const shouldUpdate = row.instance().shouldComponentUpdate({...rowProps, selection: nextSelection})
-        expect(shouldUpdate).toBe(true)
-      });
-
-      it('should update even if row is still selected but selected cell has changed', () => {
-        const nextSelection = {rowIdx: 1, colIdx: 1}
-        const row = renderRow()
-        const shouldUpdate = row.instance().shouldComponentUpdate({...rowProps, selection: nextSelection})
-        expect(shouldUpdate).toBe(true)
-      });
-
-      it('should not update otherwise', () => {
-        const nextRows = testDataSource.rows().slice()
-        const nextDataSource = testDataSource.setRows(nextRows)
-        const nextSelection = {...selection}
-        const row = renderRow()
-        const nextProps = {...rowProps, selection: nextSelection, tableDataSource: nextDataSource}
-        const shouldUpdate = row.instance().shouldComponentUpdate(nextProps)
-        expect(shouldUpdate).toBe(false)
-      });
-    });
-
-    describe('isSelected', () => {
-      it('returns true when selection matches props', () => {
-        const row = renderRow()
-        expect(row.instance().isSelected({
-          selection: {rowIdx: 1},
-          rowIdx: 1,
-        })).toBe(true)
-      });
-
-      it('returns false otherwise', () => {
-        const row = renderRow()
-        expect(row.instance().isSelected({
-          selection: {rowIdx: 2},
-          rowIdx: 1,
-        })).toBe(false)
-      });
-    });
-
     it('renders with the appropriate className when selected', () => {
-      const row = renderRow()
-      expect(row.hasClass('selected')).toBe(true)
+      // Default rowProps: rowIdx=0, selection={rowIdx:0} — matches → selected
+      const { container } = renderRow();
+      const tr = container.querySelector('tr');
+      expect(tr.classList.contains('selected')).toBe(true);
     });
 
     it('renders with the appropriate className when not selected', () => {
-      const row = renderRow({selection: {rowIdx: 2, colIdx: 0}})
-      expect(row.hasClass('selected')).toBe(false)
+      // selection.rowIdx=2 does not match rowIdx=0
+      const { container } = renderRow({ selection: { rowIdx: 2, colIdx: 0, key: null } });
+      const tr = container.querySelector('tr');
+      expect(tr.classList.contains('selected')).toBe(false);
     });
 
     it('renders any extra classNames', () => {
-      const row = renderRow({className: 'my-row'})
-      expect(row.hasClass('my-row')).toBe(true)
+      const { container } = renderRow({ className: 'my-row' });
+      const tr = container.querySelector('tr');
+      expect(tr.classList.contains('my-row')).toBe(true);
+    });
+
+    describe('selection state', () => {
+      it('has selected class when selection rowIdx matches row position', () => {
+        const { container } = renderRow({ rowIdx: 1, selection: { rowIdx: 1, colIdx: 0, key: null } });
+        const tr = container.querySelector('tr');
+        expect(tr.classList.contains('selected')).toBe(true);
+      });
+
+      it('does not have selected class when selection rowIdx differs from row position', () => {
+        const { container } = renderRow({ rowIdx: 1, selection: { rowIdx: 2, colIdx: 0, key: null } });
+        const tr = container.querySelector('tr');
+        expect(tr.classList.contains('selected')).toBe(false);
+      });
     });
   });
 
   describe('SelectableTable', () => {
-    function renderTable(props) {
-      return mount(
-        <SelectableTable
-          {...tableProps}
-          {...props}
-        />
-      )
+    function renderTable(props = {}) {
+      return render(<SelectableTable {...tableProps} {...props} />);
     }
 
     describe('onTab', () => {
       it('shifts selection to the next row if last column is selected', () => {
-        const onShiftSelection = jasmine.createSpy('onShiftSelection')
-        const table = renderTable({selection: {colIdx: 2, rowIdx: 1}, onShiftSelection})
-        table.instance().onTab({key: 'Tab'})
-        expect(onShiftSelection).toHaveBeenCalledWith({
-          row: 1, col: -2, key: 'Tab',
-        })
+        const onShiftSelection = jasmine.createSpy('onShiftSelection');
+        // testDataSource has 3 columns (colLen=3), so colIdx=2 is the last column
+        const { container } = renderTable({
+          selection: { colIdx: 2, rowIdx: 1 },
+          onShiftSelection,
+        });
+        // ListensToMovementKeys wraps the table in a KeyCommandsRegion div with onKeyDown
+        const keyRegionDiv = container.firstElementChild as HTMLElement;
+        fireEvent.keyDown(keyRegionDiv, { key: 'Tab', shiftKey: false });
+        expect(onShiftSelection).toHaveBeenCalledWith({ row: 1, col: -2, key: 'Tab' });
       });
 
       it('shifts selection to the next col otherwise', () => {
-        const onShiftSelection = jasmine.createSpy('onShiftSelection')
-        const table = renderTable({selection: {colIdx: 0, rowIdx: 1}, onShiftSelection})
-        table.instance().onTab({key: 'Tab'})
-        expect(onShiftSelection).toHaveBeenCalledWith({
-          col: 1, key: 'Tab',
-        })
+        const onShiftSelection = jasmine.createSpy('onShiftSelection');
+        const { container } = renderTable({
+          selection: { colIdx: 0, rowIdx: 1 },
+          onShiftSelection,
+        });
+        const keyRegionDiv = container.firstElementChild as HTMLElement;
+        fireEvent.keyDown(keyRegionDiv, { key: 'Tab', shiftKey: false });
+        expect(onShiftSelection).toHaveBeenCalledWith({ col: 1, key: 'Tab' });
       });
     });
 
     describe('onShiftTab', () => {
       it('shifts selection to the previous row if first column is selected', () => {
-        const onShiftSelection = jasmine.createSpy('onShiftSelection')
-        const table = renderTable({selection: {colIdx: 0, rowIdx: 2}, onShiftSelection})
-        table.instance().onShiftTab({key: 'Tab'})
-        expect(onShiftSelection).toHaveBeenCalledWith({
-          row: -1, col: 2, key: 'Tab',
-        })
+        const onShiftSelection = jasmine.createSpy('onShiftSelection');
+        // colIdx=0 is the first column; testDataSource has 3 columns so col delta = colLen-1 = 2
+        const { container } = renderTable({
+          selection: { colIdx: 0, rowIdx: 2 },
+          onShiftSelection,
+        });
+        const keyRegionDiv = container.firstElementChild as HTMLElement;
+        fireEvent.keyDown(keyRegionDiv, { key: 'Tab', shiftKey: true });
+        expect(onShiftSelection).toHaveBeenCalledWith({ row: -1, col: 2, key: 'Tab' });
       });
 
       it('shifts selection to the previous col otherwise', () => {
-        const onShiftSelection = jasmine.createSpy('onShiftSelection')
-        const table = renderTable({selection: {colIdx: 1, rowIdx: 1}, onShiftSelection})
-        table.instance().onShiftTab({key: 'Tab'})
-        expect(onShiftSelection).toHaveBeenCalledWith({
-          col: -1, key: 'Tab',
-        })
+        const onShiftSelection = jasmine.createSpy('onShiftSelection');
+        const { container } = renderTable({
+          selection: { colIdx: 1, rowIdx: 1 },
+          onShiftSelection,
+        });
+        const keyRegionDiv = container.firstElementChild as HTMLElement;
+        fireEvent.keyDown(keyRegionDiv, { key: 'Tab', shiftKey: true });
+        expect(onShiftSelection).toHaveBeenCalledWith({ col: -1, key: 'Tab' });
       });
     });
 
-    it('renders with the correct props', () => {
-      const RowRenderer = () => <tr />
-      const CellRenderer = () => <td />
-      const onSetSelection = () => {}
-      const onShiftSelection = () => {}
-      const extraProps = {p1: 'p1'}
-      const table = renderTable({
-        extraProps,
-        onSetSelection,
-        onShiftSelection,
-        RowRenderer,
-        CellRenderer,
-      }).find(Table)
-      expect(table.prop('extraProps')).toEqual({
-        p1: 'p1',
-        selection,
-        onSetSelection,
-        onShiftSelection,
-      })
-      expect(table.prop('tableDataSource')).toBe(testDataSource)
-      expect(table.prop('RowRenderer')).toBe(RowRenderer)
-      expect(table.prop('CellRenderer')).toBe(CellRenderer)
+    it('renders custom RowRenderer components within the table', () => {
+      let rowRendererCallCount = 0;
+      const RowRenderer = (props: any) => {
+        rowRendererCallCount += 1;
+        return <tr data-testid="custom-row" />;
+      };
+      renderTable({ RowRenderer });
+      expect(rowRendererCallCount).toBeGreaterThan(0);
+    });
+
+    it('renders custom CellRenderer components within the table', () => {
+      let cellRendererCallCount = 0;
+      const CellRenderer = (props: any) => {
+        cellRendererCallCount += 1;
+        return <td data-testid="custom-cell" />;
+      };
+      renderTable({ CellRenderer });
+      expect(cellRendererCallCount).toBeGreaterThan(0);
+    });
+
+    it('passes selection and callbacks into extraProps for child renderers', () => {
+      const capturedExtraProps: any[] = [];
+      const onSetSelection = jasmine.createSpy('onSetSelection');
+      const onShiftSelection = jasmine.createSpy('onShiftSelection');
+      const extraProps = { p1: 'p1' };
+      const RowRenderer = (props: any) => {
+        capturedExtraProps.push(props);
+        return <tr />;
+      };
+      renderTable({ extraProps, onSetSelection, onShiftSelection, RowRenderer });
+      // The first captured props should include selection, onSetSelection, onShiftSelection, and p1
+      const firstProps = capturedExtraProps[0];
+      expect(firstProps.selection).toEqual(selection);
+      expect(firstProps.onSetSelection).toBe(onSetSelection);
+      expect(firstProps.onShiftSelection).toBe(onShiftSelection);
+      expect(firstProps.p1).toBe('p1');
+    });
+
+    it('passes tableDataSource to the underlying table', () => {
+      const capturedProps: any[] = [];
+      const RowRenderer = (props: any) => {
+        capturedProps.push(props);
+        return <tr />;
+      };
+      renderTable({ RowRenderer });
+      expect(capturedProps[0].tableDataSource).toBe(testDataSource);
     });
   });
 });

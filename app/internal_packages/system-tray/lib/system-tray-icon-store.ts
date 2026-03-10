@@ -49,7 +49,7 @@ class SystemTrayIconStore {
   }
 
   deactivate() {
-    this._unsubscribers.forEach(unsub => unsub());
+    this._unsubscribers.forEach((unsub) => unsub());
   }
 
   _onWindowBackgrounded = () => {
@@ -72,7 +72,14 @@ class SystemTrayIconStore {
       return nativeTheme.shouldUseDarkColors ? '-dark' : '';
     }
     if (process.platform === 'linux') {
-      // On GNOME/Unity the top bar panel is always dark regardless of the
+      const traySystemTheme = AppEnv.config.get('core.workspace.traySystemTheme') || 'automatic';
+      if (traySystemTheme === 'dark') {
+        return '-dark';
+      }
+      if (traySystemTheme === 'light') {
+        return '';
+      }
+      // Automatic: On GNOME/Unity the top bar panel is always dark regardless of the
       // application theme, so nativeTheme.shouldUseDarkColors is unreliable
       // for choosing the tray icon variant. Default to the light-on-dark icon.
       const desktop = (process.env.XDG_CURRENT_DESKTOP || '').toUpperCase();
@@ -122,7 +129,7 @@ class SystemTrayIconStore {
     let icon = { path: this.inboxFullIcon(), isTemplateImg: true };
     if (isInboxZero) {
       icon = { path: this.inboxZeroIcon(), isTemplateImg: true };
-    } else if (unread !== 0) {
+    } else if (unread !== 0 && newMessagesIconStyle !== 'none') {
       if (newMessagesIconStyle === 'blue') {
         icon = { path: this.inboxFullUnreadIcon(), isTemplateImg: false };
       } else {

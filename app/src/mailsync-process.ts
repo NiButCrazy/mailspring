@@ -284,7 +284,7 @@ export class MailsyncProcess extends EventEmitter {
   sync() {
     this._spawnProcess('sync');
     let outBuffer = '';
-    let errBuffer = null;
+    let errBuffer = '';
 
     if (this._proc.stdout) {
       this._proc.stdout.on('data', data => {
@@ -305,7 +305,16 @@ export class MailsyncProcess extends EventEmitter {
     }
     if (this._proc.stderr) {
       this._proc.stderr.on('data', data => {
-        errBuffer += data.toString();
+        try {
+          errBuffer += data.toString();
+          // Trim to last 100KB if the buffer grows too large to avoid OOM
+          if (errBuffer.length > 100 * 1024) {
+            errBuffer = errBuffer.slice(-100 * 1024);
+          }
+        } catch (err) {
+          console.error(`Mailsync stderr buffer is ${errBuffer.length} chars, out of memory.`);
+          errBuffer = '';
+        }
       });
     }
     this._proc.on('error', err => {

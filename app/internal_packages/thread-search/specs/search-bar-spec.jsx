@@ -6,6 +6,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import ReactTestUtils from 'react-dom/test-utils';
+import { Actions } from 'mailspring-exports';
 
 import ThreadSearchBar from '../lib/thread-search-bar';
 
@@ -13,17 +14,13 @@ describe('ThreadSearchBar', function() {
   beforeEach(function() {
     spyOn(AppEnv, 'isMainWindow').andReturn(true);
     this.searchBar = ReactTestUtils.renderIntoDocument(<ThreadSearchBar />);
-    this.input = ReactDOM.findDOMNode(this.searchBar).querySelector('input');
+    this.input = ReactDOM.findDOMNode(this.searchBar).querySelector('[contenteditable]');
   });
 
   it('preserves capitalization on searches', function() {
+    spyOn(Actions, 'searchQueryChanged');
     const test = 'HeLlO wOrLd';
-    ReactTestUtils.Simulate.change(this.input, { target: { value: test } });
-    waitsFor(() => {
-      return this.input.value.length > 0;
-    });
-    runs(() => {
-      expect(this.input.value).toBe(test);
-    });
+    ReactTestUtils.Simulate.input(this.input, { target: { innerText: test } });
+    expect(Actions.searchQueryChanged).toHaveBeenCalledWith(test);
   });
 });

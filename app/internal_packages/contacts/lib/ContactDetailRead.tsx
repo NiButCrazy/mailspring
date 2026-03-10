@@ -74,8 +74,8 @@ const ContactAttributes = ({
       <div className="contact-attributes-section">
         {data.nicknames.map((item, idx) => (
           <div className="contact-attribute" key={idx}>
-            <label></label>
-            <div>{`“${item.value}”`}</div>
+            <span aria-hidden="true"></span>
+            <div>{`”${item.value}”`}</div>
           </div>
         ))}
       </div>
@@ -83,9 +83,9 @@ const ContactAttributes = ({
     {(data.title || data.company) && (
       <div className="contact-attributes-section">
         <div className="contact-attribute">
-          <label>
+          <span aria-hidden="true">
             <Icons.Briefcase />
-          </label>
+          </span>
           <div>{`${data.title ? `${data.title}, ` : ''}${data.company}`}</div>
         </div>
       </div>
@@ -94,9 +94,9 @@ const ContactAttributes = ({
       <div className="contact-attributes-section">
         {data.emailAddresses.map((item, idx) => (
           <div className="contact-attribute" key={idx}>
-            <label>
+            <span aria-hidden="true">
               <Icons.Envelope />
-            </label>
+            </span>
             <div>
               <a href={`mailto:${item.value}`} title="Send email...">
                 {item.value}
@@ -111,9 +111,9 @@ const ContactAttributes = ({
       <div className="contact-attributes-section">
         {data.phoneNumbers.map((item, idx) => (
           <div className="contact-attribute" key={idx}>
-            <label>
+            <span aria-hidden="true">
               <Icons.Phone />
-            </label>
+            </span>
             <div>
               <a href={`tel:${item.value}`} title="Call...">
                 {item.value}
@@ -128,9 +128,9 @@ const ContactAttributes = ({
       <div className="contact-attributes-section">
         {data.addresses.map((item, idx) => (
           <div className="contact-attribute" key={idx}>
-            <label>
+            <span aria-hidden="true">
               <Icons.Map />
-            </label>
+            </span>
             <div>
               <a href={`https://maps.google.com/?q=${encodeURIComponent(item.formattedValue)}`}>
                 {item.formattedValue}
@@ -145,15 +145,23 @@ const ContactAttributes = ({
       <div className="contact-attributes-section">
         {data.birthdays.map((item, idx) => (
           <div className="contact-attribute" key={idx}>
-            <label>
+            <span aria-hidden="true">
               <Icons.Crown />
-            </label>
+            </span>
             <div>
-              { // If there is no year given, solely display the month and day
-                item.date.year ?
-                  new Date(item.date.year, item.date.month - 1, item.date.day).toLocaleDateString() :
-                  new Date(new Date().getFullYear(), item.date.month - 1, item.date.day).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })
-              }
+              {item.date
+                ? item.date.year
+                  ? new Date(
+                      item.date.year,
+                      item.date.month - 1,
+                      item.date.day
+                    ).toLocaleDateString()
+                  : new Date(
+                      new Date().getFullYear(),
+                      item.date.month - 1,
+                      item.date.day
+                    ).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })
+                : ''}
             </div>
           </div>
         ))}
@@ -163,9 +171,9 @@ const ContactAttributes = ({
       <div className="contact-attributes-section">
         {data.relations.map((item, idx) => (
           <div className="contact-attribute" key={idx}>
-            <label>
+            <span aria-hidden="true">
               <Icons.People />
-            </label>
+            </span>
             <div>
               {item.person}
               {item.type && <div className="type">{item.type}</div>}
@@ -178,9 +186,9 @@ const ContactAttributes = ({
       <div className="contact-attributes-section">
         {data.urls.map((item, idx) => (
           <div className="contact-attribute" key={idx}>
-            <label>
+            <span aria-hidden="true">
               <Icons.Link />
-            </label>
+            </span>
             <div>
               <a href={`${item.value}`} title="Visit website...">
                 {item.value}
@@ -194,9 +202,9 @@ const ContactAttributes = ({
     {data.notes && (
       <div className="contact-attributes-section">
         <div className="contact-attribute">
-          <label>
+          <span aria-hidden="true">
             <Icons.Note />
-          </label>
+          </span>
           <div style={{ whiteSpace: 'pre-wrap' }}>{data.notes}</div>
         </div>
       </div>

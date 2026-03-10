@@ -51,7 +51,18 @@ export default class DefaultClientNotification extends React.Component<
   _onAccept = () => {
     this.helper.registerForURLScheme('mailto', err => {
       if (err) {
-        AppEnv.reportError(err);
+        if (err.message && err.message.includes('xdg-mime: command not found')) {
+          require('@electron/remote').dialog.showMessageBox({
+            type: 'error',
+            buttons: [localized('OK')],
+            message: localized('Could not set as default mail client'),
+            detail: localized(
+              'Mailspring could not find the xdg-mime utility. Please install the xdg-utils package using your system package manager (e.g. apt install xdg-utils) and try again from Preferences > General.'
+            ),
+          });
+        } else {
+          AppEnv.reportError(err);
+        }
       }
     });
     AppEnv.config.set(SETTINGS_KEY, true);

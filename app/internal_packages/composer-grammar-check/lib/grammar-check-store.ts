@@ -76,10 +76,6 @@ class _GrammarCheckStore extends MailspringStore {
     return this._enabled;
   }
 
-  warnOnSend(): boolean {
-    return AppEnv.config.get('core.composing.grammarCheckWarnOnSend') !== false;
-  }
-
   isChecking(draftId?: string): boolean {
     if (!draftId) {
       for (const val of this._checking.values()) {

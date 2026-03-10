@@ -45,18 +45,12 @@ export class Registry extends MailspringStore {
   validateExtension(extension, method) {
     if (!extension || Array.isArray(extension) || !_.isObject(extension)) {
       throw new Error(
-        `ExtensionRegistry.${
-          this.name
-        }.${method} requires a valid extension object that implements one of the functions defined by ${
-          this.name
-        }Extension`
+        `ExtensionRegistry.${this.name}.${method} requires a valid extension object that implements one of the functions defined by ${this.name}Extension`
       );
     }
     if (!extension.name) {
       throw new Error(
-        `ExtensionRegistry.${
-          this.name
-        }.${method} requires a \`name\` property defined on the extension object`
+        `ExtensionRegistry.${this.name}.${method} requires a \`name\` property defined on the extension object`
       );
     }
   }

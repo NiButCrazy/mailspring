@@ -26,7 +26,11 @@ TaskFactory. Unfortunately, the TaskFactory uses the CategoryStore and other
 information about the current view. Maybe after the unified inbox refactor...
 */
 const MailRulesActions: {
-  [action: string]: (message: Message, thread: Thread, value: string) => undefined | Task | Promise<undefined> | Promise<Task>
+  [action: string]: (
+    message: Message,
+    thread: Thread,
+    value: string
+  ) => undefined | Task | Promise<undefined> | Promise<Task>;
 } = {
   markAsImportant: async (message, thread) => {
     const important = CategoryStore.getCategoryByRole(thread.accountId, 'important');
@@ -79,7 +83,7 @@ const MailRulesActions: {
     Actions.composeAndSendForward({
       thread: thread,
       message: message,
-      to: [new Contact({email: value})]
+      to: [new Contact({ email: value })],
     });
     return undefined;
   },
@@ -196,7 +200,7 @@ class MailRulesProcessor {
     }
   }
 
-  _conditionTemplateMap: Map<string, (typeof ConditionTemplates)[number]> | null = null;
+  _conditionTemplateMap: Map<string, typeof ConditionTemplates[number]> | null = null;
 
   _getConditionTemplateMap() {
     if (!this._conditionTemplateMap) {

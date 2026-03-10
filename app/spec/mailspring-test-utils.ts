@@ -39,7 +39,7 @@ const MailspringTestUtils = {
   removeFromDocument(reactElement) {
     const $el = ReactDOM.findDOMNode(reactElement) as HTMLElement;
     if (document.body.contains($el)) {
-      for (let child of Array.from(document.body.childNodes)) {
+      for (const child of Array.from(document.body.childNodes)) {
         if (child.contains($el)) {
           document.body.removeChild(child);
           return;

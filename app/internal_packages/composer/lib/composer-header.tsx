@@ -146,7 +146,11 @@ export class ComposerHeader extends React.Component<ComposerHeaderProps, Compose
     }
     return (
       <KeyCommandsRegion tabIndex={-1} className="composer-subject subject-field">
+        <label htmlFor="composer-subject" className="sr-only">
+          {localized('Subject')}
+        </label>
         <input
+          id="composer-subject"
           ref={el => {
             if (el) {
               this._els[Fields.Subject] = el;
@@ -251,7 +255,7 @@ export class ComposerHeader extends React.Component<ComposerHeaderProps, Compose
 
   render() {
     return (
-      <div className="composer-header">
+      <header className="composer-header" aria-label={localized('Message addressing')}>
         <ComposerHeaderActions
           headerMessageId={this.props.draft.headerMessageId}
           enabledFields={this.state.enabledFields}
@@ -269,7 +273,7 @@ export class ComposerHeader extends React.Component<ComposerHeaderProps, Compose
           {this._renderFields()}
         </KeyCommandsRegion>
         {this._renderSubject()}
-      </div>
+      </header>
     );
   }
 }

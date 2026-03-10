@@ -99,7 +99,11 @@ export function cleanParticipants(icsEvent: ICALEvent): ICSParticipant[] {
     component: a,
     status: (a.getParameter('partstat') || 'NEEDS-ACTION') as ICSParticipantStatus,
     role: (a.getParameter('role') || 'REQ-PARTICIPANT') as ICSParticipant['role'],
-    email: a.getValues().map(emailFromParticipantURI).find(v => !!v) || null,
+    email:
+      a
+        .getValues()
+        .map(emailFromParticipantURI)
+        .find(v => !!v) || null,
   }));
 }
 

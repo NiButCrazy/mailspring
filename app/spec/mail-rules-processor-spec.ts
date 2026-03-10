@@ -124,7 +124,10 @@ const Tests = [
       new Message({ to: [new Contact({ email: 'files@mailspring.com' })] }),
       new Message({
         to: [new Contact({ email: 'ben@mailspring.com' })],
-        cc: [new Contact({ email: 'ben@test.com' }), new Contact({ email: 'files@mailspring.com' })],
+        cc: [
+          new Contact({ email: 'ben@test.com' }),
+          new Contact({ email: 'files@mailspring.com' }),
+        ],
       }),
     ],
     bad: [

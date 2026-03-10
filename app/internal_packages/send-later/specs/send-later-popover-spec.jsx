@@ -1,9 +1,9 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render, fireEvent, cleanup } from '@testing-library/react';
 import SendLaterPopover from '../lib/send-later-popover';
 
 const makePopover = (props = {}) => {
-  return mount(
+  const { container } = render(
     <SendLaterPopover
       sendLaterDate={null}
       onSendLater={() => {}}
@@ -12,15 +12,17 @@ const makePopover = (props = {}) => {
       {...props}
     />
   );
+  return container;
 };
 
 describe('SendLaterPopover', function sendLaterPopover() {
+  afterEach(cleanup);
+
   describe('render', () => {
     it('renders cancel button if scheduled', () => {
       const onCancelSendLater = jasmine.createSpy('onCancelSendLater');
-      const popover = makePopover({ onCancelSendLater, sendLaterDate: new Date() });
-      const button = popover.find('.btn-cancel');
-      button.simulate('click');
+      const container = makePopover({ onCancelSendLater, sendLaterDate: new Date() });
+      fireEvent.click(container.querySelector('.btn-cancel'));
       expect(onCancelSendLater).toHaveBeenCalled();
     });
   });

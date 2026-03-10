@@ -85,8 +85,8 @@ export class MetricHistogram extends React.Component<{
               className="column"
               style={{
                 transitionDelay: `${idx * Math.round(800 / values.length)}ms`,
-                left: `${(idx + 1) / values.length * 100}%`,
-                height: `${value / max * 100}%`,
+                left: `${((idx + 1) / values.length) * 100}%`,
+                height: `${(value / max) * 100}%`,
                 width: `${100 / values.length}%`,
               }}
             />
@@ -114,7 +114,7 @@ export class MetricGraph extends React.Component<{ loading: boolean; values: num
 
     const pointsForSvg = values
       .reverse()
-      .map((v, idx) => [(values.length - idx) * step, (maxValue - v) / maxValue * 10]);
+      .map((v, idx) => [(values.length - idx) * step, ((maxValue - v) / maxValue) * 10]);
 
     // make a little diamond at the end
     if (pointsForSvg[0]) {
@@ -137,7 +137,7 @@ export class MetricGraph extends React.Component<{ loading: boolean; values: num
             <div
               key={idx}
               className="gridline"
-              style={{ left: `${(idx + 1) / values.length * 100}%` }}
+              style={{ left: `${((idx + 1) / values.length) * 100}%` }}
             />
           ))}
         </div>
@@ -189,21 +189,21 @@ export class MetricsBySubjectTable extends React.Component<{ data: SubjectStatsE
                 <td>{count}</td>
                 <td>
                   {opens ? (
-                    `${Math.ceil(opens / count * 100)}% (${opens})`
+                    `${Math.ceil((opens / count) * 100)}% (${opens})`
                   ) : (
                     <span className="empty">—</span>
                   )}
                 </td>
                 <td>
                   {clicks ? (
-                    `${Math.ceil(clicks / count * 100)}% (${clicks})`
+                    `${Math.ceil((clicks / count) * 100)}% (${clicks})`
                   ) : (
                     <span className="empty">—</span>
                   )}
                 </td>
                 <td>
                   {replies ? (
-                    `${Math.ceil(replies / count * 100)}% (${replies})`
+                    `${Math.ceil((replies / count) * 100)}% (${replies})`
                   ) : (
                     <span className="empty">—</span>
                   )}

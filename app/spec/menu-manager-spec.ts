@@ -30,7 +30,13 @@ describe('MenuManager', function() {
           label: 'A',
           submenu: [
             { label: 'B', command: 'b' },
-            { label: 'C', submenu: [{ label: 'D', command: 'd' }, { label: 'E', command: 'e' }] },
+            {
+              label: 'C',
+              submenu: [
+                { label: 'D', command: 'd' },
+                { label: 'E', command: 'e' },
+              ],
+            },
           ],
         },
       ]);

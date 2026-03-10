@@ -230,7 +230,7 @@ export * from '../searchable-components/searchable-component-maker';
 // Composer Editor Plugin APIs
 export type GrammarCheckPluginAPI = typeof import('../components/composer-editor/grammar-check-plugins').GrammarCheckPluginAPI;
 export const GrammarCheckPluginAPI: GrammarCheckPluginAPI;
-export type { GrammarCheckStoreAPI } from '../components/composer-editor/grammar-check-plugins';
+export type GrammarCheckStoreAPI = typeof import('../components/composer-editor/grammar-check-plugins').GrammarCheckStoreAPI;
 
 // Errors
 export * from '../flux/errors';

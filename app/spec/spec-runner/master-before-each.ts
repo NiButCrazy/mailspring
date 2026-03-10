@@ -54,7 +54,6 @@ class MasterBeforeEach {
 
   _resetDatabase() {
     global.localStorage.clear();
-    DatabaseStore._transactionQueue = undefined;
 
     // If we don't spy on DatabaseStore._query, then
     // `DatabaseStore.inTransaction` will never complete and cause all
@@ -87,9 +86,7 @@ class MasterBeforeEach {
         emailAddress: TestConstants.TEST_ACCOUNT_EMAIL,
         id: TestConstants.TEST_ACCOUNT_ID,
         aliases: [
-          `${TestConstants.TEST_ACCOUNT_NAME} Alternate <${
-            TestConstants.TEST_ACCOUNT_ALIAS_EMAIL
-          }>`,
+          `${TestConstants.TEST_ACCOUNT_NAME} Alternate <${TestConstants.TEST_ACCOUNT_ALIAS_EMAIL}>`,
         ],
       }),
 

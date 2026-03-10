@@ -100,8 +100,18 @@ export default class OAuthSignInPage extends React.Component<
   }
 
   _onError(err) {
-    this.setState({ authStage: 'error', errorMessage: err.message });
-    AppEnv.reportError(err);
+    const isNetworkError = err.message?.includes('Failed to fetch');
+    this.setState({
+      authStage: 'error',
+      errorMessage: isNetworkError
+        ? localized(
+            'A network error occurred. Please check your internet connection and try again.'
+          )
+        : err.message,
+    });
+    if (!isNetworkError) {
+      AppEnv.reportError(err);
+    }
   }
 
   async _onReceivedCode(code) {

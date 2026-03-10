@@ -58,8 +58,8 @@ class AccountIMAPSettingsForm extends React.Component<AccountIMAPSettingsFormPro
     return { errorMessage, errorFieldNames, populated: true };
   };
 
-  componentDidMount () {
-    ipcRenderer.send('resize-window', {width: 900, height: 660});
+  componentDidMount() {
+    ipcRenderer.send('resize-window', { width: 900, height: 660 });
   }
 
   renderPortDropdown(protocol) {
@@ -128,19 +128,24 @@ class AccountIMAPSettingsForm extends React.Component<AccountIMAPSettingsFormPro
           </option>
         </select>
         {!isStandard && (
-          <input
-            style={{
-              width: 80,
-              marginLeft: 6,
-              height: 23,
-            }}
-            id={`settings.${field}`}
-            tabIndex={0}
-            value={settings[field]}
-            disabled={submitting}
-            onKeyPress={onFieldKeyPress}
-            onChange={onFieldChange}
-          />
+          <>
+            <label htmlFor={`settings.${field}_custom`} className="sr-only">
+              {localized('Custom Port')}
+            </label>
+            <input
+              style={{
+                width: 80,
+                marginLeft: 6,
+                height: 23,
+              }}
+              id={`settings.${field}_custom`}
+              tabIndex={0}
+              value={settings[field]}
+              disabled={submitting}
+              onKeyPress={onFieldKeyPress}
+              onChange={onFieldChange}
+            />
+          </>
         )}
       </span>
     );
@@ -197,12 +202,16 @@ class AccountIMAPSettingsForm extends React.Component<AccountIMAPSettingsFormPro
   renderFieldsForType(type) {
     return (
       <div>
-        <FormField field={`settings.${type}_host`} title={'Server'} {...this.props} />
+        <FormField field={`settings.${type}_host`} title={localized('Server')} {...this.props} />
         <div style={{ textAlign: 'left' }}>
           {this.renderPortDropdown(type)}
           {this.renderSecurityDropdown(type)}
         </div>
-        <FormField field={`settings.${type}_username`} title={'Username'} {...this.props} />
+        <FormField
+          field={`settings.${type}_username`}
+          title={localized('Username')}
+          {...this.props}
+        />
         <FormField
           field={`settings.${type}_password`}
           title={localized('Password')}
@@ -210,7 +219,11 @@ class AccountIMAPSettingsForm extends React.Component<AccountIMAPSettingsFormPro
           {...this.props}
         />
         {type === 'imap' && (
-          <FormField field={`settings.container_folder`} title={'Custom Container Folder'} {...this.props} />
+          <FormField
+            field={`settings.container_folder`}
+            title={localized('Custom Container Folder')}
+            {...this.props}
+          />
         )}
       </div>
     );

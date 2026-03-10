@@ -106,10 +106,16 @@ export function fromVCF(info: ContactInfoVCF): ContactParseResult {
   const note = VCFHelpers.asSingle(card.get('note'));
 
   let photoURL = photo ? photo._data : undefined;
-  if (photoURL && new URL(photoURL).host.endsWith('contacts.icloud.com')) {
-    // connecting to iCloud for contact photos requires authentication
-    // and it's difficult to reach from here. No photos for now :(
-    photoURL = undefined;
+  if (photoURL) {
+    try {
+      if (new URL(photoURL).host.endsWith('contacts.icloud.com')) {
+        // connecting to iCloud for contact photos requires authentication
+        // and it's difficult to reach from here. No photos for now :(
+        photoURL = undefined;
+      }
+    } catch {
+      // malformed or non-http URL (e.g. data: URI) — not an iCloud URL, keep as-is
+    }
   }
 
   return {

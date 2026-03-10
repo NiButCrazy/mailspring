@@ -100,7 +100,11 @@ export class SendActionButton extends React.Component<
 
     return (
       <span>
-        <RetinaImg name="icon-composer-send.png" mode={RetinaImg.Mode.ContentIsMask} />
+        <RetinaImg
+          name="icon-composer-send.png"
+          mode={RetinaImg.Mode.ContentIsMask}
+          aria-hidden="true"
+        />
         <span className="text">
           {localized(`Send`)}
           {plusHTML}

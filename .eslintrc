@@ -18,23 +18,34 @@
     "node": true,
     "jasmine": true
   },
-  "plugins": ["react", "import", "jsx-a11y"],
+  "plugins": ["react", "import", "jsx-a11y", "prettier"],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended", 
+    "plugin:@typescript-eslint/recommended",
     "prettier",
-    "prettier/@typescript-eslint"],
+    "prettier/@typescript-eslint"
+  ],
   "rules": {
     "no-cond-assign": 0,
     "no-console": 0,
     "no-constant-condition": "warn",
     "no-async-promise-executor": "warn",
     "import/first": 0,
+    "prettier/prettier": "error",
     "import/no-dynamic-require": 0,
     "import/no-mutable-exports": 0,
-    "jsx-a11y/tabindex-no-positive": 0,
-    "jsx-a11y/label-has-for": 0,
+    "jsx-a11y/tabindex-no-positive": "error",
+    "jsx-a11y/label-has-associated-control": [
+      "error",
+      {
+        "labelComponents": [],
+        "labelAttributes": [],
+        "controlComponents": [],
+        "assert": "either",
+        "depth": 3
+      }
+    ],
     "@typescript-eslint/explicit-member-accessibility": 0,
     "@typescript-eslint/no-explicit-any": 0,
     "@typescript-eslint/explicit-function-return-type": 0,

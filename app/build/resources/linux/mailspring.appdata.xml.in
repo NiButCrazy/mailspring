@@ -21,11 +21,14 @@
     </p>
   </description>
   <url type="homepage">https://getmailspring.com/</url>
-  <url type="bugtracker">https://github.com/Foundry376/Mailspring/issues</url>
+  <url type="bugtracker">https://community.getmailspring.com/c/bugs</url>
   <url type="help">http://support.getmailspring.com/</url>
+  <url type="vcs-browser">https://github.com/Foundry376/Mailspring</url>
   <launchable type="desktop-id"><%= productName %>.desktop</launchable>
 
-  <developer_name>Mailspring</developer_name>
+  <developer id="com.getmailspring">
+    <name>Mailspring</name>
+  </developer>
   <project_license>GPL-3.0+</project_license>
 
   <screenshots>
@@ -36,6 +39,7 @@
   </screenshots>
 
   <releases>
+    <release version="1.19.0" date="2026-03-09" />
     <release version="1.18.0" date="2026-02-22" />
     <release version="1.17.4" date="2026-02-11" />
     <release version="1.17.3" date="2026-01-31" />

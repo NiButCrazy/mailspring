@@ -1,4 +1,4 @@
-import { mount } from 'enzyme';
+import { render, fireEvent, cleanup } from '@testing-library/react';
 import proxyquire from 'proxyquire';
 import React from 'react';
 
@@ -22,29 +22,34 @@ const DefaultClientNotification = patched.default;
 const SETTINGS_KEY = 'mailto.prompted-about-default';
 
 describe('DefaultClientNotif', function DefaultClientNotifTests() {
+  afterEach(cleanup);
+
   describe("when Mailspring isn't the default mail client", () => {
     beforeEach(() => {
       stubIsRegistered = false;
     });
+
     describe('when the user has already responded', () => {
+      let container;
       beforeEach(() => {
         spyOn(AppEnv.config, 'get').andReturn(true);
-        this.notif = mount(<DefaultClientNotification />);
+        ({ container } = render(<DefaultClientNotification />));
         expect(AppEnv.config.get).toHaveBeenCalledWith(SETTINGS_KEY);
       });
       it('renders nothing', () => {
-        expect(this.notif.find('.notification').exists()).toEqual(false);
+        expect(container.querySelector('.notification') !== null).toEqual(false);
       });
     });
 
     describe('when the user has yet to respond', () => {
+      let container;
       beforeEach(() => {
         spyOn(AppEnv.config, 'get').andReturn(false);
-        this.notif = mount(<DefaultClientNotification />);
+        ({ container } = render(<DefaultClientNotification />));
         expect(AppEnv.config.get).toHaveBeenCalledWith(SETTINGS_KEY);
       });
       it('renders a notification', () => {
-        expect(this.notif.find('.notification').exists()).toEqual(true);
+        expect(container.querySelector('.notification') !== null).toEqual(true);
       });
 
       it('allows the user to set Mailspring as the default client', () => {
@@ -52,25 +57,26 @@ describe('DefaultClientNotif', function DefaultClientNotifTests() {
         stubRegister = urlScheme => {
           scheme = urlScheme;
         };
-        this.notif.find('#action-0').simulate('click'); // Expects first action to set Mailspring as default
+        fireEvent.click(container.querySelector('#action-0'));
         expect(scheme).toEqual('mailto');
       });
 
       it('allows the user to decline', () => {
         spyOn(AppEnv.config, 'set');
-        this.notif.find('#action-1').simulate('click'); // Expects second action to decline
+        fireEvent.click(container.querySelector('#action-1'));
         expect(AppEnv.config.set).toHaveBeenCalledWith(SETTINGS_KEY, true);
       });
     });
   });
 
   describe('when Mailspring is the default mail client', () => {
+    let container;
     beforeEach(() => {
       stubIsRegistered = true;
-      this.notif = mount(<DefaultClientNotification />);
+      ({ container } = render(<DefaultClientNotification />));
     });
     it('renders nothing', () => {
-      expect(this.notif.find('.notification').exists()).toEqual(false);
+      expect(container.querySelector('.notification') !== null).toEqual(false);
     });
   });
 });

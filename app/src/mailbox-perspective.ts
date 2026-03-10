@@ -50,7 +50,6 @@ export class MailboxPerspective {
   }
 
   static forStandardCategories(accountsOrIds, ...names) {
-    // TODO this method is broken
     const categories = CategoryStore.getCategoriesWithRoles(accountsOrIds, ...names);
     return this.forCategories(categories);
   }
@@ -375,7 +374,10 @@ class CategoryMailboxPerspective extends MailboxPerspective {
   isEqual(other) {
     return (
       super.isEqual(other) &&
-      _.isEqual(this.categories().map(c => c.id), other.categories().map(c => c.id))
+      _.isEqual(
+        this.categories().map(c => c.id),
+        other.categories().map(c => c.id)
+      )
     );
   }
 

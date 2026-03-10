@@ -34,7 +34,14 @@ function captureEventSnapshot(event: Event): EventSnapshot {
 export interface EventTimeChangeOptions {
   /** The Event model to modify */
   event: Event;
-  /** Original occurrence start time (unix seconds) - for recurring events */
+  /**
+   * Original occurrence start time (unix seconds).
+   * For a regular occurrence this is its RRULE-generated start time.
+   * For an inline exception this must be the RECURRENCE-ID value (i.e.
+   * `occurrence.recurrenceIdStart`), NOT the exception's moved DTSTART —
+   * otherwise `createRecurrenceException` computes the wrong RECURRENCE-ID
+   * and the upsert fails to replace the existing inline exception VEVENT.
+   */
   originalOccurrenceStart: number;
   /** New start time (unix seconds) */
   newStart: number;
@@ -44,6 +51,13 @@ export interface EventTimeChangeOptions {
   isAllDay: boolean;
   /** Description for the undo toast (e.g., "Move event") */
   description?: string;
+  /**
+   * True when the occurrence being modified is already an inline exception.
+   * When set, `modifyEventWithRecurringSupport` skips the "edit all / this
+   * occurrence" dialog and always edits only this exception — matching the
+   * behaviour of the popover's `saveEdits` path.
+   */
+  isException?: boolean;
 }
 
 /**
@@ -56,8 +70,6 @@ export interface EventModificationResult {
   cancelled?: boolean;
   /** The modified master event (if applicable) */
   masterEvent?: Event;
-  /** The created exception event (if applicable) */
-  exceptionEvent?: Event;
 }
 
 /**
@@ -92,20 +104,19 @@ export function modifySimpleEvent(options: EventTimeChangeOptions): void {
 
 /**
  * Creates an exception for a single occurrence of a recurring event.
- * Updates the master event with an EXDATE and creates a new exception event.
- *
- * Note: Undo for exception creation is complex (requires removing EXDATE and
- * deleting the exception). Currently only the master event update supports undo.
+ * Embeds the exception VEVENT inline in the master VCALENDAR and queues a single
+ * update task (RFC 4791 §4.1 compliant — same UID must share the same resource).
+ * Undo reverses the entire master ICS change, removing the inline exception.
  */
-export function createOccurrenceException(options: EventTimeChangeOptions): Event {
+export function createOccurrenceException(options: EventTimeChangeOptions): void {
   const { event: masterEvent, originalOccurrenceStart, newStart, newEnd, isAllDay, description } =
     options;
 
   // Capture master event state for undo BEFORE modifying
   const masterUndoData = captureEventSnapshot(masterEvent);
 
-  // Create the exception ICS data
-  const { masterIcs, exceptionIcs, recurrenceId } = ICSEventHelpers.createRecurrenceException(
+  // Embed the exception VEVENT inline in the master VCALENDAR
+  const { masterIcs } = ICSEventHelpers.createRecurrenceException(
     masterEvent.ics,
     originalOccurrenceStart,
     newStart,
@@ -113,22 +124,12 @@ export function createOccurrenceException(options: EventTimeChangeOptions): Even
     isAllDay
   );
 
-  // Update master event with EXDATE
+  // Update master event ICS (now contains the inline exception VEVENT)
   masterEvent.ics = masterIcs;
+  masterEvent.recurrenceStart = newStart;
+  masterEvent.recurrenceEnd = newEnd;
 
-  // Create new exception event
-  const exceptionEvent = new Event({
-    accountId: masterEvent.accountId,
-    calendarId: masterEvent.calendarId,
-    ics: exceptionIcs,
-    icsuid: masterEvent.icsuid,
-    recurrenceId: recurrenceId,
-    recurrenceStart: newStart,
-    recurrenceEnd: newEnd,
-    status: masterEvent.status,
-  });
-
-  // Queue task for master event with undo support
+  // Queue a single update task with full undo support
   Actions.queueTask(
     SyncbackEventTask.forUpdating({
       event: masterEvent,
@@ -136,17 +137,6 @@ export function createOccurrenceException(options: EventTimeChangeOptions): Even
       description: description || localized('Edit occurrence'),
     })
   );
-
-  // Queue task for exception event (no undo - creating new event)
-  Actions.queueTask(
-    SyncbackEventTask.forCreating({
-      event: exceptionEvent,
-      calendarId: masterEvent.calendarId,
-      accountId: masterEvent.accountId,
-    })
-  );
-
-  return exceptionEvent;
 }
 
 /**
@@ -167,6 +157,14 @@ export function modifyAllOccurrences(options: EventTimeChangeOptions): void {
     newEnd,
     isAllDay
   );
+
+  // Shift inline exception RECURRENCE-IDs by the same delta so they remain mapped to
+  // the correct (now-shifted) RRULE-generated slots. Exception DTSTART/DTEND are left
+  // unchanged — the user's explicit exception time (e.g., 2AM) is preserved.
+  const deltaMs = (newStart - originalOccurrenceStart) * 1000;
+  if (deltaMs !== 0) {
+    event.ics = ICSEventHelpers.shiftInlineExceptions(event.ics, deltaMs);
+  }
 
   // Re-parse to get the new master times
   const { event: icsEvent } = CalendarUtils.parseICSString(event.ics);
@@ -197,13 +195,15 @@ export async function modifyEventWithRecurringSupport(
   operation: RecurringEventOperation,
   eventTitle: string
 ): Promise<EventModificationResult> {
-  const { event, newStart, newEnd, isAllDay } = options;
+  const { event, newStart, newEnd, isAllDay, isException } = options;
 
-  // Check if this is a recurring event (and not already an exception)
+  // Check if this is a recurring event (and not already a standalone DB exception)
   const isRecurring = ICSEventHelpers.isRecurringEvent(event.ics);
 
-  if (isRecurring && !event.isRecurrenceException()) {
-    // Show dialog for recurring events
+  if (isRecurring && !event.isRecurrenceException() && !isException) {
+    // Show dialog for recurring events.
+    // Skip when `isException` is true: the occurrence being modified is already
+    // an inline exception — always edit just that exception (no dialog needed).
     const choice = await showRecurringEventDialog(operation, eventTitle);
 
     if (choice === 'cancel') {
@@ -211,12 +211,11 @@ export async function modifyEventWithRecurringSupport(
     }
 
     if (choice === 'this-occurrence') {
-      // Create exception for this occurrence only
-      const exceptionEvent = createOccurrenceException(options);
+      // Create exception for this occurrence only (inline, single task)
+      createOccurrenceException(options);
       return {
         success: true,
         masterEvent: event,
-        exceptionEvent,
       };
     } else {
       // Modify all occurrences
@@ -226,8 +225,20 @@ export async function modifyEventWithRecurringSupport(
         masterEvent: event,
       };
     }
+  } else if (isException && !event.isRecurrenceException()) {
+    // Inline exception being modified — `options.event` is the master event (guaranteed
+    // because `parseEventIdFromOccurrence` strips the `-e{N}` suffix from inline occurrences).
+    // `originalOccurrenceStart` must be the RECURRENCE-ID value (occurrence.recurrenceIdStart),
+    // not the exception's moved DTSTART.
+    createOccurrenceException(options);
+    return {
+      success: true,
+      masterEvent: event,
+    };
   } else {
-    // Non-recurring event or already an exception - simple update
+    // Non-recurring event, or standalone DB exception (event.isRecurrenceException() === true).
+    // For standalone exceptions the loaded event IS the exception record, not the master, so
+    // createOccurrenceException would embed into the wrong ICS. Just update it directly.
     modifySimpleEvent(options);
     return {
       success: true,

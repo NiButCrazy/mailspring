@@ -278,7 +278,7 @@ class QuotedHTMLTransformer {
     // considered quoted text.
     return Array.from(doc.querySelectorAll('.gmail_quote'));
   }
-  
+
   _findYahooQuotes(doc) {
     // Both Yahoo and AOL wrap their quotes in divs with classes that contain
     // the text yahoo_quoted

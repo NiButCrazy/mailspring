@@ -239,7 +239,6 @@ on the result. */
   const applyMark = function applyMark(
     node: TextJSON | InlineJSON | BlockJSON | MarkJSON
   ): NodeJSON {
-    // TODO BG
     if (node.object === 'mark') {
       // THIS LINE CONTAINS THE CHANGE. +map
       let result = (HtmlSerializer as any).deserializeMark(node);
@@ -457,7 +456,7 @@ export function convertToPlainText(value: Value) {
 }
 
 /* This is a utility method that converts the value to JSON and strips every node
-of it's sensitive bigts, replacing text, links, images, etc. with "XXX" characers
+of its sensitive bits, replacing text, links, images, etc. with "X" characters
 of the same length. This allows us to log exceptions with the document's structure
 so we can debug challenging problems but not leak PII. */
 export function convertToShapeWithoutContent(value: Value) {

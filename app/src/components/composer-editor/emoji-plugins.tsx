@@ -24,13 +24,13 @@ let allEmojiNames: string[] | null = null;
 
 function getAllEmojiNames(): string[] {
   if (!allEmojiNames) {
-    // In node-emoji v2, use search('') to get all emojis
+    // node-emoji v2: search() returns { name, emoji } objects where `name` is the identifier.
     allEmojiNames = NodeEmoji.search('').map(e => e.name).sort();
   }
   return allEmojiNames;
 }
 
-/* Returns the official emoji names matching the provided text. */
+/* Returns emoji names that start with the provided text (used by the typeahead). */
 export function getEmojiSuggestions(word: string) {
   const emojiOptions = [];
   const emojiNames = getAllEmojiNames();
@@ -40,6 +40,11 @@ export function getEmojiSuggestions(word: string) {
     }
   }
   return emojiOptions;
+}
+
+/* Returns emoji names containing the provided text anywhere (used by the toolbar popover). */
+export function searchEmojiNames(word: string) {
+  return getAllEmojiNames().filter(name => name.includes(word));
 }
 
 export function getEmojiImagePath(emojiname: string) {
@@ -93,15 +98,15 @@ function FloatingEmojiPicker({ editor, value }: ComposerEditorPluginTopLevelComp
   const targetRect = target.getBoundingClientRect();
   const relativeParentW = relativePositionedParent.clientWidth;
 
-  // Create mutable copy since DOMRect properties are read-only
-  let targetLeft = targetRect.left;
+  // Convert to parent-relative coordinates before clamping to editor bounds
+  let targetLeft = targetRect.left - intrinsicPos.left;
   if (targetLeft + 150 > relativeParentW) {
     targetLeft = relativeParentW - 150;
   }
 
   const delta = {
     top: targetRect.top + targetRect.height - intrinsicPos.top,
-    left: targetLeft - intrinsicPos.left,
+    left: targetLeft,
   };
 
   // Don't display all the selections - just display a few before/after the
@@ -230,7 +235,10 @@ function onKeyDown(event: React.KeyboardEvent, editor: Editor, next: () => void)
   if ([' ', 'Return', 'Enter'].includes(event.key)) {
     const emoji = editor.value.marks.find(i => i.type === EMOJI_TYPING_TYPE);
     if (!emoji) return next();
-    const picked = emoji.data.get('picked');
+    const suggestions = emoji.data.get('suggestions');
+    // If there's exactly one suggestion, auto-accept it on Enter/Space regardless of
+    // whether the user has explicitly selected it with arrow keys.
+    const picked = emoji.data.get('picked') || (suggestions?.length === 1 ? suggestions[0] : null);
     swapEmojiMarkFor(editor, emoji, picked);
     if (picked) {
       event.preventDefault();
@@ -270,7 +278,7 @@ function onKeyUp(event: React.KeyboardEvent, editor: Editor, next: () => void) {
     let typed = '';
     const { offset, key } = editor.value.selection.focus;
     const focusText = editor.value.focusText;
-    if (focusText.key === key) {
+    if (focusText && focusText.key === key) {
       typed = focusText.text.substr(focusText.text.lastIndexOf(':', offset), offset);
     }
     if (typed.length > 10 || !typed.startsWith(':')) {

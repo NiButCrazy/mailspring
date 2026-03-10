@@ -4,14 +4,6 @@ global.shellStartTime = Date.now();
 const util = require('util');
 
 const fs = require('fs');
-fs.statSyncNoException = function (...args) {
-  try {
-    return fs.statSync.apply(fs, args);
-  } catch (e) {
-    //pass
-  }
-  return false;
-};
 
 console.inspect = function consoleInspect(val) {
   console.log(util.inspect(val, true, 7, true));
@@ -41,10 +33,10 @@ const setupConfigDir = args => {
   if (args.specMode) {
     dirname = 'Mailspring-spec';
   }
-  
+
   // Check if a custom config dir was provided via --config-dir-path
   let configDirPath = args.configDirPath || path.join(app.getPath('appData'), dirname);
-  
+
   if (process.platform === 'linux' && process.env.SNAP) {
     // for linux snap, use the sandbox directory that is persisted between snap revisions
     configDirPath = args.configDirPath || process.env.SNAP_USER_COMMON;
@@ -282,8 +274,14 @@ const handleStartupEventWithSquirrel = () => {
       WindowsUpdater.handleSquirrelInstall(app);
       return true;
     case '--squirrel-updated':
-      // Restart the app after update
-      WindowsUpdater.restartMailspring(app);
+      // Squirrel runs the NEW version with this flag after applying an update.
+      // Per Squirrel.Windows conventions, we should update shortcuts and exit
+      // quickly — NOT restart the app. The restart happens later when the user
+      // triggers "Install Update" via the UI, which calls restartMailspring().
+      // Previously this called restartMailspring() which spawned a new instance
+      // that would be killed by requestSingleInstanceLock() (the original app
+      // is still running), wasting time and risking Squirrel's 15s timeout.
+      WindowsUpdater.handleSquirrelUpdated(app);
       return true;
     case '--squirrel-uninstall':
       // Handle uninstall with fast exit - spawns detached processes and quits immediately
@@ -325,7 +323,7 @@ const start = () => {
       // Register mailto: protocol without elevation or setting as default
       WindowsUpdater.createRegistryEntries(
         { allowEscalation: false, registerDefaultIfPossible: false },
-        () => {}
+        () => { }
       );
     }
   }

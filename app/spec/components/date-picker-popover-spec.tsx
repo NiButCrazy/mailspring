@@ -1,10 +1,10 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render, fireEvent, cleanup } from '@testing-library/react';
 import { DateUtils } from 'mailspring-exports';
 import { DatePickerPopover } from 'mailspring-component-kit';
 
 const makePopover = (props = {}) => {
-  return mount(
+  return render(
     <DatePickerPopover
       dateOptions={{}}
       header={<span className="header">my header</span>}
@@ -15,68 +15,81 @@ const makePopover = (props = {}) => {
 };
 
 describe('DatePickerPopover', function sendLaterPopover() {
+  afterEach(cleanup);
+
   beforeEach(() => {
     spyOn(DateUtils, 'format').andReturn('formatted');
   });
 
   describe('selectDate', () => {
-    it('calls props.onSelectDate', () => {
+    it('calls props.onSelectDate when a date option item is clicked', () => {
       const onSelectDate = jasmine.createSpy('onSelectDate');
-      const popover = makePopover({ onSelectDate });
       const fakeDate = new Date();
-      popover.instance().selectDate(fakeDate, 'Custom');
-      expect(onSelectDate).toHaveBeenCalledWith(fakeDate, 'Custom');
+      const { container } = makePopover({
+        onSelectDate,
+        dateOptions: {
+          'My Option': () => fakeDate,
+        },
+      });
+      const item = container.querySelector('.item');
+      fireEvent.mouseDown(item);
+      expect(onSelectDate).toHaveBeenCalledWith(fakeDate, 'My Option');
     });
   });
 
   describe('onSelectMenuOption', () => {});
 
   describe('onCustomDateSelected', () => {
-    it('selects date', () => {
-      const popover = makePopover();
-      const instance = popover.instance();
-      spyOn(instance, 'selectDate');
-      const fakeDate = new Date();
-      instance.onCustomDateSelected(fakeDate, 'abc');
-      expect(instance.selectDate).toHaveBeenCalledWith(fakeDate, 'Custom');
+    it('selects date when a valid date is submitted via DateInput', () => {
+      const onSelectDate = jasmine.createSpy('onSelectDate');
+      const fakeDate = Object.assign(new Date(), { clone: () => fakeDate });
+      spyOn(DateUtils, 'futureDateFromString').andReturn(fakeDate);
+      const { container } = makePopover({ onSelectDate });
+      const input = container.querySelector('.date-input-section input');
+      fireEvent.change(input, { target: { value: 'next monday' } });
+      fireEvent.keyDown(input, { key: 'Enter', target: { value: 'next monday' } });
+      expect(onSelectDate).toHaveBeenCalledWith(fakeDate, 'Custom');
     });
 
     it('throws error if date is invalid', () => {
       spyOn(AppEnv, 'showErrorDialog');
-      const popover = makePopover();
-      popover.instance().onCustomDateSelected(null, 'abc');
+      spyOn(DateUtils, 'futureDateFromString').andReturn(null);
+      const { container } = makePopover();
+      const input = container.querySelector('.date-input-section input');
+      fireEvent.change(input, { target: { value: 'not a date' } });
+      fireEvent.keyDown(input, { key: 'Enter', target: { value: 'not a date' } });
       expect(AppEnv.showErrorDialog).toHaveBeenCalled();
     });
   });
 
   describe('render', () => {
     it('renders the provided dateOptions', () => {
-      const popover = makePopover({
+      const { container } = makePopover({
         dateOptions: {
-          'label 1-': () => {},
-          'label 2-': () => {},
+          'label 1-': () => new Date(),
+          'label 2-': () => new Date(),
         },
       });
-      const items = popover.find('.item');
-      expect(items.at(0).text()).toEqual('label 1-formatted');
-      expect(items.at(1).text()).toEqual('label 2-formatted');
+      const items = container.querySelectorAll('.item:not(.divider)');
+      expect(items[0].textContent).toEqual('label 1-formatted');
+      expect(items[1].textContent).toEqual('label 2-formatted');
     });
 
     it('renders header components', () => {
-      const popover = makePopover();
-      expect(popover.find('.header').text()).toEqual('my header');
+      const { container } = makePopover();
+      expect(container.querySelector('.header').textContent).toEqual('my header');
     });
 
     it('renders footer components', () => {
-      const popover = makePopover({
+      const { container } = makePopover({
         footer: (
           <span key="footer" className="footer">
             footer
           </span>
         ),
       });
-      expect(popover.find('.footer').text()).toEqual('footer');
-      expect(popover.find('.date-input-section').exists()).toBe(true);
+      expect(container.querySelector('.footer').textContent).toEqual('footer');
+      expect(container.querySelector('.date-input-section') !== null).toBe(true);
     });
   });
 });

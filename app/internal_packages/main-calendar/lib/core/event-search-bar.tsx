@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import moment from 'moment-timezone';
 import { Rx, Event, DatabaseStore, localized, Calendar, Actions } from 'mailspring-exports';
-import { RetinaImg, KeyCommandsRegion } from 'mailspring-component-kit';
+import { RetinaImg, KeyCommandsRegion, BindGlobalCommands } from 'mailspring-component-kit';
 import { EventOccurrence, occurrencesForEvents } from './calendar-data-source';
 import { Disposable } from 'rx-core';
 
@@ -99,8 +99,12 @@ export class EventSearchBar extends Component<Record<string, unknown>, EventSear
 
       // Expand events to occurrences within a wide time range
       const suggestions = occurrencesForEvents(events, {
-        startUnix: moment().add(-2, 'years').unix(),
-        endUnix: moment().add(2, 'years').unix(),
+        startUnix: moment()
+          .add(-2, 'years')
+          .unix(),
+        endUnix: moment()
+          .add(2, 'years')
+          .unix(),
       });
 
       // Sort by start date, closest to now first
@@ -131,6 +135,10 @@ export class EventSearchBar extends Component<Record<string, unknown>, EventSear
   _onSelectEvent = (event: EventOccurrence) => {
     this.setState({ query: '', suggestions: [], focused: false, selectedIdx: -1 });
     Actions.focusCalendarEvent(event);
+  };
+
+  _focusSearch = () => {
+    this._inputRef.current?.focus();
   };
 
   _onFocus = () => {
@@ -192,7 +200,9 @@ export class EventSearchBar extends Component<Record<string, unknown>, EventSear
     }
 
     if (start.isSame(end, 'day')) {
-      return `${start.format('ddd, MMM D')} \u00B7 ${start.format('h:mm A')} - ${end.format('h:mm A')}`;
+      return `${start.format('ddd, MMM D')} \u00B7 ${start.format('h:mm A')} - ${end.format(
+        'h:mm A'
+      )}`;
     }
 
     return `${start.format('MMM D, h:mm A')} - ${end.format('MMM D, h:mm A')}`;
@@ -228,69 +238,71 @@ export class EventSearchBar extends Component<Record<string, unknown>, EventSear
     const showX = query.length > 0 && focused;
 
     return (
-      <KeyCommandsRegion className={`event-search-bar ${focused ? 'focused' : ''}`} tabIndex={-1}>
-        {loading ? (
-          <RetinaImg
-            className="search-accessory search loading"
-            name="inline-loading-spinner.gif"
-            mode={RetinaImg.Mode.ContentPreserve}
+      <BindGlobalCommands commands={{ 'core:focus-search': this._focusSearch }}>
+        <KeyCommandsRegion className={`event-search-bar ${focused ? 'focused' : ''}`} tabIndex={-1}>
+          {loading ? (
+            <RetinaImg
+              className="search-accessory search loading"
+              name="inline-loading-spinner.gif"
+              mode={RetinaImg.Mode.ContentPreserve}
+            />
+          ) : (
+            <RetinaImg
+              className="search-accessory search"
+              name="searchloupe.png"
+              mode={RetinaImg.Mode.ContentDark}
+              onClick={() => this._inputRef.current?.focus()}
+            />
+          )}
+          <input
+            ref={this._inputRef}
+            type="text"
+            className="event-search-input"
+            placeholder={showPlaceholder ? localized('Search events') : ''}
+            value={query}
+            onChange={this._onInputChange}
+            onFocus={this._onFocus}
+            onBlur={this._onBlur}
+            onKeyDown={this._onKeyDown}
           />
-        ) : (
-          <RetinaImg
-            className="search-accessory search"
-            name="searchloupe.png"
-            mode={RetinaImg.Mode.ContentDark}
-            onClick={() => this._inputRef.current?.focus()}
-          />
-        )}
-        <input
-          ref={this._inputRef}
-          type="text"
-          className="event-search-input"
-          placeholder={showPlaceholder ? localized('Search events') : ''}
-          value={query}
-          onChange={this._onInputChange}
-          onFocus={this._onFocus}
-          onBlur={this._onBlur}
-          onKeyDown={this._onKeyDown}
-        />
-        {showX && (
-          <RetinaImg
-            name="searchclear.png"
-            className="search-accessory clear"
-            mode={RetinaImg.Mode.ContentDark}
-            onMouseDown={this._onClearSearch}
-          />
-        )}
-        {suggestions.length > 0 && focused && (
-          <div className="suggestions">
-            {suggestions.map((event, idx) => {
-              const color = this._getCalendarColor(event.calendarId);
-              return (
-                <div
-                  key={event.id}
-                  className={`suggestion ${selectedIdx === idx ? 'selected' : ''}`}
-                  onMouseDown={e => {
-                    this._onSelectEvent(event);
-                    e.preventDefault();
-                  }}
-                >
-                  <span className="suggestion-calendar-dot" style={{ backgroundColor: color }} />
-                  <span className="suggestion-content">
-                    <span className="suggestion-title">
-                      {event.title || localized('(No title)')}
+          {showX && (
+            <RetinaImg
+              name="searchclear.png"
+              className="search-accessory clear"
+              mode={RetinaImg.Mode.ContentDark}
+              onMouseDown={this._onClearSearch}
+            />
+          )}
+          {suggestions.length > 0 && focused && (
+            <div className="suggestions">
+              {suggestions.map((event, idx) => {
+                const color = this._getCalendarColor(event.calendarId);
+                return (
+                  <div
+                    key={event.id}
+                    className={`suggestion ${selectedIdx === idx ? 'selected' : ''}`}
+                    onMouseDown={e => {
+                      this._onSelectEvent(event);
+                      e.preventDefault();
+                    }}
+                  >
+                    <span className="suggestion-calendar-dot" style={{ backgroundColor: color }} />
+                    <span className="suggestion-content">
+                      <span className="suggestion-title">
+                        {event.title || localized('(No title)')}
+                      </span>
+                      <span className="suggestion-time">{this._formatEventTime(event)}</span>
+                      {event.location && (
+                        <span className="suggestion-location">{event.location}</span>
+                      )}
                     </span>
-                    <span className="suggestion-time">{this._formatEventTime(event)}</span>
-                    {event.location && (
-                      <span className="suggestion-location">{event.location}</span>
-                    )}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </KeyCommandsRegion>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </KeyCommandsRegion>
+      </BindGlobalCommands>
     );
   }
 }

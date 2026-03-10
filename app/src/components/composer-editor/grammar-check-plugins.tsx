@@ -142,20 +142,18 @@ function offsetToSlateRange(
   length: number
 ): { startKey: string; startOffset: number; endKey: string; endOffset: number } | null {
   let charsSoFar = 0;
-  let startKey: string | undefined;
-  let startOffset: number | undefined;
+  let start: { key: string; offset: number } | undefined;
 
   for (const text of texts) {
     const textLength = text.text.length;
 
-    if (startKey === undefined && charsSoFar + textLength > offset) {
-      startKey = text.key;
-      startOffset = offset - charsSoFar;
+    if (!start && charsSoFar + textLength > offset) {
+      start = { key: text.key, offset: offset - charsSoFar };
     }
-    if (startKey !== undefined && charsSoFar + textLength >= offset + length) {
+    if (start && charsSoFar + textLength >= offset + length) {
       return {
-        startKey,
-        startOffset: startOffset!,
+        startKey: start.key,
+        startOffset: start.offset,
         endKey: text.key,
         endOffset: offset + length - charsSoFar,
       };

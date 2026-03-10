@@ -251,6 +251,10 @@ export class Menu extends React.Component<MenuProps, MenuState> {
           newSelectedIndex = Math.min(newSelectedIndex, maxIndex);
         }
       }
+    } else if (itemsChanged && state.selectedItemKey === null && props.items.length > 0) {
+      // Items went from empty to non-empty with no previous selection — select the default
+      const defaultIdx = props.defaultSelectedIndex != null ? props.defaultSelectedIndex : 0;
+      newSelectedIndex = Math.min(defaultIdx, maxIndex);
     } else if (!itemsChanged) {
       // Items didn't change, just do bounds checking
       if (newSelectedIndex >= 0 && newSelectedIndex > maxIndex) {

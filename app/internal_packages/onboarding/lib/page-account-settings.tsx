@@ -66,7 +66,12 @@ class AccountBasicSettingsForm extends React.Component<AccountBasicSettingsFormP
 
   async submit() {
     // create a new account with expanded settings and just the three fields
-    const { name, emailAddress, provider, settings: { imap_password } } = this.props.account;
+    const {
+      name,
+      emailAddress,
+      provider,
+      settings: { imap_password },
+    } = this.props.account;
     let account = new Account({ name, emailAddress, provider, settings: { imap_password } });
     account = await expandAccountWithCommonSettings(account);
     OnboardingActions.setAccount(account);
@@ -87,7 +92,7 @@ class AccountBasicSettingsForm extends React.Component<AccountBasicSettingsFormP
         <FormField field="emailAddress" title={localized('Email')} {...this.props} />
         <FormField
           field="settings.imap_password"
-          title="Password"
+          title={localized('Password')}
           type="password"
           {...this.props}
         />

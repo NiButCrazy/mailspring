@@ -349,7 +349,7 @@ class MessageList extends React.Component<Record<string, unknown>, MessageListSt
     }
 
     return (
-      <div className="message-subject-wrap">
+      <header className="message-subject-wrap">
         <MailImportantIcon thread={this.state.currentThread} />
         <div style={{ flex: 1 }}>
           <span className="message-subject" onContextMenu={() => _onSubjectContextMenu()}>
@@ -370,7 +370,7 @@ class MessageList extends React.Component<Record<string, unknown>, MessageListSt
           onPopOut={this._onPopoutThread}
           onToggleAllExpanded={this._onToggleAllMessagesExpanded}
         />
-      </div>
+      </header>
     );
 
     function _onSubjectContextMenu() {
@@ -418,8 +418,9 @@ class MessageList extends React.Component<Record<string, unknown>, MessageListSt
     return (
       <KeyCommandsRegion globalHandlers={this._globalKeymapHandlers()}>
         <FindInThread />
-        <div
+        <section
           id="message-list"
+          aria-label={this.state.currentThread?.subject || localized('Messages')}
           className={classNames({
             'message-list': true,
             'restrict-width': AppEnv.config.get(PREF_RESTRICT_WIDTH),
@@ -450,7 +451,7 @@ class MessageList extends React.Component<Record<string, unknown>, MessageListSt
             {this._messageElements()}
           </ScrollRegion>
           <Spinner visible={this.state.loading} />
-        </div>
+        </section>
       </KeyCommandsRegion>
     );
   }
@@ -472,9 +473,22 @@ class MessageListReplyArea extends React.Component<{ onClick: () => void; replyT
     this.setState({ forcePlaintext: AppEnv.keymaps.getIsAltKeyDown() });
   };
 
+  _onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      this.props.onClick();
+    }
+  };
+
   render() {
     return (
-      <div className="footer-reply-area-wrap" onClick={this.props.onClick}>
+      <div
+        className="footer-reply-area-wrap"
+        role="button"
+        tabIndex={0}
+        onClick={this.props.onClick}
+        onKeyDown={this._onKeyDown}
+      >
         <div className="footer-reply-area">
           <RetinaImg
             name={`${this.props.replyType}-footer.png`}

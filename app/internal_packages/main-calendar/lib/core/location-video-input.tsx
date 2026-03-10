@@ -3,10 +3,10 @@ import { RetinaImg } from 'mailspring-component-kit';
 import { localized } from 'mailspring-exports';
 
 interface LocationVideoInputProps {
-  value: string;                      // Current location value
-  onChange: (value: string) => void;  // Callback when location changes
-  onVideoToggle?: () => void;         // Optional callback for video button click
-  showVideoButton?: boolean;          // Whether to show video button (default: true)
+  value: string; // Current location value
+  onChange: (value: string) => void; // Callback when location changes
+  onVideoToggle?: () => void; // Optional callback for video button click
+  showVideoButton?: boolean; // Whether to show video button (default: true)
 }
 
 export const LocationVideoInput: React.FC<LocationVideoInputProps> = ({
@@ -28,9 +28,10 @@ export const LocationVideoInput: React.FC<LocationVideoInputProps> = ({
       <input
         type="text"
         className="location-input"
+        aria-label={localized('Location or Video Call')}
         placeholder={localized('Add Location or Video Call')}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={e => onChange(e.target.value)}
       />
       {showVideoButton && (
         <div
@@ -38,10 +39,7 @@ export const LocationVideoInput: React.FC<LocationVideoInputProps> = ({
           onClick={handleVideoClick}
           title={localized('Add Video Call')}
         >
-          <RetinaImg
-            name="ic-eventcard-videocall.png"
-            mode={RetinaImg.Mode.ContentIsMask}
-          />
+          <RetinaImg name="ic-eventcard-videocall.png" mode={RetinaImg.Mode.ContentIsMask} />
         </div>
       )}
     </div>

@@ -188,7 +188,10 @@ export const reorderAccount = create('reorderAccount', ActionScopeWindow);
   Actions.updateContainerFolderDefault(newContainerFolderDefault)
   ```
   */
-export const updateContainerFolderDefault = create('updateContainerFolderDefault', ActionScopeWindow);
+export const updateContainerFolderDefault = create(
+  'updateContainerFolderDefault',
+  ActionScopeWindow
+);
 
 /*
   Public: Select the provided sheet in the current window. This action changes
@@ -385,7 +388,6 @@ export const composeForward = create('composeForward', ActionScopeWindow);
   *Scope: Window*
   */
 export const composeAndSendForward = create('composeAndSendForward', ActionScopeWindow);
-
 
 /*
   Public: Pop out the draft with the provided ID so the user can edit it in another

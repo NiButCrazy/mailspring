@@ -118,24 +118,26 @@ class ActivityEventStore extends MailspringStore {
 
     // Build actions and notifications
 
-    this._messages.filter(m => sidebarAccountIds.includes(m.accountId)).forEach(message => {
-      const openMetadata = message.metadataForPluginId(OPEN_TRACKING_ID);
-      const linkMetadata = message.metadataForPluginId(LINK_TRACKING_ID);
-      if (openMetadata && openMetadata.open_count > 0) {
-        this._appendActionsForMessage(message, OPEN_TRACKING_ID, cb => {
-          openMetadata.open_data.forEach(open => cb(open, message.subject));
-        });
-      }
-      if (linkMetadata && linkMetadata.links) {
-        this._appendActionsForMessage(message, LINK_TRACKING_ID, cb => {
-          for (const link of linkMetadata.links) {
-            for (const click of link.click_data) {
-              cb(click, link.title || link.url);
+    this._messages
+      .filter(m => sidebarAccountIds.includes(m.accountId))
+      .forEach(message => {
+        const openMetadata = message.metadataForPluginId(OPEN_TRACKING_ID);
+        const linkMetadata = message.metadataForPluginId(LINK_TRACKING_ID);
+        if (openMetadata && openMetadata.open_count > 0) {
+          this._appendActionsForMessage(message, OPEN_TRACKING_ID, cb => {
+            openMetadata.open_data.forEach(open => cb(open, message.subject));
+          });
+        }
+        if (linkMetadata && linkMetadata.links) {
+          this._appendActionsForMessage(message, LINK_TRACKING_ID, cb => {
+            for (const link of linkMetadata.links) {
+              for (const click of link.click_data) {
+                cb(click, link.title || link.url);
+              }
             }
-          }
-        });
-      }
-    });
+          });
+        }
+      });
 
     this._actions = this._actions.sort((a, b) => b.timestamp - a.timestamp);
     if (this._actions.length > 100) {

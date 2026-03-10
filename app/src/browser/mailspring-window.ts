@@ -113,9 +113,12 @@ export default class MailspringWindow extends EventEmitter {
       autoHideMenuBar,
     };
 
-    if (this.neverClose) {
+    if (this.neverClose || this.isSpec) {
       // Prevents DOM timers from being suspended when the main window is hidden.
       // Means there's not an awkward catch-up when you re-show the main window.
+      // For spec windows, this is critical: the hidden spec window would otherwise
+      // throttle setTimeout calls to ~1Hz, making each test take ~1s and causing
+      // the full test suite to exceed CI time limits.
       browserWindowOptions.webPreferences.backgroundThrottling = false;
     }
 
@@ -163,7 +166,12 @@ export default class MailspringWindow extends EventEmitter {
 
     loadSettings.initialPath = pathToOpen;
 
-    const stats = fs.statSyncNoException(pathToOpen);
+    let stats: fs.Stats | false = false;
+    try {
+      stats = fs.statSync(pathToOpen);
+    } catch (e) {
+      // path doesn't exist
+    }
     if (stats && stats.isFile && stats.isFile()) {
       loadSettings.initialPath = path.dirname(pathToOpen);
     }
@@ -349,6 +357,7 @@ export default class MailspringWindow extends EventEmitter {
 
       if (this.exitWhenDone) {
         app.exit(100);
+        return;
       }
 
       if (this.neverClose) {

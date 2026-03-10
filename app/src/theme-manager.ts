@@ -205,10 +205,7 @@ export default class ThemeManager {
 
       if (error.line !== undefined) {
         message = `Error compiling Less stylesheet: ${lessStylesheetPath}`;
-        detail = `
-          Line number: ${error.line}
-          ${error.message}
-        `;
+        detail = `Line number: ${error.line}\n${error.message}`;
       }
       console.error(message, { detail, dismissable: true });
       console.error(detail);

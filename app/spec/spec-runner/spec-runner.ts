@@ -1,8 +1,5 @@
 /* eslint global-require:0 */
 import _ from 'underscore';
-import Enzyme from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
-
 import ReactTestUtils from 'react-dom/test-utils';
 import Config from '../../src/config';
 import SpecLoader from './spec-loader';
@@ -22,8 +19,6 @@ class SpecRunner {
 
   runSpecs(loadSettings) {
     this.loadSettings = loadSettings;
-
-    Enzyme.configure({ adapter: new Adapter() });
 
     this._extendGlobalWindow();
     this._setupJasmine();
@@ -120,15 +115,35 @@ class SpecRunner {
   }
 
   _setupWindow() {
-    window.addEventListener('beforeunload', e => {
-      // TODO(flotwig): figure out a way to stop the tests from quitting prematurely that is not this
-      e.returnValue = 'foo';
+    console.log('_setupWindow');
+    window.addEventListener('beforeunload', () => {
+      console.log('beforeunload');
       AppEnv.storeWindowDimensions();
       AppEnv.saveWindowState();
+    });
+
+    // Log full stack traces for uncaught errors and unhandled promise rejections,
+    // since Chromium's default renderer error logging only shows the message and
+    // compiled-JS line number — no call stack.
+    window.addEventListener('error', e => {
+      if (e.error && e.error.stack) {
+        console.error('Uncaught error (stack):\n' + e.error.stack);
+      } else {
+        console.error('Uncaught error:\n' + e.error);
+      }
+    });
+    window.addEventListener('unhandledrejection', e => {
+      const r = e.reason;
+      if (r && r.stack) {
+        console.error('Unhandled promise rejection (stack):\n' + r.stack);
+      } else if (r) {
+        console.error('Unhandled promise rejection:', r);
+      }
     });
   }
 
   _addReporters() {
+    console.log('_addReporters');
     const timeReporter = new TimeReporter();
     const consoleReporter = new ConsoleReporter();
 

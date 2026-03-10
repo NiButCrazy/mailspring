@@ -9,7 +9,6 @@ import SendingSection from './sending-section';
 import LanguageSection from './language-section';
 import { ConfigLike, ConfigSchemaLike } from '../types';
 
-
 class PreferencesGeneral extends React.Component<{
   config: ConfigLike;
   configSchema: ConfigSchemaLike;
@@ -22,14 +21,15 @@ class PreferencesGeneral extends React.Component<{
   };
 
   _onReboot = () => {
+    console.log('general relaunch');
     const app = require('@electron/remote').app;
     app.relaunch();
     app.quit();
   };
 
   _onResetEmailsThatIgnoreWarnings = () => {
-    localStorage.removeItem("recipientWarningBlacklist");
-  }
+    localStorage.removeItem('recipientWarningBlacklist');
+  };
 
   _onResetAccountsAndSettings = () => {
     const chosen = require('@electron/remote').dialog.showMessageBoxSync({
@@ -59,7 +59,6 @@ class PreferencesGeneral extends React.Component<{
     ipc.send('command', 'application:reset-database', {});
   };
 
-
   render() {
     return (
       <div className="container-general">
@@ -81,7 +80,11 @@ class PreferencesGeneral extends React.Component<{
         <div className="two-columns-flexbox" style={{ paddingTop: 30 }}>
           <div style={{ flex: 1 }}>
             <SendingSection config={this.props.config} configSchema={this.props.configSchema} />
-            <div className="btn" onClick={this._onResetEmailsThatIgnoreWarnings} style={{ marginLeft: 0, marginTop:5 }}>
+            <div
+              className="btn"
+              onClick={this._onResetEmailsThatIgnoreWarnings}
+              style={{ marginLeft: 0, marginTop: 5 }}
+            >
               {localized('Reset Emails that Ignore Warnings')}
             </div>
           </div>

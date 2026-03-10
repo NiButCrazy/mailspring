@@ -60,8 +60,7 @@ export default class AccountContactField extends React.Component<AccountContactF
     const multipleAccounts = this.props.accounts.length > 1;
     const hasAliases = this.props.accounts[0] && this.props.accounts[0].aliases.length > 0;
     const account = AccountStore.accountForEmail(this.props.value.email);
-    let style: CSSProperties = {
-    }
+    let style: CSSProperties = {};
     if (account && account.color) {
       style = {
         ...style,
@@ -69,7 +68,7 @@ export default class AccountContactField extends React.Component<AccountContactF
         paddingLeft: '8px',
         borderLeftWidth: '8px',
         borderLeftStyle: 'solid',
-      }
+      };
     }
 
     if (multipleAccounts || hasAliases) {
@@ -93,7 +92,7 @@ export default class AccountContactField extends React.Component<AccountContactF
       position: 'relative',
       top: 13,
       left: '0.5em',
-    }
+    };
 
     return (
       <span className="from-single-name" style={style}>
@@ -103,8 +102,8 @@ export default class AccountContactField extends React.Component<AccountContactF
   };
 
   _renderMenuItem = contact => {
-    const account = AccountStore.accountForId(contact.accountId)
-    let style: CSSProperties = {}
+    const account = AccountStore.accountForId(contact.accountId);
+    let style: CSSProperties = {};
     if (account && account.color) {
       style = {
         ...style,
@@ -112,15 +111,17 @@ export default class AccountContactField extends React.Component<AccountContactF
         paddingLeft: '8px',
         borderLeftWidth: '8px',
         borderLeftStyle: 'solid',
-      }
+      };
     }
     const className = classnames({
       contact: true,
       'is-alias': contact.isAlias,
     });
-    return <div className={className} style={style}>
-      {contact.toString()}
-    </div>;
+    return (
+      <div className={className} style={style}>
+        {contact.toString()}
+      </div>
+    );
   };
 
   _renderAccounts(accounts) {

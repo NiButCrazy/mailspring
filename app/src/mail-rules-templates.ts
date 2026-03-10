@@ -6,38 +6,57 @@ export const ConditionTemplates = [
   new Template('from', Template.Type.String, {
     name: localized('From'),
     valueForMessage: message =>
-      [].concat(message.from.map(c => c.email), message.from.map(c => c.name)),
+      [].concat(
+        message.from.map(c => c.email),
+        message.from.map(c => c.name)
+      ),
   }),
 
   new Template('to', Template.Type.String, {
     name: localized('To'),
     valueForMessage: message =>
-      [].concat(message.to.map(c => c.email), message.to.map(c => c.name)),
+      [].concat(
+        message.to.map(c => c.email),
+        message.to.map(c => c.name)
+      ),
   }),
 
   new Template('cc', Template.Type.String, {
     name: localized('Cc'),
     valueForMessage: message =>
-      [].concat(message.cc.map(c => c.email), message.cc.map(c => c.name)),
+      [].concat(
+        message.cc.map(c => c.email),
+        message.cc.map(c => c.name)
+      ),
   }),
 
   new Template('bcc', Template.Type.String, {
     name: localized('Bcc'),
     valueForMessage: message =>
-      [].concat(message.bcc.map(c => c.email), message.bcc.map(c => c.name)),
+      [].concat(
+        message.bcc.map(c => c.email),
+        message.bcc.map(c => c.name)
+      ),
   }),
 
   new Template('anyRecipient', Template.Type.String, {
     name: localized('Recipient'),
     valueForMessage: message => {
       const recipients = [].concat(message.to, message.cc, message.bcc);
-      return [].concat(recipients.map(c => c.email), recipients.map(c => c.name));
+      return [].concat(
+        recipients.map(c => c.email),
+        recipients.map(c => c.name)
+      );
     },
   }),
 
   new Template('replyTo', Template.Type.String, {
     name: localized('Reply to'),
-    valueForMessage: message => [].concat(message.replyTo.map(c => c.email), message.replyTo.map(c => c.name)),
+    valueForMessage: message =>
+      [].concat(
+        message.replyTo.map(c => c.email),
+        message.replyTo.map(c => c.name)
+      ),
   }),
 
   new Template('anyAttachmentName', Template.Type.String, {
@@ -88,7 +107,10 @@ export const ActionTemplates = [
   new Template('markAsRead', Template.Type.None, { name: localized('Mark as Read') }),
   new Template('moveToTrash', Template.Type.None, { name: localized('Move to Trash') }),
   new Template('star', Template.Type.None, { name: localized('Star') }),
-  new Template('forward', Template.Type.InputString, { name: localized('Forward'), valueLabel: "to:" })
+  new Template('forward', Template.Type.InputString, {
+    name: localized('Forward'),
+    valueLabel: 'to:',
+  }),
 ];
 
 export const ConditionMode = {

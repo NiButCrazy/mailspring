@@ -166,13 +166,19 @@ class PreferencesMailRules extends React.Component<
     ));
 
     return (
-      <select
-        value={this.state.currentAccount.id}
-        onChange={this._onSelectAccount}
-        style={{ margin: 0, minWidth: 200 }}
-      >
-        {options}
-      </select>
+      <>
+        <label htmlFor="mail-rules-account" className="sr-only">
+          {localized('Account')}
+        </label>
+        <select
+          id="mail-rules-account"
+          value={this.state.currentAccount.id}
+          onChange={this._onSelectAccount}
+          style={{ margin: 0, minWidth: 200 }}
+        >
+          {options}
+        </select>
+      </>
     );
   }
 

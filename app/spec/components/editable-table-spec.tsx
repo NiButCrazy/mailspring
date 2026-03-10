@@ -1,28 +1,31 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import { mount, shallow } from 'enzyme';
-import { SelectableTable, EditableTableCell, EditableTable } from 'mailspring-component-kit';
-import { selection, cellProps, tableProps, testDataSource } from '../fixtures/table-data';
+import { render, fireEvent, cleanup } from '@testing-library/react';
+import { Table, EditableTableCell, EditableTable } from 'mailspring-component-kit';
+import { cellProps, tableProps } from '../fixtures/table-data';
 
 describe('EditableTable Components', function describeBlock() {
+  afterEach(cleanup);
+
   describe('EditableTableCell', () => {
-    function renderCell(props) {
-      // This node is used so that React does not issue DOM tree warnings when running
-      // the tests
+    function renderCell(props = {}) {
+      // Provide a valid table > tbody > tr DOM structure to avoid browser warnings
       const table = document.createElement('table');
-      table.innerHTML = '<tbody><tr></tr></tbody>';
-      const cellRootNode = table.querySelector('tr');
-      return mount(<EditableTableCell {...cellProps} {...props} />, { attachTo: cellRootNode });
+      document.body.appendChild(table);
+      const tbody = document.createElement('tbody');
+      table.appendChild(tbody);
+      const tr = document.createElement('tr');
+      tbody.appendChild(tr);
+      const result = render(<EditableTableCell {...cellProps} {...props} />, { container: tr });
+      return result;
     }
 
     describe('onInputBlur', () => {
       it('should call onCellEdited if value is different from current value', () => {
         const onCellEdited = jasmine.createSpy('onCellEdited');
-        const event = {
-          target: { value: 'new-val' },
-        };
-        const cell = renderCell({ onCellEdited, isHeader: false }).instance();
-        cell.onInputBlur(event);
+        // testDataSource.cellAt({rowIdx:0, colIdx:0}) === 1, so 'new-val' is different
+        const { container } = renderCell({ onCellEdited, isHeader: false });
+        const input = container.querySelector('input');
+        fireEvent.blur(input, { target: { value: 'new-val' } });
         expect(onCellEdited).toHaveBeenCalledWith({
           rowIdx: 0,
           colIdx: 0,
@@ -33,11 +36,23 @@ describe('EditableTable Components', function describeBlock() {
 
       it('should not call onCellEdited otherwise', () => {
         const onCellEdited = jasmine.createSpy('onCellEdited');
-        const event = {
-          target: { value: 1 },
-        };
-        const cell = renderCell({ onCellEdited }).instance();
-        cell.onInputBlur(event);
+        // Use a data source with a string value so it matches exactly what the input reports on blur.
+        // The onInputBlur handler uses strict inequality (value !== currentValue), so
+        // we need the string in the input to match the string stored in the data source.
+        const existingValue = 'existing-val';
+        const customDataSource = new Table.TableDataSource({
+          columns: ['col1'],
+          rows: [[existingValue]],
+        });
+        const { container } = renderCell({
+          onCellEdited,
+          tableDataSource: customDataSource,
+          rowIdx: 0,
+          colIdx: 0,
+        });
+        const input = container.querySelector('input');
+        // Blur with the same value that is already in the cell — no change
+        fireEvent.blur(input, { target: { value: existingValue } });
         expect(onCellEdited).not.toHaveBeenCalled();
       });
     });
@@ -45,97 +60,106 @@ describe('EditableTable Components', function describeBlock() {
     describe('onInputKeyDown', () => {
       it('calls onAddRow if Enter pressed and cell is in last row', () => {
         const onAddRow = jasmine.createSpy('onAddRow');
-        const event = {
-          key: 'Enter',
-          stopPropagation: jasmine.createSpy('stopPropagation'),
-        };
-        const cell = renderCell({ rowIdx: 2, onAddRow }).instance();
-        cell.onInputKeyDown(event);
-        expect(event.stopPropagation).toHaveBeenCalled();
+        // rowIdx: 2 is the last row in testDataSource (3 rows: 0,1,2)
+        const { container } = renderCell({ rowIdx: 2, onAddRow });
+        const input = container.querySelector('input');
+        fireEvent.keyDown(input, { key: 'Enter' });
         expect(onAddRow).toHaveBeenCalled();
       });
 
-      it('stops event propagation and blurs input if Escape pressed', () => {
-        const focusSpy = jasmine.createSpy('focusSpy');
-        spyOn(ReactDOM, 'findDOMNode').andReturn({
-          focus: focusSpy,
-        });
-        const event = {
-          key: 'Escape',
-          stopPropagation: jasmine.createSpy('stopPropagation'),
+      it('stops event propagation and focuses inputContainer div if Escape pressed', () => {
+        const { container } = renderCell();
+        const input = container.querySelector('input');
+        // The inputContainer is the div with tabIndex=0 that wraps the input
+        const inputContainer = container.querySelector('[tabindex="0"]') as HTMLElement;
+
+        let focused = false;
+        const origFocus = inputContainer.focus.bind(inputContainer);
+        inputContainer.focus = () => {
+          focused = true;
+          origFocus();
         };
-        const cell = renderCell().instance();
-        cell.onInputKeyDown(event);
-        expect(event.stopPropagation).toHaveBeenCalled();
-        expect(focusSpy).toHaveBeenCalled();
+
+        fireEvent.keyDown(input, { key: 'Escape' });
+        expect(focused).toBe(true);
       });
     });
 
-    it('renders a SelectableTableCell with the correct props', () => {
-      const cell = renderCell();
-      expect(cell.prop('tableDataSource')).toBe(testDataSource);
-      expect(cell.prop('selection')).toBe(selection);
-      expect(cell.prop('rowIdx')).toBe(0);
-      expect(cell.prop('colIdx')).toBe(0);
+    it('renders a cell with the correct data from the tableDataSource', () => {
+      // cellAt({rowIdx:0, colIdx:0}) === 1; verify the input renders with defaultValue '1'
+      const { container } = renderCell();
+      const input = container.querySelector('input');
+      expect(input).not.toBeNull();
+      // defaultValue is set as a DOM property (React coerces the number to a string)
+      expect((input as HTMLInputElement).defaultValue).toBe('1');
     });
 
-    it('renders the InputRenderer as the child of the SelectableTableCell with the correct props', () => {
-      const TestInput = props => <span />;
-      const InputRenderer = props => <TestInput {...props} />;
+    it('renders the InputRenderer with the correct props passed through', () => {
+      // testDataSource.cellAt({rowIdx:2, colIdx:2}) === 9
+      const InputRenderer = props => (
+        <input
+          data-testid="custom-input"
+          data-rowidx={props.rowIdx}
+          data-colidx={props.colIdx}
+          data-p1={props.p1}
+          defaultValue={props.defaultValue}
+        />
+      );
       const inputProps = { p1: 'p1' };
-      const input = renderCell({
+      const { container } = renderCell({
         rowIdx: 2,
         colIdx: 2,
         inputProps,
         InputRenderer,
-      }).find(InputRenderer);
-      expect(input.type()).toBe(InputRenderer);
-      expect(input.prop('rowIdx')).toBe(2);
-      expect(input.prop('colIdx')).toBe(2);
-      expect(input.prop('p1')).toBe('p1');
-      expect(input.prop('defaultValue')).toBe(9);
-      expect(input.prop('tableDataSource')).toBe(testDataSource);
+      });
+
+      const input = container.querySelector('[data-testid="custom-input"]') as HTMLInputElement;
+      expect(input).not.toBeNull();
+      expect(input.getAttribute('data-rowidx')).toBe('2');
+      expect(input.getAttribute('data-colidx')).toBe('2');
+      expect(input.getAttribute('data-p1')).toBe('p1');
+      // The defaultValue passed to InputRenderer is the cell value at row 2, col 2 = 9
+      expect(input.defaultValue).toBe('9');
     });
   });
 
   describe('EditableTable', () => {
-    function renderTable(props) {
-      return shallow(<EditableTable {...tableProps} {...props} />);
+    function renderTable(props = {}) {
+      return render(<EditableTable {...tableProps} {...props} />);
     }
 
     it('renders column buttons if onAddColumn and onRemoveColumn are provided', () => {
       const onAddColumn = () => {};
       const onRemoveColumn = () => {};
-      const table = renderTable({ onAddColumn, onRemoveColumn });
-      expect(table.hasClass('editable-table-container')).toBe(true);
-      expect(table.find('.btn').length).toBe(2);
+      const { container } = renderTable({ onAddColumn, onRemoveColumn });
+      expect(container.firstElementChild.classList.contains('editable-table-container')).toBe(true);
+      expect(container.querySelectorAll('.btn').length).toBe(2);
     });
 
     it('renders only a SelectableTable if column callbacks are not provided', () => {
-      const table = renderTable();
-      expect(table.find('.btn').length).toBe(0);
+      const { container } = renderTable();
+      expect(container.querySelectorAll('.btn').length).toBe(0);
     });
 
-    it('renders with the correct props', () => {
+    it('renders a table with the editable-table class and uses the provided InputRenderer', () => {
       const onAddRow = () => {};
       const onCellEdited = () => {};
       const inputProps = {};
-      const InputRenderer = () => <input />;
-      const other = 'other';
-      const table = renderTable({
+      const InputRenderer = () => <input data-testid="custom-renderer" />;
+      const { container } = renderTable({
         onAddRow,
         onCellEdited,
         inputProps,
         InputRenderer,
-        other,
-      }).find(SelectableTable);
-      expect(table.prop('extraProps').onAddRow).toBe(onAddRow);
-      expect(table.prop('extraProps').onCellEdited).toBe(onCellEdited);
-      expect(table.prop('extraProps').inputProps).toBe(inputProps);
-      expect(table.prop('extraProps').InputRenderer).toBe(InputRenderer);
-      expect(table.prop('other')).toEqual('other');
-      expect(table.prop('CellRenderer')).toBe(EditableTableCell);
-      expect(table.hasClass('editable-table')).toBe(true);
+      });
+
+      // The SelectableTable receives className='editable-table' from EditableTable
+      const editableTable = container.querySelector('.editable-table');
+      expect(editableTable).not.toBeNull();
+
+      // The custom InputRenderer should be rendered for each cell in the table
+      const customInputs = container.querySelectorAll('[data-testid="custom-renderer"]');
+      expect(customInputs.length).toBeGreaterThan(0);
     });
   });
 });

@@ -117,16 +117,17 @@ body.platform-win32 {
       overflow: hidden;
 
       .event-meeting-link,
+      .event-location,
       .event-time-range {
-        display: block;
+        display: flex;
+        align-items: center;
+        gap: 2px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
 
-        .meeting-icon,
-        .time-icon {
-          font-size: 9px;
-          margin-right: 2px;
+        .detail-icon {
+          flex-shrink: 0;
           opacity: 0.7;
         }
       }
@@ -223,6 +224,25 @@ body.platform-win32 {
       &:before {
         display: none; // Hide the left accent bar for cancelled events
       }
+    }
+
+    // Recurring event icon in top-right corner
+    .recurring-icon {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      color: var(--event-text-color, inherit);
+      opacity: 0.7;
+      flex-shrink: 0;
+    }
+
+    &.selected .recurring-icon {
+      color: @text-color-inverse;
+    }
+
+    // Hide recurring icon on horizontal (all-day) events - too small
+    &.horizontal .recurring-icon {
+      display: none;
     }
 
     // Exception events: small "Modified" tag in corner
@@ -620,6 +640,20 @@ body.platform-win32 {
         text-overflow: ellipsis;
         color: var(--event-text-color, inherit);
         opacity: 1;
+      }
+
+      .recurring-icon {
+        position: absolute;
+        top: 50%;
+        right: 3px;
+        transform: translateY(-50%);
+        color: var(--event-text-color, inherit);
+        opacity: 0.7;
+        flex-shrink: 0;
+      }
+
+      &.selected .recurring-icon {
+        color: @text-color-inverse;
       }
 
       &:hover {

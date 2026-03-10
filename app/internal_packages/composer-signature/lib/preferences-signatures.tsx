@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   localized,
@@ -27,7 +26,7 @@ interface SignatureEditorProps {
   accountsAndAliases: IAliasSet;
 }
 
-interface SignatureEditorState { }
+interface SignatureEditorState {}
 
 class SignatureEditor extends React.Component<SignatureEditorProps, SignatureEditorState> {
   _onTitleChange = event => {
@@ -105,9 +104,12 @@ class SignatureEditor extends React.Component<SignatureEditorProps, SignatureEdi
     return (
       <div className={`signature-wrap ${empty && 'empty'}`}>
         <div className="section basic-info">
+          <label htmlFor="signature-title" className="sr-only">
+            {localized('Signature Name')}
+          </label>
           <input
             type="text"
-            id="title"
+            id="signature-title"
             placeholder={localized('Name')}
             value={signature.title || ''}
             onChange={this._onTitleChange}
@@ -131,43 +133,46 @@ class SignatureEditor extends React.Component<SignatureEditorProps, SignatureEdi
 
         {!resolvedData.templateName
           ? [
-            <div key="header" className="section-header">
-              {localized('Raw Source')}
-            </div>,
-            <textarea
-              id="body"
-              key={`textarea ${signature.id}`}
-              className="section raw-html"
-              spellCheck={false}
-              onChange={this._onRawBodyChange}
-              defaultValue={signature.body || ''}
-            />,
-          ]
+              <div key="header" className="section-header">
+                {localized('Raw Source')}
+              </div>,
+              <label key="body-label" htmlFor="signature-body" className="sr-only">
+                {localized('Signature HTML')}
+              </label>,
+              <textarea
+                id="signature-body"
+                key={`textarea ${signature.id}`}
+                className="section raw-html"
+                spellCheck={false}
+                onChange={this._onRawBodyChange}
+                defaultValue={signature.body || ''}
+              />,
+            ]
           : [
-            <div key="header" className="section-header">
-              {localized('Information')}
-            </div>,
-            <div key="section" className="section information">
-              {DataShape.map(item => (
-                <div className="field" key={item.key}>
-                  <label>{item.label}</label>
-                  <input
-                    type="text"
-                    onChange={this._onDataFieldChange}
-                    placeholder={item.placeholder}
-                    id={item.key}
-                    value={data[item.key] || ''}
-                  />
-                </div>
-              ))}
-              <SignaturePhotoPicker
-                id={signature.id}
-                data={data}
-                resolvedURL={resolvedData.photoURL}
-                onChange={this._onDataFieldChange}
-              />
-            </div>,
-          ]}
+              <div key="header" className="section-header">
+                {localized('Information')}
+              </div>,
+              <div key="section" className="section information">
+                {DataShape.map(item => (
+                  <div className="field" key={item.key}>
+                    <label htmlFor={item.key}>{item.label}</label>
+                    <input
+                      type="text"
+                      onChange={this._onDataFieldChange}
+                      placeholder={item.placeholder}
+                      id={item.key}
+                      value={data[item.key] || ''}
+                    />
+                  </div>
+                ))}
+                <SignaturePhotoPicker
+                  id={signature.id}
+                  data={data}
+                  resolvedURL={resolvedData.photoURL}
+                  onChange={this._onDataFieldChange}
+                />
+              </div>,
+            ]}
       </div>
     );
   }

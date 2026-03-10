@@ -392,7 +392,9 @@ export default class MailsyncBridge {
         continue;
       }
       if (msg[0] !== '{') {
-        console.log(`Sync worker sent non-JSON formatted message: ${msg}`);
+        if (!msg.startsWith('Waiting for')) {
+          console.log(`Sync worker sent non-JSON formatted message: ${msg}`);
+        }
         continue;
       }
 

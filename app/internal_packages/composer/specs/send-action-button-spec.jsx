@@ -1,6 +1,5 @@
 import React from 'react';
-import { mount } from 'enzyme';
-import { ButtonDropdown, RetinaImg } from 'mailspring-component-kit';
+import { render, fireEvent, cleanup } from '@testing-library/react';
 import { Actions, Message, SendActionsStore } from 'mailspring-exports';
 import { SendActionButton } from '../lib/send-action-button';
 
@@ -27,6 +26,8 @@ const NoIconUrl = {
 };
 
 describe('SendActionButton', function describeBlock() {
+  afterEach(cleanup);
+
   beforeEach(() => {
     spyOn(Actions, 'sendDraft');
     this.isValidDraft = jasmine.createSpy('isValidDraft');
@@ -34,14 +35,17 @@ describe('SendActionButton', function describeBlock() {
     this.draft = new Message({ id: this.id, draft: true, headerMessageId: 'bla' });
   });
 
-  const render = (draft, { isValid = true } = {}) => {
+  const renderButton = (draft, { isValid = true } = {}) => {
     this.isValidDraft.andReturn(isValid);
-    return mount(<SendActionButton draft={draft} isValidDraft={this.isValidDraft} />);
+    const { container } = render(
+      <SendActionButton draft={draft} isValidDraft={this.isValidDraft} />
+    );
+    return container;
   };
 
   it('renders without error', () => {
-    const sendActionButton = render(this.draft);
-    expect(sendActionButton.is(SendActionButton)).toBe(true);
+    const container = renderButton(this.draft);
+    expect(container.querySelector('.button-dropdown') !== null).toBe(true);
   });
 
   it('is a dropdown', () => {
@@ -49,12 +53,10 @@ describe('SendActionButton', function describeBlock() {
       SendActionsStore.DefaultSendAction,
       GoodSendAction,
     ]);
-    const sendActionButton = render(this.draft);
-    const dropdowns = sendActionButton.find(ButtonDropdown);
-    const buttons = sendActionButton.find('button');
-    expect(buttons.length).toBe(0);
-    expect(dropdowns.length).toBe(1);
-    expect(dropdowns.first().prop('primaryTitle')).toBe('Send');
+    const container = renderButton(this.draft);
+    expect(container.querySelector('.button-dropdown') !== null).toBe(true);
+    expect(container.querySelectorAll('button').length).toBe(0);
+    expect(container.querySelector('.primary-item').getAttribute('title')).toBe('Send');
   });
 
   it('has the correct primary item', () => {
@@ -63,9 +65,8 @@ describe('SendActionButton', function describeBlock() {
       SendActionsStore.DefaultSendAction,
       GoodSendAction,
     ]);
-    const sendActionButton = render(this.draft);
-    const dropdown = sendActionButton.find(ButtonDropdown).first();
-    expect(dropdown.prop('primaryTitle')).toBe('Second Send Action');
+    const container = renderButton(this.draft);
+    expect(container.querySelector('.primary-item').getAttribute('title')).toBe('Second Send Action');
   });
 
   it("still renders with a null iconUrl and doesn't show the image", () => {
@@ -73,13 +74,10 @@ describe('SendActionButton', function describeBlock() {
       NoIconUrl,
       SendActionsStore.DefaultSendAction,
     ]);
-    const sendActionButton = render(this.draft);
-    const dropdowns = sendActionButton.find(ButtonDropdown);
-    const buttons = sendActionButton.find('button');
-    const icons = sendActionButton.find(RetinaImg);
-    expect(buttons.length).toBe(0);
-    expect(dropdowns.length).toBe(1);
-    expect(icons.length).toBe(2);
+    const container = renderButton(this.draft);
+    expect(container.querySelector('.button-dropdown') !== null).toBe(true);
+    expect(container.querySelectorAll('button').length).toBe(0);
+    expect(container.querySelectorAll('img').length).toBe(2);
   });
 
   it('sends a draft by default if no extra actions present', () => {
@@ -87,9 +85,8 @@ describe('SendActionButton', function describeBlock() {
       SendActionsStore.DefaultSendAction,
       GoodSendAction,
     ]);
-    const sendActionButton = render(this.draft);
-    const button = sendActionButton.find('.primary-item').first();
-    button.simulate('click');
+    const container = renderButton(this.draft);
+    fireEvent.click(container.querySelector('.primary-item'));
     expect(this.isValidDraft).toHaveBeenCalled();
     expect(Actions.sendDraft).toHaveBeenCalledWith(this.draft.headerMessageId, {
       actionKey: 'send',
@@ -101,9 +98,8 @@ describe('SendActionButton', function describeBlock() {
       SendActionsStore.DefaultSendAction,
       GoodSendAction,
     ]);
-    const sendActionButton = render(this.draft, { isValid: false });
-    const button = sendActionButton.find('.primary-item').first();
-    button.simulate('click');
+    const container = renderButton(this.draft, { isValid: false });
+    fireEvent.click(container.querySelector('.primary-item'));
     expect(this.isValidDraft).toHaveBeenCalled();
     expect(Actions.sendDraft).not.toHaveBeenCalled();
   });
@@ -113,9 +109,8 @@ describe('SendActionButton', function describeBlock() {
       GoodSendAction,
       SendActionsStore.DefaultSendAction,
     ]);
-    const sendActionButton = render(this.draft, {});
-    const button = sendActionButton.find('.primary-item').first();
-    button.simulate('click');
+    const container = renderButton(this.draft, {});
+    fireEvent.click(container.querySelector('.primary-item'));
     expect(this.isValidDraft).toHaveBeenCalled();
     expect(Actions.sendDraft).toHaveBeenCalledWith(this.draft.headerMessageId, {
       actionKey: 'good-send-action',

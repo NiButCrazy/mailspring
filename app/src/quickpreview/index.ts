@@ -250,14 +250,24 @@ export function displayQuickPreviewWindow(filePath) {
   }
   quickPreviewWindow.setTitle(path.basename(filePath));
 
+  const onLoadError = (err: Error) => {
+    if (!err?.message?.includes('ERR_ABORTED')) {
+      console.error('Quickpreview display window failed to load:', err);
+    }
+  };
+
   if (isPDF) {
-    quickPreviewWindow.loadFile(path.join(PDFJSRoot, 'web/viewer.html'), {
-      search: `file=${encodeURIComponent(`file://${filePath}`)}`,
-    });
+    quickPreviewWindow
+      .loadFile(path.join(PDFJSRoot, 'web/viewer.html'), {
+        search: `file=${encodeURIComponent(`file://${filePath}`)}`,
+      })
+      .catch(onLoadError);
   } else {
-    quickPreviewWindow.loadFile(path.join(filesRoot, 'renderer.html'), {
-      search: JSON.stringify({ mode: 'display', filePath, strategy }),
-    });
+    quickPreviewWindow
+      .loadFile(path.join(filesRoot, 'renderer.html'), {
+        search: JSON.stringify({ mode: 'display', filePath, strategy }),
+      })
+      .catch(onLoadError);
   }
 }
 
@@ -346,9 +356,17 @@ async function _generateNextCrossplatformPreview() {
   const previewToken = await generatePreviewToken(previewPath);
 
   // Start the thumbnail generation
-  captureWindow.loadFile(path.join(filesRoot, 'renderer.html'), {
-    search: JSON.stringify({ strategy, mode: 'capture', filePath, previewToken }),
-  });
+  captureWindow
+    .loadFile(path.join(filesRoot, 'renderer.html'), {
+      search: JSON.stringify({ strategy, mode: 'capture', filePath, previewToken }),
+    })
+    .catch((err: Error) => {
+      // ERR_ABORTED is expected when a new preview starts while the previous is still loading
+      // (e.g. after the 5-second timeout fires). The thumbnail just won't be generated.
+      if (!err?.message?.includes('ERR_ABORTED')) {
+        console.error('Quickpreview capture window failed to load:', err);
+      }
+    });
 
   // Race against a timer to complete the preview. We don't want this to hang
   // forever if for some reason the window encounters an exception

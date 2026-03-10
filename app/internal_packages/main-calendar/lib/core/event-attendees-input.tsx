@@ -52,7 +52,10 @@ export class EventAttendeesInput extends React.Component<EventAttendeesInputProp
     return <Menu.NameEmailContent name={p.name} email={p.email} />;
   };
 
-  _tokensForString = (string: string, options: Record<string, unknown> = {}): Promise<Contact[]> => {
+  _tokensForString = (
+    string: string,
+    options: Record<string, unknown> = {}
+  ): Promise<Contact[]> => {
     // If the input is a string, parse out email addresses and build
     // an array of contact objects. For each email address wrapped in
     // parentheses, look for a preceding name, if one exists.
@@ -72,10 +75,7 @@ export class EventAttendeesInput extends React.Component<EventAttendeesInputProp
 
   _remove = (values: EventAttendee[]): void => {
     const emailsToRemove = values.map(o => o.email);
-    const updates = _.reject(
-      this.props.attendees,
-      p => emailsToRemove.includes(p.email)
-    );
+    const updates = _.reject(this.props.attendees, p => emailsToRemove.includes(p.email));
     this.props.change(updates);
   };
 

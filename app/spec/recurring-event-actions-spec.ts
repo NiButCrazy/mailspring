@@ -3,8 +3,8 @@ import {
   ICSEventHelpers,
   CalendarUtils,
   SyncbackEventTask,
-  Event,
 } from 'mailspring-exports';
+import { Event as MailspringEvent } from '../src/flux/models/event';
 
 // Import the functions under test directly from the source file.
 // We use a relative path because the plugin is not registered in mailspring-exports.
@@ -90,8 +90,8 @@ END:VCALENDAR`;
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeEvent(ics: string, overrides: Partial<Event> = {}): Event {
-  return new Event({
+function makeEvent(ics: string, overrides: Partial<MailspringEvent> = {}): MailspringEvent {
+  return new MailspringEvent({
     id: 'event-id-1',
     accountId: 'account-id-1',
     calendarId: 'calendar-id-1',
@@ -171,7 +171,7 @@ describe('modifySimpleEvent', function() {
     const event = makeEvent(originalIcs, {
       recurrenceStart: originalStart,
       recurrenceEnd: originalEnd,
-    });
+    } as any);
 
     modifySimpleEvent({
       event,
@@ -303,7 +303,7 @@ describe('createOccurrenceException', function() {
     const event = makeEvent(originalIcs, {
       recurrenceStart: originalStart,
       recurrenceEnd: originalEnd,
-    });
+    } as any);
 
     createOccurrenceException({
       event,
@@ -461,7 +461,7 @@ END:VCALENDAR`;
     const event = makeEvent(originalIcs, {
       recurrenceStart: originalStart,
       recurrenceEnd: originalEnd,
-    });
+    } as any);
 
     modifyAllOccurrences({
       event,

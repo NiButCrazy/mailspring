@@ -45,8 +45,8 @@ describe('ComponentRegistry', function() {
 
   describe('register', function() {
     it('throws an exception if passed a non-component', function() {
-      expect(() => ComponentRegistry.register(null)).toThrow();
-      expect(() => ComponentRegistry.register('cheese')).toThrow();
+      expect(() => ComponentRegistry.register(null, null)).toThrow();
+      expect(() => ComponentRegistry.register('cheese' as any, null)).toThrow();
     });
 
     it('returns itself', () =>
@@ -82,7 +82,7 @@ describe('ComponentRegistry', function() {
 
   describe('findComponentsMatching', function() {
     it('should throw if a descriptor is not provided', () =>
-      expect(() => ComponentRegistry.findComponentsMatching()).toThrow());
+      expect(() => (ComponentRegistry as any).findComponentsMatching()).toThrow());
 
     it('should return the correct results in a wide range of test cases', function() {
       const StubLocation1 = { id: 'StubLocation1' };

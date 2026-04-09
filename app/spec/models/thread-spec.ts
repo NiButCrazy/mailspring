@@ -14,7 +14,7 @@ describe('Thread', function() {
         if (_.isString(json)) {
           data = JSON.parse(json);
         }
-        const object = new Thread();
+        const object = new Thread({} as any);
         object.fromJSON(data);
         iterations += 1;
       }

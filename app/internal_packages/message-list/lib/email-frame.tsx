@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 import {
   PropTypes,
   Utils,
+  localized,
   QuotedHTMLTransformer,
   MessageStore,
   Message,
@@ -103,7 +104,9 @@ export default class EmailFrame extends React.Component<EmailFrameProps> {
         `<div id='inbox-plain-wrapper' class="${process.platform}"></div>`
       );
       doc.close();
-      doc.getElementById('inbox-plain-wrapper').innerText = content;
+      const plainWrapper = doc.getElementById('inbox-plain-wrapper');
+      plainWrapper.innerText = content;
+      plainWrapper.setAttribute('role', 'document');
     } else {
       doc.write(
         `<!DOCTYPE html>` +
@@ -111,6 +114,10 @@ export default class EmailFrame extends React.Component<EmailFrameProps> {
         `<div id='inbox-html-wrapper' class="${process.platform}">${content}</div>`
       );
       doc.close();
+      const htmlWrapper = doc.getElementById('inbox-html-wrapper');
+      if (htmlWrapper) {
+        htmlWrapper.setAttribute('role', 'document');
+      }
     }
 
     if (doc.body && restrictWidth) {
@@ -206,6 +213,7 @@ export default class EmailFrame extends React.Component<EmailFrameProps> {
           searchable
           sandbox="allow-forms allow-same-origin"
           seamless={true}
+          title={localized('Email message')}
           style={{ height: 0 }}
           ref={cm => {
             this._iframeComponent = cm;

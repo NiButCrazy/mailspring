@@ -505,9 +505,11 @@ describe('TokenizingTextField.Token', function() {
           selected: false,
           valid: true,
           item: participant1,
+          className: '',
           onClick: jasmine.createSpy('onClick'),
           onDragStart: jasmine.createSpy('onDragStart'),
           onEdited: null,
+          onAction: jasmine.createSpy('onAction'),
         })
       );
       const container = result.container;

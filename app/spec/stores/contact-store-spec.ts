@@ -5,9 +5,6 @@ import ContactStore from '../../src/flux/stores/contact-store';
 xdescribe('ContactStore', function() {
   beforeEach(function() {
     spyOn(AppEnv, 'isMainWindow').andReturn(true);
-    ContactStore._contactCache = [];
-    ContactStore._fetchOffset = 0;
-    ContactStore._accountId = null;
   });
 
   describe('when searching for a contact', function() {
@@ -85,16 +82,16 @@ xdescribe('ContactStore', function() {
 
   describe('isValidContact', function() {
     it('should call contact.isValid', function() {
-      const contact = new Contact();
+      const contact = new Contact({} as any);
       spyOn(contact, 'isValid').andReturn(true);
       expect(ContactStore.isValidContact(contact)).toBe(true);
     });
 
     it('should return false for non-Contact objects', () =>
-      expect(ContactStore.isValidContact({ name: 'Ben', email: 'ben@mailspring.com' })).toBe(false));
+      expect(ContactStore.isValidContact({ name: 'Ben', email: 'ben@mailspring.com' } as unknown as Contact)).toBe(false));
 
     it("returns false if we're not passed a contact", () =>
-      expect(ContactStore.isValidContact()).toBe(false));
+      expect(ContactStore.isValidContact(undefined as unknown as Contact)).toBe(false));
   });
 
   describe('parseContactsInString', function() {
@@ -151,9 +148,9 @@ xdescribe('ContactStore', function() {
       it(`works for ${key}`, () =>
         waitsForPromise(() =>
           ContactStore.parseContactsInString(key).then(function(contacts) {
-            contacts = contacts.map(c => c.toString());
+            const contactStrings = contacts.map(c => c.toString());
             const expectedContacts = value.map(c => c.toString());
-            expect(contacts).toEqual(expectedContacts);
+            expect(contactStrings).toEqual(expectedContacts);
           })
         ))
     );

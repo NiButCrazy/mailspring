@@ -187,8 +187,8 @@ describe('MailRulesProcessor', function() {
       spyOn(Actions, 'queueTasks');
       spyOn(DatabaseStore, 'findBy').andReturn(Promise.resolve({}));
       Tests.forEach(({ rule }) => {
-        TaskQueue.waitForPerformLocal.reset();
-        Actions.queueTasks.reset();
+        (TaskQueue.waitForPerformLocal as jasmine.Spy).reset();
+        (Actions.queueTasks as unknown as jasmine.Spy).reset();
 
         const message = new Message({ accountId: rule.accountId });
         const thread = new Thread({ accountId: rule.accountId });

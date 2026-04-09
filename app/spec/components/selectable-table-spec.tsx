@@ -89,7 +89,7 @@ describe('SelectableTable Components', function describeBlock() {
   });
 
   describe('SelectableTableRow', () => {
-    function renderRow(props = {}) {
+    function renderRow(props: any = {}) {
       // SelectableTableRow renders a <tr>, which requires valid table DOM context
       return render(
         <table>

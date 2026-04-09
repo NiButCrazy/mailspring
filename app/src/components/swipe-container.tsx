@@ -410,7 +410,7 @@ export default class SwipeContainer extends React.Component<
         {...otherProps}
         style={{ touchAction: 'pan-x pan-y', ...otherProps.style }}
       >
-        <div style={backingStyles} className={backingClass} />
+        <div style={backingStyles} className={backingClass} aria-hidden="true" />
         <div style={{ transform: `translate3d(${currentX}px, 0, 0)` }}>{this.props.children}</div>
       </div>
     );

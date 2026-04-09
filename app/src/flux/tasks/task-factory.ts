@@ -15,7 +15,7 @@ export const TaskFactory = {
     const byAccount = {};
     threads.forEach(thread => {
       if (!(thread instanceof Thread)) {
-        throw new Error('tasksForApplyingCategories: `threads` must be instances of Thread');
+        throw new Error('tasksForThreadsByAccountId: `threads` must be instances of Thread');
       }
       const { accountId } = thread;
       if (!byAccount[accountId]) {

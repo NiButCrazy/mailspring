@@ -43,7 +43,7 @@ class SpecRunner {
 
         it: this._makeItAsync(jasmineExports.it),
         // it: jasmineExports.it,
-        fit: this._makeItAsync(jasmineExports.fit),
+        fit: this._makeItAsync((jasmineExports as any).fit),
         xit: jasmineExports.xit,
         runs: jasmineExports.runs,
         waits: jasmineExports.waits,
@@ -155,7 +155,7 @@ class SpecRunner {
       // global scope before it gets extended. This is done in
       // `_extendGlobalWindow`
       require('jasmine-reporters');
-      const jUnitXmlReporter = new jasmine.JUnitXmlReporter(loadSettings.jUnitXmlPath, true, true);
+      const jUnitXmlReporter = new (jasmine as any).JUnitXmlReporter(loadSettings.jUnitXmlPath, true, true);
       this.jasmineEnv.addReporter(jUnitXmlReporter);
     }
     this.jasmineEnv.addReporter(timeReporter);

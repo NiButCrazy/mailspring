@@ -114,7 +114,6 @@ export default class PreferencesKeymaps extends React.Component<
             <div className="dropdown">
               <select
                 style={{ margin: 0 }}
-                tabIndex={-1}
                 value={this.props.config.get('core.keymapTemplate')}
                 onChange={event => this.props.config.set('core.keymapTemplate', event.target.value)}
               >

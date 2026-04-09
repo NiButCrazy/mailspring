@@ -778,7 +778,7 @@ describe('DraftFactory', function draftFactory() {
         'mailto:?subject=Issues%20%C2%B7%20atom/electron%20%C2%B7%20GitHub&body=https://github.com/atom/electron/issues?utf8=&q=is%253Aissue+is%253Aopen+123%0A%0A',
       ];
       const expected = [
-        new Message(),
+        new Message({} as any),
         new Message({
           to: [new Contact({ name: 'bengotow@gmail.com', email: 'bengotow@gmail.com' })],
         }),

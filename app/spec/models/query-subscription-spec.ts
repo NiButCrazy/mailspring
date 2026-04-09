@@ -51,9 +51,9 @@ describe('QuerySubscription', function QuerySubscriptionSpecs() {
   describe('addCallback', () =>
     it('should emit the last result to the new callback if one is available', () => {
       const cb = jasmine.createSpy('callback');
-      spyOn(QuerySubscription.prototype, 'update').andReturn();
+      spyOn(QuerySubscription.prototype, 'update').andReturn(undefined);
       const subscription = new QuerySubscription(DatabaseStore.findAll<Thread>(Thread));
-      subscription._lastResult = 'something';
+      (subscription as any)._lastResult = 'something';
       runs(() => {
         subscription.addCallback(cb);
         advanceClock();
@@ -235,7 +235,7 @@ describe('QuerySubscription', function QuerySubscriptionSpecs() {
             spyOn(subscription, 'update');
             spyOn(subscription, '_createResultAndTrigger');
             subscription._updateInFlight = false;
-            subscription.applyChangeRecord(test.change);
+            subscription.applyChangeRecord(test.change as any);
 
             if (test.mustUpdate) {
               expect(subscription.update).toHaveBeenCalledWith({ mustRefetchEntireRange: true });
@@ -245,7 +245,7 @@ describe('QuerySubscription', function QuerySubscriptionSpecs() {
               expect(subscription._set.models()).toEqual(test.nextModels);
             }
 
-            if (test.mustTriger) {
+            if ((test as any).mustTriger) {
               expect(subscription._createResultAndTrigger).toHaveBeenCalled();
             }
           });
@@ -277,7 +277,7 @@ describe('QuerySubscription', function QuerySubscriptionSpecs() {
       it('should fetch full full models only when the previous set is empty', () => {
         const subscription = new QuerySubscription(DatabaseStore.findAll<Thread>(Thread));
         subscription._set = new MutableQueryResultSet();
-        subscription._set.addModelsInRange([new Thread()], new QueryRange({ start: 0, end: 1 }));
+        subscription._set.addModelsInRange([new Thread({} as any)], new QueryRange({ start: 0, end: 1 }));
         subscription.update();
         advanceClock();
         expect(subscription._fetchRange).toHaveBeenCalledWith(QueryRange.infinite(), {
@@ -310,15 +310,15 @@ describe('QuerySubscription', function QuerySubscriptionSpecs() {
           spyOn(QueryRange, 'rangesBySubtracting').andReturn([customRange]);
           const subscription = new QuerySubscription(this.query);
           subscription._set = new MutableQueryResultSet();
-          subscription._set.addModelsInRange([new Thread()], new QueryRange({ start: 0, end: 1 }));
+          subscription._set.addModelsInRange([new Thread({} as any)], new QueryRange({ start: 0, end: 1 }));
 
           advanceClock();
-          subscription._fetchRange.reset();
+          (subscription._fetchRange as jasmine.Spy).reset();
           subscription._updateInFlight = false;
           subscription.update();
           advanceClock();
-          expect(subscription._fetchRange.callCount).toBe(1);
-          expect(subscription._fetchRange.calls[0].args).toEqual([
+          expect((subscription._fetchRange as jasmine.Spy).callCount).toBe(1);
+          expect((subscription._fetchRange as jasmine.Spy).calls[0].args).toEqual([
             customRange,
             { fetchEntireModels: true, version: 1 },
           ]);
@@ -332,15 +332,15 @@ describe('QuerySubscription', function QuerySubscriptionSpecs() {
           const range = new QueryRange({ start: 0, end: 1 });
           const subscription = new QuerySubscription(this.query);
           subscription._set = new MutableQueryResultSet();
-          subscription._set.addModelsInRange([new Thread()], range);
+          subscription._set.addModelsInRange([new Thread({} as any)], range);
 
           advanceClock();
-          subscription._fetchRange.reset();
+          (subscription._fetchRange as jasmine.Spy).reset();
           subscription._updateInFlight = false;
           subscription.update();
           advanceClock();
-          expect(subscription._fetchRange.callCount).toBe(1);
-          expect(subscription._fetchRange.calls[0].args).toEqual([
+          expect((subscription._fetchRange as jasmine.Spy).callCount).toBe(1);
+          expect((subscription._fetchRange as jasmine.Spy).calls[0].args).toEqual([
             this.query.range(),
             { fetchEntireModels: true, version: 1 },
           ]);

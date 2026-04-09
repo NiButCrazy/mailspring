@@ -207,6 +207,7 @@ export class MultiselectList extends React.Component<MultiselectListProps, Multi
             handler.shouldShowKeyboardCursor() && item.id === this.props.keyboardCursorId,
         });
       props['data-item-id'] = item.id;
+      props['id'] = `list-item-${item.id}`;
       props['role'] = 'option';
       props['ariaSelected'] = selected;
       if (this.props.ariaLabelForItem) {
@@ -224,6 +225,8 @@ export class MultiselectList extends React.Component<MultiselectListProps, Multi
       const handler = this._getHandler();
       className += ` ${handler.cssClass()}`;
 
+      const activeCursorId = this.props.keyboardCursorId || this.props.focusedId;
+
       return (
         <KeyCommandsRegion
           globalHandlers={this._globalKeymapHandlers()}
@@ -239,6 +242,8 @@ export class MultiselectList extends React.Component<MultiselectListProps, Multi
             role="listbox"
             ariaLabel={this.props.ariaLabel}
             ariaMultiselectable={this.state.layoutMode === 'list'}
+            tabIndex={0}
+            ariaActiveDescendant={activeCursorId ? `list-item-${activeCursorId}` : undefined}
             {...otherProps}
             onDragStart={this._onDragStart}
           />
@@ -302,6 +307,10 @@ export class MultiselectList extends React.Component<MultiselectListProps, Multi
 
   private _onShift = (delta: number, options: { select?: boolean } = {}) => {
     this._getHandler().onShift(delta, options);
+    // Focus the listbox after re-renders complete so aria-activedescendant is announced.
+    // Deferred because the Flux action above may trigger synchronous React re-renders
+    // that temporarily clear the _listRowsEl ref before re-assigning it.
+    setTimeout(() => this.listRef.current?.focusListbox(), 0);
   };
 
   private _onScrollByPage = (delta: number) => {

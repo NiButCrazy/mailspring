@@ -2,6 +2,7 @@ import { RetinaImg, RovingTabIndexToolbar } from 'mailspring-component-kit';
 import { localized } from 'mailspring-exports';
 import PropTypes from 'prop-types';
 import React from 'react';
+import { isWaylandSession } from '../../../../src/browser/is-wayland';
 import SystemTrayIconStore from '../../../system-tray/lib/system-tray-icon-store';
 import { ConfigLike } from '../types';
 
@@ -67,10 +68,18 @@ class MenubarStylePicker extends React.Component<{ config: ConfigLike }> {
   };
 
   render() {
+    if (process.platform !== 'linux') return null;
+
     const val = this.props.config.get(this.kp);
 
+    const waylandNote = isWaylandSession()
+      ? localized(
+          '(Native menu bar may not appear on Wayland. A menu button will be shown as a fallback.)'
+        )
+      : '';
+
     const options = [
-      ['default', localized('Default Window Controls and Menubar'), ''],
+      ['default', localized('Default Window Controls and Menubar'), waylandNote],
       [
         'autohide',
         localized('Default Window Controls and Auto-hiding Menubar'),
@@ -78,8 +87,6 @@ class MenubarStylePicker extends React.Component<{ config: ConfigLike }> {
       ],
       ['hamburger', localized('Custom Window Frame and Right-hand Menu'), ''],
     ];
-
-    if (process.platform !== 'linux') return null;
 
     return (
       <section>

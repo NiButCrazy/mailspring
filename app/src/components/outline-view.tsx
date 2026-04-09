@@ -241,12 +241,109 @@ export class OutlineView extends Component<OutlineViewProps, OutlineViewState> {
     );
   }
 
-  _renderItems() {
+  _renderItems(sectionTitle?: string) {
     const noneSelected = !this.props.items.some(item => item.selected);
     return this.props.items.map((item, idx) => (
-      <OutlineViewItem key={item.id} item={item} isFirst={noneSelected && idx === 0} />
+      <OutlineViewItem
+        key={item.id}
+        item={item}
+        isFirst={noneSelected && idx === 0}
+        sectionTitle={idx === 0 ? sectionTitle : undefined}
+      />
     ));
   }
+
+  _onTreeKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const tree = event.currentTarget;
+    const items = Array.from(
+      tree.querySelectorAll<HTMLElement>('[role="treeitem"]')
+    ).filter(el => !el.closest('[aria-expanded="false"] [role="treeitem"]'));
+
+    const focused = document.activeElement as HTMLElement;
+    const currentIndex = items.indexOf(focused);
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      event.stopPropagation();
+      const next = items[currentIndex + 1];
+      if (next) {
+        next.setAttribute('tabIndex', '0');
+        if (focused && focused !== next) focused.setAttribute('tabIndex', '-1');
+        next.focus();
+      }
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      event.stopPropagation();
+      const prev = items[currentIndex - 1];
+      if (prev) {
+        prev.setAttribute('tabIndex', '0');
+        if (focused && focused !== prev) focused.setAttribute('tabIndex', '-1');
+        prev.focus();
+      }
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      if (focused) {
+        const expanded = focused.getAttribute('aria-expanded');
+        if (expanded === 'false') {
+          // Click the disclosure triangle to expand
+          const triangle = focused.querySelector<HTMLElement>('.disclosure-triangle');
+          if (triangle) triangle.click();
+        } else if (expanded === 'true') {
+          // Move to first child
+          const firstChild = items[currentIndex + 1];
+          if (firstChild) {
+            firstChild.setAttribute('tabIndex', '0');
+            focused.setAttribute('tabIndex', '-1');
+            firstChild.focus();
+          }
+        }
+      }
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      if (focused) {
+        const expanded = focused.getAttribute('aria-expanded');
+        if (expanded === 'true') {
+          // Click the disclosure triangle to collapse
+          const triangle = focused.querySelector<HTMLElement>('.disclosure-triangle');
+          if (triangle) triangle.click();
+        } else {
+          // Move to parent treeitem
+          let parent = focused.parentElement;
+          while (parent && parent !== tree) {
+            if (parent.getAttribute('role') === 'treeitem') {
+              parent.setAttribute('tabIndex', '0');
+              focused.setAttribute('tabIndex', '-1');
+              parent.focus();
+              break;
+            }
+            parent = parent.parentElement;
+          }
+        }
+      }
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      const first = items[0];
+      if (first) {
+        first.setAttribute('tabIndex', '0');
+        if (focused && focused !== first) focused.setAttribute('tabIndex', '-1');
+        first.focus();
+      }
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      const last = items[items.length - 1];
+      if (last) {
+        last.setAttribute('tabIndex', '0');
+        if (focused && focused !== last) focused.setAttribute('tabIndex', '-1');
+        last.focus();
+      }
+    } else if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      if (focused) {
+        const clickTarget = focused.querySelector<HTMLElement>('.item');
+        if (clickTarget) clickTarget.click();
+      }
+    }
+  };
 
   _renderOutline(allowCreate, collapsed) {
     if (collapsed) {
@@ -255,9 +352,9 @@ export class OutlineView extends Component<OutlineViewProps, OutlineViewState> {
 
     const showInput = allowCreate && this.state.showCreateInput;
     return (
-      <div role="tree" aria-label={this.props.title}>
+      <div role="tree" aria-label={this.props.title} onKeyDown={this._onTreeKeyDown}>
         {showInput ? this._renderCreateInput() : null}
-        {this._renderItems()}
+        {this._renderItems(this.props.title || undefined)}
       </div>
     );
   }
@@ -268,10 +365,10 @@ export class OutlineView extends Component<OutlineViewProps, OutlineViewState> {
     const allowCreate = this.props.onItemCreated != null && !collapsed;
 
     return (
-      <section className="outline-view nylas-outline-view" aria-label={this.props.title}>
+      <div className="outline-view nylas-outline-view">
         {this._renderHeading(allowCreate, collapsed, collapsible)}
         {this._renderOutline(allowCreate, collapsed)}
-      </section>
+      </div>
     );
   }
 }

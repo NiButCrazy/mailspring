@@ -10,6 +10,10 @@ import _ from 'underscore';
 import { jasmine } from './jasmine';
 
 export default class TimeReporter extends jasmine.Reporter {
+  suite: string;
+  description: string;
+  time: number;
+
   constructor() {
     super();
 
@@ -22,7 +26,7 @@ export default class TimeReporter extends jasmine.Reporter {
     window.logLongestSuites = number => this.logLongestSuites(number);
   }
 
-  logLongestSuites(number, log) {
+  logLongestSuites(number?, log?) {
     if (number == null) {
       number = 10;
     }
@@ -34,14 +38,14 @@ export default class TimeReporter extends jasmine.Reporter {
       log = line => console.log(line);
     }
     log('Longest running suites:');
-    const suites = _.map(window.timedSuites, (key, value) => [value, key]);
+    const suites = _.map(window.timedSuites, (key, value) => [value, key] as [string, number]);
     for (let suite of Array.from(_.sortBy(suites, suite => -suite[1]).slice(0, number))) {
       const time = Math.round(suite[1] / 100) / 10;
       log(`  ${suite[0]} (${time}s)`);
     }
   }
 
-  logLongestSpecs(number, log) {
+  logLongestSpecs(number?, log?) {
     if (number == null) {
       number = 10;
     }

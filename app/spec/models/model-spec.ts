@@ -112,7 +112,7 @@ describe('Model', function modelSpecs() {
     it('should assign attribute values by calling through to attribute fromJSON functions', () => {
       spyOn(Model.attributes.accountId, 'fromJSON').andCallFake(() => 'inflated value!');
       this.m.fromJSON(this.json);
-      expect(Model.attributes.accountId.fromJSON.callCount).toBe(1);
+      expect((Model.attributes.accountId.fromJSON as jasmine.Spy).callCount).toBe(1);
       expect(this.m.accountId).toBe('inflated value!');
     });
 

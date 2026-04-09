@@ -126,7 +126,7 @@ describe('ModelQuery', function ModelQuerySpecs() {
       q.where({ accountId: 'abcd' }).count();
 
       const raw = [{ count: '12' }];
-      expect(q.formatResult(q.inflateResult(raw))).toBe(12);
+      expect(q.formatResult(q.inflateResult(raw) as any)).toBe(12);
     }));
 
   describe('sql', () => {

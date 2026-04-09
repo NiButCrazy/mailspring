@@ -5,11 +5,18 @@ import ReactDOM from 'react-dom';
 import { PropTypes, DOMUtils } from 'mailspring-exports';
 
 export interface MenuItemProps {
+  id?: string;
   onMouseDown?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
   divider?: string | boolean;
   selected?: boolean;
   checked?: boolean;
   content?: any;
+  role?: string;
+  // When true, overrides aria-selected to false regardless of `selected`.
+  // Used in combobox popup mode where aria-activedescendant is the sole
+  // mechanism for announcing the active item, and aria-selected mutations
+  // would cause double-announcements.
+  suppressAriaSelected?: boolean;
 }
 
 export interface MenuNameEmailContentProps {
@@ -29,7 +36,9 @@ export interface MenuProps extends HTMLProps<any> {
   onSelect: (item: any) => any;
   onExpand?: (item: any) => any;
   onEscape?: (...args: any[]) => any;
+  onActiveDescendantChange?: (id: string | null) => void;
   defaultSelectedIndex?: number;
+  listboxId?: string;
 }
 
 interface MenuState {
@@ -72,7 +81,17 @@ class MenuItem extends React.Component<MenuItemProps> {
         checked: this.props.checked,
       });
       return (
-        <div className={className} onMouseDown={this.props.onMouseDown}>
+        <div
+          id={this.props.id}
+          role={this.props.role}
+          aria-selected={
+            this.props.role === 'option' && !this.props.suppressAriaSelected
+              ? this.props.selected
+              : undefined
+          }
+          className={className}
+          onMouseDown={this.props.onMouseDown}
+        >
           {this.props.content}
         </div>
       );
@@ -315,7 +334,7 @@ export class Menu extends React.Component<MenuProps, MenuState> {
     this._mounted = false;
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps: MenuProps, prevState: MenuState) {
     // Scroll selected item into view
     if ((this.props.items || []).length === 0) {
       return;
@@ -326,6 +345,22 @@ export class Menu extends React.Component<MenuProps, MenuState> {
     const adjustment = DOMUtils.scrollAdjustmentToMakeNodeVisibleInContainer(item, container);
     if (adjustment !== 0) {
       container.scrollTop += adjustment;
+    }
+
+    // Notify parent when the active completion changes so the combobox input
+    // can update aria-activedescendant and screen readers announce the new item.
+    if (
+      prevState.selectedItemKey !== this.state.selectedItemKey &&
+      this.props.onActiveDescendantChange
+    ) {
+      const activeId =
+        this.props.listboxId &&
+        this.state.selectedItemKey !== null &&
+        this.state.selectedIndex >= 0 &&
+        this.state.selectedIndex < this.props.items.length
+          ? `${this.props.listboxId}-option-${this.state.selectedItemKey}`
+          : null;
+      this.props.onActiveDescendantChange(activeId);
     }
   }
 
@@ -407,10 +442,13 @@ export class Menu extends React.Component<MenuProps, MenuState> {
       return (
         <MenuItem
           key={key}
+          id={this.props.listboxId ? `${this.props.listboxId}-option-${key}` : undefined}
+          role={this.props.listboxId ? 'option' : undefined}
           onMouseDown={onMouseDown}
           checked={this.props.itemChecked && this.props.itemChecked(item)}
           content={content}
           selected={this.state.selectedIndex === i}
+          suppressAriaSelected={!!this.props.onActiveDescendantChange}
         />
       );
     });
@@ -420,7 +458,15 @@ export class Menu extends React.Component<MenuProps, MenuState> {
       empty: items.length === 0,
     });
 
-    return <div className={contentClass}>{items}</div>;
+    return (
+      <div
+        id={this.props.listboxId}
+        role={this.props.listboxId ? 'listbox' : undefined}
+        className={contentClass}
+      >
+        {items}
+      </div>
+    );
   };
 
   _onShiftSelectedIndex = delta => {

@@ -9,7 +9,7 @@ describe('SystemTrayIconStore', function systemTrayIconStore() {
   });
 
   function getCallData() {
-    const { args } = (ipcRenderer.send as any).calls[0];
+    const { args } = (ipcRenderer.send as jasmine.Spy).calls[0];
     return { path: args[1], isTemplateImg: args[3] };
   }
 

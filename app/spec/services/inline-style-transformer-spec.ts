@@ -38,7 +38,7 @@ describe('InlineStyleTransformer', function specs() {
       mso-displayed-thousand-separator:",";}
       --></style>
       `);
-      expect(ipcRenderer.send.mostRecentCall.args[1].html).toEqual(`
+      expect((ipcRenderer.send as jasmine.Spy).mostRecentCall.args[1].html).toEqual(`
       <style>table
       {mso-displayed-decimal-separator:".";
       mso-displayed-thousand-separator:",";}
@@ -68,7 +68,7 @@ describe('InlineStyleTransformer', function specs() {
       -->
       </style>Other content goes here`);
       expect(ipcRenderer.send).toHaveBeenCalled();
-      expect(ipcRenderer.send.mostRecentCall.args[0]).toEqual('inline-style-parse');
+      expect((ipcRenderer.send as jasmine.Spy).mostRecentCall.args[0]).toEqual('inline-style-parse');
     });
   });
 });

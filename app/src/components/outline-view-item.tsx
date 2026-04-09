@@ -25,6 +25,7 @@ type OutlineViewItemProps = {
   item: IOutlineViewItem;
   level?: number;
   isFirst?: boolean;
+  sectionTitle?: string;
 };
 type OutlineViewItemState = {
   editing: boolean;
@@ -375,7 +376,7 @@ class OutlineViewItem extends Component<OutlineViewItemProps, OutlineViewItemSta
         aria-level={this.props.level || 1}
         aria-selected={item.selected || false}
         aria-expanded={hasChildren ? !item.collapsed : undefined}
-        aria-label={item.name}
+        aria-label={this.props.sectionTitle ? `${this.props.sectionTitle}, ${item.name}` : item.name}
         tabIndex={item.selected || this.props.isFirst ? 0 : -1}
       >
         <span className={containerClasses}>

@@ -26,7 +26,7 @@ describe('Table Components', function describeBlock() {
         <table>
           <thead>
             <tr>
-              <TableCell isHeader />
+              <TableCell isHeader>{null}</TableCell>
             </tr>
           </thead>
         </table>
@@ -40,7 +40,7 @@ describe('Table Components', function describeBlock() {
         <table>
           <tbody>
             <tr>
-              <TableCell isHeader={false} />
+              <TableCell isHeader={false}>{null}</TableCell>
             </tr>
           </tbody>
         </table>
@@ -54,7 +54,7 @@ describe('Table Components', function describeBlock() {
         <table>
           <tbody>
             <tr>
-              <TableCell className="my-cell" />
+              <TableCell className="my-cell">{null}</TableCell>
             </tr>
           </tbody>
         </table>
@@ -69,7 +69,7 @@ describe('Table Components', function describeBlock() {
         <table>
           <tbody>
             <tr>
-              <TableCell className="my-cell" onClick={handler} />
+              <TableCell className="my-cell" onClick={handler}>{null}</TableCell>
             </tr>
           </tbody>
         </table>

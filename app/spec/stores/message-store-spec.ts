@@ -77,35 +77,35 @@ describe('MessageStore', function() {
             return true;
           },
         });
-        expect(MessageStore._onApplyFocusChange.callCount).toBe(1);
+        expect((MessageStore._onApplyFocusChange as jasmine.Spy).callCount).toBe(1);
         advanceClock(50);
         FocusedContentStore.trigger({
           impactsCollection(c) {
             return true;
           },
         });
-        expect(MessageStore._onApplyFocusChange.callCount).toBe(1);
+        expect((MessageStore._onApplyFocusChange as jasmine.Spy).callCount).toBe(1);
         advanceClock(50);
         FocusedContentStore.trigger({
           impactsCollection(c) {
             return true;
           },
         });
-        expect(MessageStore._onApplyFocusChange.callCount).toBe(1);
+        expect((MessageStore._onApplyFocusChange as jasmine.Spy).callCount).toBe(1);
         advanceClock(150);
         FocusedContentStore.trigger({
           impactsCollection(c) {
             return true;
           },
         });
-        expect(MessageStore._onApplyFocusChange.callCount).toBe(3);
+        expect((MessageStore._onApplyFocusChange as jasmine.Spy).callCount).toBe(3);
         advanceClock(150);
         FocusedContentStore.trigger({
           impactsCollection(c) {
             return true;
           },
         });
-        expect(MessageStore._onApplyFocusChange.callCount).toBe(5);
+        expect((MessageStore._onApplyFocusChange as jasmine.Spy).callCount).toBe(5);
       });
     });
   });
@@ -116,18 +116,18 @@ describe('MessageStore', function() {
       MessageStore._items = [
         new Message({
           folder: new Folder({ role: 'trash' }),
-          labels: [new Label({ displayName: 'bla' })],
-        }),
+          labels: [new Label({ path: 'bla' })],
+        } as any),
         new Message({
           folder: new Folder({ role: 'all' }),
           labels: [new Label({ role: 'inbox' })],
-        }),
+        } as any),
         new Message({
           folder: new Folder({ role: 'spam' }),
-          labels: [new Label({ displayName: 'bla' })],
-        }),
-        new Message({ folder: new Folder({ role: 'all' }), labels: [] }),
-        new Message({ folder: new Folder({ role: 'all' }), labels: [], draft: true }),
+          labels: [new Label({ path: 'bla' })],
+        } as any),
+        new Message({ folder: new Folder({ role: 'all' }), labels: [] } as any),
+        new Message({ folder: new Folder({ role: 'all' }), labels: [], draft: true } as any),
       ];
     });
 
@@ -164,7 +164,7 @@ describe('MessageStore', function() {
 
   describe('when applying focus changes', function() {
     beforeEach(function() {
-      MessageStore._lastLoadedThreadId = null;
+      (MessageStore as any)._lastLoadedThreadId = null;
 
       this.focus = null;
       spyOn(FocusedContentStore, 'focused').andCallFake(collection => {
@@ -203,7 +203,7 @@ describe('MessageStore', function() {
       MessageStore._thread = null;
       MessageStore._onApplyFocusChange();
       expect(DatabaseStore.findAll).toHaveBeenCalled();
-      expect(DatabaseStore.findAll.mostRecentCall.args[0]).toBe(Message);
+      expect((DatabaseStore.findAll as jasmine.Spy).mostRecentCall.args[0]).toBe(Message);
     });
 
     describe('when the thread is already focused', () =>
@@ -234,7 +234,7 @@ describe('MessageStore', function() {
         expect(Actions.queueTask).not.toHaveBeenCalled();
         advanceClock(500);
         expect(Actions.queueTask).toHaveBeenCalled();
-        expect(Actions.queueTask.mostRecentCall.args[0] instanceof ChangeUnreadTask).toBe(true);
+        expect((Actions.queueTask as unknown as jasmine.Spy).mostRecentCall.args[0] instanceof ChangeUnreadTask).toBe(true);
       });
 
       it('should not queue a task to mark the thread as read if the thread is no longer selected 500msec later', function() {

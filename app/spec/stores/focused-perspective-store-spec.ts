@@ -177,7 +177,7 @@ describe('FocusedPerspectiveStore', function() {
 
       const otherAccountInbox = this.inboxCategory.clone();
       otherAccountInbox.id = 'other-id';
-      FocusedPerspectiveStore._current = MailboxPerspective.forCategory(otherAccountInbox);
+      (FocusedPerspectiveStore as any)._current = MailboxPerspective.forCategory(otherAccountInbox);
 
       FocusedPerspectiveStore._onCategoryStoreChanged();
       expect(FocusedPerspectiveStore.current()).toEqual(defaultPerspective);
@@ -194,7 +194,7 @@ describe('FocusedPerspectiveStore', function() {
   describe('_setPerspective', () =>
     it('should not trigger if the perspective is already focused', function() {
       FocusedPerspectiveStore._setPerspective(this.inboxPerspective);
-      FocusedPerspectiveStore.trigger.reset();
+      (FocusedPerspectiveStore.trigger as jasmine.Spy).reset();
       FocusedPerspectiveStore._setPerspective(this.inboxPerspective);
       expect(FocusedPerspectiveStore.trigger).not.toHaveBeenCalled();
     }));

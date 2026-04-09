@@ -128,10 +128,10 @@ xdescribe('DraftStore', function draftStore() {
             messageId: this.fakeMessage.id,
             type: 'reply',
             popout: true,
-          });
+          } as any);
         });
         waitsFor(() => {
-          return DatabaseWriter.prototype.persistModel.callCount > 0;
+          return (globalThis as any).DatabaseWriter.prototype.persistModel.callCount > 0;
         });
         runs(() => {
           expect(AppEnv.newWindow).toHaveBeenCalledWith({
@@ -153,7 +153,7 @@ xdescribe('DraftStore', function draftStore() {
           });
         });
         waitsFor(() => {
-          return DatabaseWriter.prototype.persistModel.callCount > 0;
+          return (globalThis as any).DatabaseWriter.prototype.persistModel.callCount > 0;
         });
         runs(() => {
           expect(AppEnv.newWindow).toHaveBeenCalledWith({
@@ -188,37 +188,37 @@ xdescribe('DraftStore', function draftStore() {
     });
 
     it('should teardown the draft session, ensuring no more saves are made', () => {
-      DraftStore._onDestroyDraft('abc');
+      DraftStore._onDestroyDraft('abc' as any);
       expect(this.draftSessionTeardown).toHaveBeenCalled();
     });
 
     it('should not throw if the draft session is not in the window', () => {
-      expect(() => DraftStore._onDestroyDraft('other')).not.toThrow();
+      expect(() => DraftStore._onDestroyDraft('other' as any)).not.toThrow();
     });
 
     it('should queue a destroy draft task', () => {
-      DraftStore._onDestroyDraft('abc');
+      DraftStore._onDestroyDraft('abc' as any);
       expect(Actions.queueTask).toHaveBeenCalled();
-      expect(Actions.queueTask.mostRecentCall.args[0] instanceof DestroyDraftTask).toBe(true);
+      expect((Actions.queueTask as unknown as jasmine.Spy).mostRecentCall.args[0] instanceof DestroyDraftTask).toBe(true);
     });
 
     it('should clean up the draft session', () => {
       spyOn(DraftStore, '_doneWithSession');
-      DraftStore._onDestroyDraft('abc');
+      DraftStore._onDestroyDraft('abc' as any);
       expect(DraftStore._doneWithSession).toHaveBeenCalledWith(this.session);
     });
 
     it("should close the window if it's a popout", () => {
       spyOn(AppEnv, 'close');
       spyOn(AppEnv, 'isComposerWindow').andReturn(true);
-      DraftStore._onDestroyDraft('abc');
+      DraftStore._onDestroyDraft('abc' as any);
       expect(AppEnv.close).toHaveBeenCalled();
     });
 
     it("should NOT close the window if isn't a popout", () => {
       spyOn(AppEnv, 'close');
       spyOn(AppEnv, 'isComposerWindow').andReturn(false);
-      DraftStore._onDestroyDraft('abc');
+      DraftStore._onDestroyDraft('abc' as any);
       expect(AppEnv.close).not.toHaveBeenCalled();
     });
   });
@@ -227,17 +227,17 @@ xdescribe('DraftStore', function draftStore() {
     it('should destroy pristine drafts', () => {
       DraftStore._draftSessions = {
         abc: {
-          changes: {},
+          changes: {} as any,
           draft() {
             return { pristine: true };
           },
-        },
+        } as any,
       };
 
       spyOn(Actions, 'queueTask');
-      DraftStore._onBeforeUnload(false);
+      DraftStore._onBeforeUnload(false as any);
       expect(Actions.queueTask).toHaveBeenCalled();
-      expect(Actions.queueTask.mostRecentCall.args[0] instanceof DestroyDraftTask).toBe(true);
+      expect((Actions.queueTask as unknown as jasmine.Spy).mostRecentCall.args[0] instanceof DestroyDraftTask).toBe(true);
     });
 
     describe('when drafts return unresolved commit promises', () => {
@@ -254,7 +254,7 @@ xdescribe('DraftStore', function draftStore() {
             draft() {
               return { pristine: false };
             },
-          },
+          } as any,
         };
       });
 
@@ -277,7 +277,7 @@ xdescribe('DraftStore', function draftStore() {
             draft() {
               return { pristine: false };
             },
-          },
+          } as any,
         };
       });
 
@@ -297,7 +297,7 @@ xdescribe('DraftStore', function draftStore() {
       });
 
       it('should return true and allow the window to close', () => {
-        expect(DraftStore._onBeforeUnload()).toBe(true);
+        expect(DraftStore._onBeforeUnload(undefined as any)).toBe(true);
       });
     });
   });
@@ -313,14 +313,14 @@ xdescribe('DraftStore', function draftStore() {
       DraftStore._draftSessions = {};
       DraftStore._draftsSending = {};
       this.forceCommit = false;
-      const session = {
+      const session: any = {
         prepare() {
           return Promise.resolve(session);
         },
         teardown() { },
         draft: () => this.draft,
         changes: {
-          commit: ({ force } = {}) => {
+          commit: ({ force } = {} as any) => {
             this.forceCommit = force;
             return Promise.resolve();
           },
@@ -367,7 +367,7 @@ xdescribe('DraftStore', function draftStore() {
         expect(DraftStore.trigger).not.toHaveBeenCalled();
       });
       waitsFor(() => {
-        return Actions.queueTask.calls.length > 0;
+        return (Actions.queueTask as unknown as jasmine.Spy).calls.length > 0;
       });
       runs(() => {
         // Normally, the session.changes.commit will persist to the
@@ -377,10 +377,10 @@ xdescribe('DraftStore', function draftStore() {
         DraftStore._onDataChanged({
           objectClass: 'Message',
           objects: [{ draft: true }],
-        });
+        } as any);
         expect(DraftStore.isSendingDraft(this.draft.headerMessageId)).toBe(true);
         expect(DraftStore.trigger).toHaveBeenCalled();
-        expect(DraftStore.trigger.calls.length).toBe(1);
+        expect((DraftStore.trigger as jasmine.Spy).calls.length).toBe(1);
       });
     });
 
@@ -396,7 +396,7 @@ xdescribe('DraftStore', function draftStore() {
       runs(() => {
         return DraftStore._onSendDraft(this.draft.headerMessageId);
       });
-      waitsFor('Mailspring to close', () => AppEnv.close.calls.length > 0);
+      waitsFor(() => (AppEnv.close as jasmine.Spy).calls.length > 0, 'Mailspring to close');
     });
 
     it("doesn't close the window if it's inline", () => {
@@ -407,7 +407,7 @@ xdescribe('DraftStore', function draftStore() {
       runs(() => {
         DraftStore._onSendDraft(this.draft.headerMessageId);
       });
-      waitsFor(() => AppEnv.isComposerWindow.calls.length > 0);
+      waitsFor(() => (AppEnv.isComposerWindow as jasmine.Spy).calls.length > 0);
       runs(() => {
         expect(AppEnv.close).not.toHaveBeenCalled();
       });
@@ -456,7 +456,7 @@ xdescribe('DraftStore', function draftStore() {
       });
       advanceClock(400);
       expect(Actions.composePopoutDraft).toHaveBeenCalled();
-      const call = Actions.composePopoutDraft.calls[0];
+      const call = (Actions.composePopoutDraft as unknown as jasmine.Spy).calls[0];
       expect(call.args[0]).toBe(this.draft.headerMessageId);
       expect(call.args[1]).toEqual({ errorMessage: 'boohoo' });
     });
@@ -472,7 +472,7 @@ xdescribe('DraftStore', function draftStore() {
       });
       advanceClock(400);
       expect(Actions.composePopoutDraft).toHaveBeenCalled();
-      const call = Actions.composePopoutDraft.calls[0];
+      const call = (Actions.composePopoutDraft as unknown as jasmine.Spy).calls[0];
       expect(call.args[0]).toBe(this.draft.headerMessageId);
       expect(call.args[1]).toEqual({ errorMessage: 'boohoo' });
     });
@@ -494,7 +494,7 @@ xdescribe('DraftStore', function draftStore() {
           reset() { },
         },
         teardown: this.draftTeardown,
-      };
+      } as any;
       DraftStore._draftSessions = { abc: this.session };
       DraftStore._doneWithSession(this.session);
     });
@@ -524,7 +524,7 @@ xdescribe('DraftStore', function draftStore() {
       it('should give extensions a chance to customize the draft via ext.prepareNewDraft', () => {
         waitsForPromise(() => {
           return DraftStore._onHandleMailtoLink({}, 'mailto:bengotow@gmail.com').then(() => {
-            const received = DatabaseWriter.prototype.persistModel.mostRecentCall.args[0];
+            const received = (globalThis as any).DatabaseWriter.prototype.persistModel.mostRecentCall.args[0];
             expect(received.body.indexOf('Edited by TestExtension!')).toBe(0);
           });
         });
@@ -537,7 +537,7 @@ xdescribe('DraftStore', function draftStore() {
       spyOn(DraftStore, '_onPopoutDraft');
       waitsForPromise(() => {
         return DraftStore._onHandleMailtoLink({}, 'mailto:bengotow@gmail.com').then(() => {
-          const received = DatabaseWriter.prototype.persistModel.mostRecentCall.args[0];
+          const received = (globalThis as any).DatabaseWriter.prototype.persistModel.mostRecentCall.args[0];
           expect(received).toEqual(draft);
           expect(DraftStore._onPopoutDraft).toHaveBeenCalled();
         });
@@ -547,14 +547,14 @@ xdescribe('DraftStore', function draftStore() {
 
   describe('mailfiles handling', () => {
     it('should popout a new draft', () => {
-      const defaultMe = new Contact();
+      const defaultMe = new Contact({} as any);
       spyOn(DraftStore, '_onPopoutDraft');
       spyOn(Account.prototype, 'defaultMe').andReturn(defaultMe);
       spyOn(Actions, 'addAttachment').andCallFake(({ onCreated }) => onCreated());
       DraftStore._onHandleMailFiles({}, ['/Users/ben/file1.png', '/Users/ben/file2.png']);
-      waitsFor(() => DatabaseWriter.prototype.persistModel.callCount > 0);
+      waitsFor(() => (globalThis as any).DatabaseWriter.prototype.persistModel.callCount > 0);
       runs(() => {
-        const { body, subject, from } = DatabaseWriter.prototype.persistModel.calls[0].args[0];
+        const { body, subject, from } = (globalThis as any).DatabaseWriter.prototype.persistModel.calls[0].args[0];
         expect({ body, subject, from }).toEqual({ body: '', subject: '', from: [defaultMe] });
         expect(DraftStore._onPopoutDraft).toHaveBeenCalled();
       });
@@ -563,10 +563,10 @@ xdescribe('DraftStore', function draftStore() {
     it('should call addAttachment for each provided file path', () => {
       spyOn(Actions, 'addAttachment');
       DraftStore._onHandleMailFiles({}, ['/Users/ben/file1.png', '/Users/ben/file2.png']);
-      waitsFor(() => Actions.addAttachment.callCount === 2);
+      waitsFor(() => (Actions.addAttachment as unknown as jasmine.Spy).callCount === 2);
       runs(() => {
-        expect(Actions.addAttachment.calls[0].args[0].filePath).toEqual('/Users/ben/file1.png');
-        expect(Actions.addAttachment.calls[1].args[0].filePath).toEqual('/Users/ben/file2.png');
+        expect((Actions.addAttachment as unknown as jasmine.Spy).calls[0].args[0].filePath).toEqual('/Users/ben/file1.png');
+        expect((Actions.addAttachment as unknown as jasmine.Spy).calls[1].args[0].filePath).toEqual('/Users/ben/file2.png');
       });
     });
   });

@@ -11,7 +11,6 @@ console.inspect = function consoleInspect(val) {
 
 const { app, session } = require('electron');
 const path = require('path');
-const mkdirp = require('mkdirp');
 
 // on windows
 // const reactDevToolsPath = 'C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/6.1.1_0'
@@ -43,7 +42,7 @@ const setupConfigDir = args => {
   }
 
   // crete the directory
-  mkdirp.sync(configDirPath);
+  fs.mkdirSync(configDirPath, { recursive: true });
 
   // tell Electron to use this folder for local storage, etc. as well
   app.setPath('userData', configDirPath);

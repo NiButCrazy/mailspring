@@ -217,7 +217,7 @@ xdescribe('DraftEditingSession Specs', function() {
 
       it('should ignore the update unless it applies to the current draft', function() {
         spyOn(this.session, 'trigger');
-        this.session._onDraftChanged({ objectClass: 'message', objects: [new Message()] });
+        this.session._onDraftChanged({ objectClass: 'message', objects: [new Message({} as any)] });
         expect(this.session.trigger).not.toHaveBeenCalled();
         this.session._onDraftChanged({ objectClass: 'message', objects: [this.draft] });
         expect(this.session.trigger).toHaveBeenCalled();
@@ -241,7 +241,7 @@ xdescribe('DraftEditingSession Specs', function() {
         waitsForPromise(() => {
           return this.session.changes.commit().then(() => {
             expect(DatabaseStore.inTransaction).toHaveBeenCalled();
-            expect(DatabaseStore.inTransaction.calls.length).toBe(1);
+            expect((DatabaseStore.inTransaction as jasmine.Spy).calls.length).toBe(1);
           });
         });
       });
@@ -251,7 +251,7 @@ xdescribe('DraftEditingSession Specs', function() {
         this.session.changes.add({ body: '123' });
         waitsForPromise(() => {
           return this.session.changes.commit().then(() => {
-            expect(updated.body).toBe('123');
+            expect((this as any).updated.body).toBe('123');
           });
         });
       });
@@ -262,7 +262,7 @@ xdescribe('DraftEditingSession Specs', function() {
           this.session.changes.add({ body: '123' });
           waitsForPromise(() => {
             return this.session.changes.commit().then(() => {
-              expect(updated.body).toBe('123');
+              expect((this as any).updated.body).toBe('123');
             });
           });
         }));

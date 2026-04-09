@@ -88,7 +88,7 @@ describe('ActionBridge', function() {
     describe('when called with TargetWindows.ALL', () =>
       it('should broadcast the action over IPC to all windows', function() {
         spyOn(ipc, 'send');
-        Actions.openPreferences.firing = false;
+        (Actions.openPreferences as any).firing = false;
         this.bridge.onRebroadcast(ActionBridge.TargetWindows.ALL, 'openPreferences', [
           { oldModel: '1', newModel: 2 },
         ]);
@@ -103,7 +103,7 @@ describe('ActionBridge', function() {
     describe('when called with TargetWindows.MAIN', () =>
       it('should broadcast the action over IPC to the main window only', function() {
         spyOn(ipc, 'send');
-        Actions.openPreferences.firing = false;
+        (Actions.openPreferences as any).firing = false;
         this.bridge.onRebroadcast(ActionBridge.TargetWindows.MAIN, 'openPreferences', [
           { oldModel: '1', newModel: 2 },
         ]);
@@ -117,7 +117,7 @@ describe('ActionBridge', function() {
 
     it('should not do anything if the current invocation of the Action was triggered by itself', function() {
       spyOn(ipc, 'send');
-      Actions.openPreferences.firing = true;
+      (Actions.openPreferences as any).firing = true;
       this.bridge.onRebroadcast(ActionBridge.TargetWindows.ALL, 'openPreferences', [
         { oldModel: '1', newModel: 2 },
       ]);

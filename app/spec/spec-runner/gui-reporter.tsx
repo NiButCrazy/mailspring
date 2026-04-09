@@ -10,12 +10,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 
-const formatStackTrace = function(spec, message, stackTrace, indent) {
+const formatStackTrace = function(spec, message, stackTrace, indent = '') {
   if (message == null) {
     message = '';
-  }
-  if (indent == null) {
-    indent = '';
   }
   if (!stackTrace) {
     return stackTrace;
@@ -58,10 +55,7 @@ const formatStackTrace = function(spec, message, stackTrace, indent) {
   return lines.join('\n');
 };
 
-function indentationString(suite, plus) {
-  if (plus == null) {
-    plus = 0;
-  }
+function indentationString(suite, plus = 0) {
   let rootSuite = suite;
   let indentLevel = 0 + plus;
   while (rootSuite.parentSuite) {
@@ -86,7 +80,13 @@ function suiteString(spec) {
   return descriptions.join('\n');
 }
 
-class N1GuiReporter extends React.Component {
+interface N1GuiReporterProps {
+  specs: any[];
+  plainTextOutput?: string;
+  startedAt?: number;
+}
+
+class N1GuiReporter extends React.Component<N1GuiReporterProps, {}> {
   render() {
     return (
       <div className="spec-reporter">
@@ -207,7 +207,12 @@ class N1GuiReporter extends React.Component {
   };
 }
 
-class SuiteResultView extends React.Component {
+interface SuiteResultViewProps {
+  suite: any;
+  allSpecs: any[];
+}
+
+class SuiteResultView extends React.Component<SuiteResultViewProps, {}> {
   static propTypes = {
     suite: PropTypes.object,
     allSpecs: PropTypes.array,
@@ -250,7 +255,11 @@ class SuiteResultView extends React.Component {
   }
 }
 
-class SpecResultView extends React.Component {
+interface SpecResultViewProps {
+  spec: any;
+}
+
+class SpecResultView extends React.Component<SpecResultViewProps, {}> {
   static propTypes = {
     spec: PropTypes.object,
   };

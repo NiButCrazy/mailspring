@@ -109,7 +109,7 @@ export default class SheetContainer extends React.Component<
         style={{ order: 0, zIndex: 3 }}
         onClick={this._onToolbarDoubleClick}
       >
-        {components[0]}
+        <div inert={this.state.stack.length > 1 ? '' : undefined}>{components[0]}</div>
         <CSSTransitionGroup
           transitionLeaveTimeout={125}
           transitionEnterTimeout={125}
@@ -158,7 +158,7 @@ export default class SheetContainer extends React.Component<
           style={{ order: 2, flex: 1, position: 'relative', zIndex: 1 }}
           aria-label={localized('Email workspace')}
         >
-          {sheetComponents[0]}
+          <div inert={totalSheets > 1 ? '' : undefined}>{sheetComponents[0]}</div>
           <CSSTransitionGroup
             transitionLeaveTimeout={125}
             transitionEnterTimeout={125}

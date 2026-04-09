@@ -164,6 +164,9 @@ class Token<T> extends React.Component<TokenProps<T>, TokenState> {
 
     return (
       <div
+        role="option"
+        aria-selected={this.props.selected}
+        aria-label={this.props.item ? this.props.item.toString() : undefined}
         className={`${classes} ${this.props.className}`}
         onDragStart={this._onDragStart}
         onDragEnd={this._onDragEnd}
@@ -262,6 +265,7 @@ type TokenizingTextFieldState<T> = {
   focus: boolean;
   completions: T[];
   selectedKeys: string[];
+  activeDescendantId: string | null;
 };
 
 /*
@@ -432,6 +436,7 @@ export class TokenizingTextField<T> extends React.Component<
       inputValue: props.defaultValue || '',
       completions: [],
       selectedKeys: [],
+      activeDescendantId: null,
     };
   }
 
@@ -445,7 +450,11 @@ export class TokenizingTextField<T> extends React.Component<
   }
 
   componentDidUpdate(prevProps: TokenizingTextFieldProps<T>) {
-    if (prevProps.tokens.length === 0 && this.props.tokens.length === 0 && this.state.inputValue.length === 0) {
+    if (
+      prevProps.tokens.length === 0 &&
+      this.props.tokens.length === 0 &&
+      this.state.inputValue.length === 0
+    ) {
       if (prevProps.defaultValue !== this.props.defaultValue) {
         const newDefaultValue = this.props.defaultValue || '';
         this.setState({ inputValue: newDefaultValue });
@@ -898,8 +907,22 @@ export class TokenizingTextField<T> extends React.Component<
 
   // Rendering
 
+  _completionsId() {
+    return `${this._inputId}-completions`;
+  }
+
+  _valueDescriptionId() {
+    return `${this._inputId}-value`;
+  }
+
+  _onActiveDescendantChange = (id: string | null) => {
+    this.setState({ activeDescendantId: id });
+  };
+
   _inputComponent() {
-    const props = {
+    const hasCompletions = this.state.completions.length > 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const props: any = {
       onCopy: this._onCopy,
       onCut: this._onCut,
       onPaste: this._onPaste,
@@ -911,6 +934,14 @@ export class TokenizingTextField<T> extends React.Component<
       tabIndex: this.props.tabIndex || 0,
       value: this.state.inputValue,
       className: '',
+      role: 'combobox',
+      'aria-expanded': hasCompletions,
+      'aria-haspopup': 'listbox',
+      'aria-autocomplete': 'list',
+      'aria-controls': this._completionsId(),
+      'aria-label': this.props.label || undefined,
+      'aria-describedby': this._valueDescriptionId(),
+      'aria-activedescendant': this.state.activeDescendantId || undefined,
     };
 
     // If we can't accept additional tokens, override the events that would
@@ -973,6 +1004,9 @@ export class TokenizingTextField<T> extends React.Component<
       'tokenizing-field-input': true,
       'at-max-tokens': this._atMaxTokens(),
     });
+    // Build a screen-reader-only description of current token values so that
+    // when the user focuses the input, the AT announces what is already in the field.
+    const tokenDescription = this.props.tokens.map(t => t.toString()).join(', ');
     return (
       <KeyCommandsRegion
         key="field-component"
@@ -989,10 +1023,18 @@ export class TokenizingTextField<T> extends React.Component<
             {`${this.props.label}:`}
           </label>
         )}
+        {/* Visually hidden span read by screen readers via aria-describedby on the input.
+            Describes the current token values so the field doesn't appear empty. */}
+        <span
+          id={this._valueDescriptionId()}
+          style={{ position: 'absolute', left: -9999, width: 1, height: 1, overflow: 'hidden' }}
+        >
+          {tokenDescription}
+        </span>
         <div className={fieldClasses}>
           {this.state.inputValue.length > 0 ||
-            this.props.placeholder === undefined ||
-            this.props.tokens.length > 0 ? (
+          this.props.placeholder === undefined ||
+          this.props.tokens.length > 0 ? (
             false
           ) : (
             <div className="placeholder">{this.props.placeholder}</div>
@@ -1025,6 +1067,8 @@ export class TokenizingTextField<T> extends React.Component<
         onFocus={this._onInputFocused}
         onBlur={this._onInputBlurred}
         onSelect={this._addToken}
+        onActiveDescendantChange={this._onActiveDescendantChange}
+        listboxId={this._completionsId()}
       />
     );
   }

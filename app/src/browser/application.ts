@@ -55,6 +55,7 @@ export default class Application extends EventEmitter {
   systemAccentWatcher: SystemAccentWatcher;
   systemTrayManager: SystemTrayManager;
   windowsTaskbarManager?: WindowsTaskbarManager;
+  theme_dark: boolean;
 
   _sourceWindows: { [taskId: string]: BrowserWindow } = {};
   _resettingAndRelaunching: boolean;
@@ -67,27 +68,27 @@ export default class Application extends EventEmitter {
 
 
 
-    // nativeTheme.on('updated', () => {
-    //   if (nativeTheme.shouldUseDarkColors) {
-    //     if (this.theme_dark) { return }
-    //     this.theme_dark = true;
-    //     console.log('切换到深色模式');
-    //     // TODO: 这里写你切换深色主题的逻辑
-    //     const main = this.windowManager.get(WindowManager.MAIN_WINDOW);
-    //     if (main) {
-    //       main.sendMessage('change-theme', "ui-dark");
-    //     }
-    //   } else {
-    //     if (!this.theme_dark) { return }
-    //     this.theme_dark = false;
-    //     console.log('切换到浅色模式');
-    //     // TODO: 这里写你切换浅色主题的逻辑
-    //     const main = this.windowManager.get(WindowManager.MAIN_WINDOW);
-    //     if (main) {
-    //       main.sendMessage('change-theme', "ui-light");
-    //     }
-    //   }
-    // });
+    nativeTheme.on('updated', () => {
+      if (nativeTheme.shouldUseDarkColors) {
+        if (this.theme_dark) { return }
+        this.theme_dark = true;
+        console.log('切换到深色模式');
+        // TODO: 这里写你切换深色主题的逻辑
+        const main = this.windowManager.get(WindowManager.MAIN_WINDOW);
+        if (main) {
+          main.sendMessage('change-theme', "ui-dark");
+        }
+      } else {
+        if (!this.theme_dark) { return }
+        this.theme_dark = false;
+        console.log('切换到浅色模式');
+        // TODO: 这里写你切换浅色主题的逻辑
+        const main = this.windowManager.get(WindowManager.MAIN_WINDOW);
+        if (main) {
+          main.sendMessage('change-theme', "ui-light");
+        }
+      }
+    });
 
 
     initializeLocalization({ configDirPath });
@@ -626,15 +627,15 @@ export default class Application extends EventEmitter {
     ]);
 
     app.whenReady().then(() => {
-      // if (nativeTheme.shouldUseDarkColors) {
-      //   const main = this.windowManager.get(WindowManager.MAIN_WINDOW);
-      //   main.sendMessage('change-theme', "ui-dark");
-      //   console.log('启动时自动深色模式');
-      // } else {
-      //   const main = this.windowManager.get(WindowManager.MAIN_WINDOW);
-      //   main.sendMessage('change-theme', "ui-light");
-      //   console.log('启动时自动浅色模式');
-      // }
+      if (nativeTheme.shouldUseDarkColors) {
+        const main = this.windowManager.get(WindowManager.MAIN_WINDOW);
+        main.sendMessage('change-theme', "ui-dark");
+        console.log('启动时自动深色模式');
+      } else {
+        const main = this.windowManager.get(WindowManager.MAIN_WINDOW);
+        main.sendMessage('change-theme', "ui-light");
+        console.log('启动时自动浅色模式');
+      }
       if (process.platform === 'darwin') {
         app.dock.setMenu(dockMenu);
       }

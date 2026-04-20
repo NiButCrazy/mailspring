@@ -38,7 +38,7 @@ export default class WindowEventHandler {
   constructor() {
     setTimeout(() => this.showDevModeMessages(), 1);
 
-    ipcRenderer.on('change-theme', (e, theme) => {
+    ipcRenderer.on('change-theme', (_, theme) => {
       AppEnv.themes.setActiveTheme(theme)
       console.log('主题自动切换至', theme);
     });

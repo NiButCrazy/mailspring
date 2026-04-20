@@ -84,13 +84,13 @@ export async function findMessage({ accountId, headerMessageId }) {
   // accounts if you sent it to yourself. To make this more performant, we do a find
   // and then a filter in code.
   return (await DatabaseStore.findAll<Message>(Message, { headerMessageId })).find(
-    m => m.accountId === accountId
+    (m) => m.accountId === accountId
   );
 }
 
 export async function transferReminderMetadataFromDraftToThread({ accountId, headerMessageId }) {
   let message = await findMessage({ accountId, headerMessageId });
-  const delay = [1500, 1500, 10000, 10000];
+  const delay = [1500, 1500, 10000, 10000, 15000, 22000];
 
   // The sent message should already be synced, but if the send taks was interrupted and completed
   // without finalizing / cleaning up, we may need to go through a sync cycle. Do this before giving up.

@@ -40,21 +40,11 @@ function _getTooltip(unreadString) {
   return unreadString ? `${unreadString} ${localized("Unread Messages")}` : '';
 }
 
-function _getIcon(iconPath, isTemplateImg = false) {
+function _getIcon(iconPath) {
   if (!iconPath) {
     return nativeImage.createEmpty();
   }
-  const icon = nativeImage.createFromPath(iconPath);
-  if (isTemplateImg) {
-    icon.isMacTemplateImage = true;
-  }
-  return icon;
-}
-function is_dark() {
-  if (nativeTheme.shouldUseDarkColors && process.platform === 'win32') {
-    return "-dark";
-  }
-  return "";
+  return nativeImage.createFromPath(iconPath);
 }
 
 class SystemTrayManager {
@@ -136,11 +126,10 @@ class SystemTrayManager {
     }
   };
 
-
-  updateTraySettings(iconPath, unreadString, isTemplateImg) {
+  updateTraySettings(iconPath, unreadString) {
     if (this._iconPath !== iconPath) {
       this._iconPath = iconPath;
-      if (this._tray) this._tray.setImage(_getIcon(this._iconPath, isTemplateImg));
+      if (this._tray) this._tray.setImage(_getIcon(this._iconPath));
     }
     if (this._unreadString !== unreadString) {
       this._unreadString = unreadString;

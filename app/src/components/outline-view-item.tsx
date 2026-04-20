@@ -30,6 +30,7 @@ type OutlineViewItemProps = {
 type OutlineViewItemState = {
   editing: boolean;
   isDropping: boolean;
+  creatingChild: boolean;
 };
 /*
  * Renders an item that may contain more arbitrarily nested items
@@ -156,6 +157,7 @@ class OutlineViewItem extends Component<OutlineViewItemProps, OutlineViewItemSta
     this.state = {
       isDropping: false,
       editing: props.item.editing || false,
+      creatingChild: false,
     };
   }
 
@@ -193,14 +195,19 @@ class OutlineViewItem extends Component<OutlineViewItemProps, OutlineViewItemSta
   };
 
   _shouldShowContextMenu = () => {
-    return this.props.item.onDelete != null || this.props.item.onEdited != null;
+    return (
+      this.props.item.onDelete != null ||
+      this.props.item.onEdited != null ||
+      this.props.item.onExport != null ||
+      this.props.item.onCreateChild != null
+    );
   };
 
-  _shouldAcceptDrop = (event) => {
+  _shouldAcceptDrop = event => {
     return this._runCallback('shouldAcceptDrop', event);
   };
 
-  _clearEditingState = (event) => {
+  _clearEditingState = event => {
     this.setState({ editing: false });
     this._runCallback('onInputCleared', event);
   };
@@ -219,7 +226,7 @@ class OutlineViewItem extends Component<OutlineViewItemProps, OutlineViewItemSta
     }
   };
 
-  _onDrop = (event) => {
+  _onDrop = event => {
     this._runCallback('onDrop', event);
   };
 
@@ -227,7 +234,7 @@ class OutlineViewItem extends Component<OutlineViewItemProps, OutlineViewItemSta
     this._runCallback('onCollapseToggled');
   };
 
-  _onClick = (event) => {
+  _onClick = event => {
     event.preventDefault();
     this._runCallback('onSelect');
   };
@@ -236,7 +243,7 @@ class OutlineViewItem extends Component<OutlineViewItemProps, OutlineViewItemSta
     this._runCallback('onDelete');
   };
 
-  _onEdited = (value) => {
+  _onEdited = value => {
     this._runCallback('onEdited', value);
   };
 
@@ -246,16 +253,34 @@ class OutlineViewItem extends Component<OutlineViewItemProps, OutlineViewItemSta
     }
   };
 
-  _onInputFocus = (event) => {
+  _onCreateChildTriggered = () => {
+    if (this.props.item.collapsed) {
+      this._onCollapseToggled();
+    }
+    this.setState({ creatingChild: true });
+  };
+
+  _onChildCreated = (_item, value) => {
+    this.setState({ creatingChild: false });
+    if (value) {
+      this._runCallback('onCreateChild', value);
+    }
+  };
+
+  _onCreateChildInputCleared = () => {
+    this.setState({ creatingChild: false });
+  };
+
+  _onInputFocus = event => {
     const input = event.target;
     input.selectionStart = input.selectionEnd = input.value.length;
   };
 
-  _onInputBlur = (event) => {
+  _onInputBlur = event => {
     this._clearEditingState(event);
   };
 
-  _onInputKeyDown = (event) => {
+  _onInputKeyDown = event => {
     if (event.key === 'Escape') {
       this._clearEditingState(event);
     }
@@ -265,8 +290,7 @@ class OutlineViewItem extends Component<OutlineViewItemProps, OutlineViewItemSta
     }
   };
 
-  _onShowContextMenu = (event) => {
-    event.stopPropagation();
+  _buildContextMenu = () => {
     const item = this.props.item;
     const contextMenuLabel = item.contextMenuLabel || item.name;
     const { Menu, MenuItem } = require('@electron/remote');
@@ -289,7 +313,37 @@ class OutlineViewItem extends Component<OutlineViewItemProps, OutlineViewItemSta
         })
       );
     }
-    menu.popup({});
+
+    if (this.props.item.onCreateChild) {
+      const isLabel = contextMenuLabel.toLowerCase() === 'label';
+      menu.append(
+        new MenuItem({
+          label: isLabel ? localized(`New Sublabel...`) : localized(`New Subfolder...`),
+          click: this._onCreateChildTriggered,
+        })
+      );
+    }
+
+    if (this.props.item.onExport) {
+      menu.append(
+        new MenuItem({
+          label: localized(`Export folder as .eml files...`),
+          click: () => this._runCallback('onExport'),
+        })
+      );
+    }
+
+    return menu;
+  };
+
+  _onShowContextMenu = event => {
+    event.stopPropagation();
+    this._buildContextMenu().popup({});
+  };
+
+  _onMenuButtonClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    this._buildContextMenu().popup({});
   };
 
   // Renderers
@@ -345,18 +399,49 @@ class OutlineViewItem extends Component<OutlineViewItemProps, OutlineViewItemSta
             {item.name}
           </div>
         )}
+        {this._shouldShowContextMenu() && !state.editing && this.props.item.onEdited && (
+          <div
+            className="item-action-button"
+            role="button"
+            tabIndex={-1}
+            aria-label={localized('Actions')}
+            onClick={this._onMenuButtonClick}
+          >
+            •••
+          </div>
+        )}
       </DropZone>
     );
   }
 
+  _renderCreateChildInput() {
+    const isLabel = (this.props.item.contextMenuLabel || '').toLowerCase() === 'label';
+    const item = {
+      id: `create-child-${this.props.item.id}`,
+      name: '',
+      children: [],
+      editing: true,
+      iconName: this.props.item.iconName || 'folder.png',
+      onEdited: this._onChildCreated,
+      inputPlaceholder: isLabel ? localized('Sublabel name') : localized('Subfolder name'),
+      onInputCleared: this._onCreateChildInputCleared,
+    };
+    return <OutlineViewItem item={item} level={(this.props.level || 1) + 1} />;
+  }
+
   _renderChildren(item = this.props.item) {
-    if (item.children.length > 0 && !item.collapsed) {
+    const showRegularChildren = item.children.length > 0 && !item.collapsed;
+    const showCreateChildInput = this.state.creatingChild;
+
+    if (showRegularChildren || showCreateChildInput) {
       const childLevel = (this.props.level || 1) + 1;
       return (
         <div role="group" className="item-children" key={`${item.id}-children`}>
-          {item.children.map((child) => (
-            <OutlineViewItem key={child.id} item={child} level={childLevel} />
-          ))}
+          {showCreateChildInput && this._renderCreateChildInput()}
+          {showRegularChildren &&
+            item.children.map(child => (
+              <OutlineViewItem key={child.id} item={child} level={childLevel} />
+            ))}
         </div>
       );
     }
@@ -366,6 +451,7 @@ class OutlineViewItem extends Component<OutlineViewItemProps, OutlineViewItemSta
   render() {
     const item = this.props.item;
     const hasChildren = item.children.length > 0;
+    const showAsExpanded = this.state.creatingChild;
     const containerClasses = classnames({
       'item-container': true,
       dropping: this.state.isDropping,
@@ -375,14 +461,18 @@ class OutlineViewItem extends Component<OutlineViewItemProps, OutlineViewItemSta
         role="treeitem"
         aria-level={this.props.level || 1}
         aria-selected={item.selected || false}
-        aria-expanded={hasChildren ? !item.collapsed : undefined}
-        aria-label={this.props.sectionTitle ? `${this.props.sectionTitle}, ${item.name}` : item.name}
+        aria-expanded={
+          hasChildren || showAsExpanded ? !(item.collapsed && !showAsExpanded) : undefined
+        }
+        aria-label={
+          this.props.sectionTitle ? `${this.props.sectionTitle}, ${item.name}` : item.name
+        }
         tabIndex={item.selected || this.props.isFirst ? 0 : -1}
       >
         <span className={containerClasses}>
           <DisclosureTriangle
-            collapsed={item.collapsed}
-            visible={hasChildren}
+            collapsed={item.collapsed && !showAsExpanded}
+            visible={hasChildren || showAsExpanded}
             onCollapseToggled={this._onCollapseToggled}
           />
           {this._renderItem()}

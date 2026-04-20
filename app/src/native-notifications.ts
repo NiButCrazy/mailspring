@@ -139,34 +139,35 @@ class NativeNotifications {
    * @private
    */
   private getIcon() {
-    if (platform === 'linux') {
-      const desktopBaseDirs = [
-        os.homedir() + '/.local/share/applications/',
-        '/usr/share/applications/',
-      ];
-      const desktopFileNames = ['mailspring.desktop', 'Mailspring.desktop'];
-      // check the applications directories, the user directory has a higher priority
-      for (const baseDir of desktopBaseDirs) {
-        // check multiple spellings
-        for (const fileName of desktopFileNames) {
-          const filePath = path.join(baseDir, fileName);
-          const desktopIcon = this.readIconFromDesktopFile(filePath);
-          if (desktopIcon != null) {
-            if (fs.existsSync(desktopIcon)) {
-              // icon is a file and can be returned
-              return desktopIcon;
+    if (platform !== 'linux') {
+      return undefined;
+    }
+    const desktopBaseDirs = [
+      os.homedir() + '/.local/share/applications/',
+      '/usr/share/applications/',
+    ];
+    const desktopFileNames = ['mailspring.desktop', 'Mailspring.desktop'];
+    // check the applications directories, the user directory has a higher priority
+    for (const baseDir of desktopBaseDirs) {
+      // check multiple spellings
+      for (const fileName of desktopFileNames) {
+        const filePath = path.join(baseDir, fileName);
+        const desktopIcon = this.readIconFromDesktopFile(filePath);
+        if (desktopIcon != null) {
+          if (fs.existsSync(desktopIcon)) {
+            // icon is a file and can be returned
+            return desktopIcon;
+          }
+          // icon is a name and we need to get it from the icon theme
+          const iconPath = getIcon(desktopIcon, 64, Context.APPLICATIONS, 2);
+          if (iconPath != null) {
+            // only .png icons work with notifications
+            if (path.extname(iconPath) === '.png') {
+              return iconPath;
             }
-            // icon is a name and we need to get it from the icon theme
-            const iconPath = getIcon(desktopIcon, 64, Context.APPLICATIONS, 2);
-            if (iconPath != null) {
-              // only .png icons work with notifications
-              if (path.extname(iconPath) === '.png') {
-                return iconPath;
-              }
-              const converted = convertToPNG(desktopIcon, iconPath);
-              if (converted != null) {
-                return converted;
-              }
+            const converted = convertToPNG(desktopIcon, iconPath);
+            if (converted != null) {
+              return converted;
             }
           }
         }

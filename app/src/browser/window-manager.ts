@@ -154,11 +154,15 @@ export default class WindowManager {
     return null;
   };
 
-  ensureWindow(windowKey, extraOpts = {}) {
+  ensureWindow(
+    windowKey: string,
+    windowExtraOpts = {},
+    behavior?: { preserveHiddenOrMinimized: boolean }
+  ) {
     const win = this._windows[windowKey];
 
     if (!win) {
-      this.newWindow(this._coreWindowOpts(windowKey, extraOpts));
+      this.newWindow(this._coreWindowOpts(windowKey, windowExtraOpts));
       // After creating the main window, clear the background flag so any
       // future recreations (crash recovery, database reset) show normally.
       if (windowKey === WindowManager.MAIN_WINDOW) {
@@ -168,6 +172,10 @@ export default class WindowManager {
     }
 
     if (win.loadSettings().hidden) {
+      return;
+    }
+
+    if (behavior?.preserveHiddenOrMinimized) {
       return;
     }
 

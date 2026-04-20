@@ -15,6 +15,7 @@ import ConfigMigrator from './config-migrator';
 import ApplicationMenu from './application-menu';
 import ApplicationTouchBar from './application-touch-bar';
 import AutoUpdateManager from './autoupdate-manager';
+import SystemAccentWatcher from './system-accent-watcher';
 import SystemTrayManager from './system-tray-manager';
 import { DefaultClientHelper } from '../default-client-helper';
 import MailspringProtocolHandler from './mailspring-protocol-handler';
@@ -51,12 +52,15 @@ export default class Application extends EventEmitter {
   mailspringProtocolHandler: MailspringProtocolHandler;
   windowManager: WindowManager;
   autoUpdateManager: AutoUpdateManager;
+  systemAccentWatcher: SystemAccentWatcher;
   systemTrayManager: SystemTrayManager;
   windowsTaskbarManager?: WindowsTaskbarManager;
 
   _sourceWindows: { [taskId: string]: BrowserWindow } = {};
   _resettingAndRelaunching: boolean;
-  theme_dark: boolean;
+  _initialized: boolean = false;
+  _pendingLaunchOptions: any[] = [];
+  _pendingUrls: string[] = [];
 
   async start(options) {
     const { resourcePath, configDirPath, version, devMode, specMode, safeMode } = options;
@@ -165,6 +169,13 @@ export default class Application extends EventEmitter {
       initializeInBackground: initializeInBackground,
     });
     this.systemTrayManager = new SystemTrayManager(process.platform, this);
+    this.systemAccentWatcher = new SystemAccentWatcher();
+    this.systemAccentWatcher.on('change', color => {
+      this.windowManager.sendToAllWindows('system-accent-color-changed', {}, color);
+    });
+    this.systemAccentWatcher.on('dark-mode-change', darkMode => {
+      this.windowManager.sendToAllWindows('system-dark-mode-changed', {}, darkMode);
+    });
     if (process.platform === 'darwin') {
       this.touchBar = new ApplicationTouchBar(resourcePath);
     }
@@ -173,7 +184,18 @@ export default class Application extends EventEmitter {
     }
 
     this.handleEvents();
+
+    // Mark initialization complete, then process the initial launch options
+    // followed by any second-instance options that arrived while we were
+    // still awaiting async initialization steps above.
+    this._initialized = true;
     this.handleLaunchOptions(options);
+    for (const pendingOpts of this._pendingLaunchOptions.splice(0)) {
+      this.handleLaunchOptions(pendingOpts);
+    }
+    for (const pendingUrl of this._pendingUrls.splice(0)) {
+      this.openUrl(pendingUrl);
+    }
 
     if (process.platform === 'linux') {
       const helper = new DefaultClientHelper();
@@ -198,6 +220,15 @@ export default class Application extends EventEmitter {
 
   // Opens a new window based on the options provided.
   handleLaunchOptions(options) {
+    // If start() hasn't finished initializing yet (e.g. a second-instance event
+    // arrives while the async mailsync migration or oneTimeMoveToApplications is
+    // still running), windowManager won't exist yet.  Queue the options and
+    // process them once initialization is complete.
+    if (!this._initialized) {
+      this._pendingLaunchOptions.push(options);
+      return;
+    }
+
     const { specMode, pathsToOpen, urlsToOpen } = options;
 
     if (specMode) {
@@ -222,12 +253,15 @@ export default class Application extends EventEmitter {
       return;
     }
 
-    this.openWindowsForTokenState();
+    const hasPaths = pathsToOpen instanceof Array && pathsToOpen.length > 0;
+    const hasUrls = urlsToOpen instanceof Array && urlsToOpen.length > 0;
 
-    if (pathsToOpen instanceof Array && pathsToOpen.length > 0) {
+    this.ensureWindowsForTokenState({ preserveHiddenOrMinimized: hasPaths || hasUrls });
+
+    if (hasPaths) {
       this.openComposerWithFiles(pathsToOpen);
     }
-    if (urlsToOpen instanceof Array) {
+    if (hasUrls) {
       for (const urlToOpen of urlsToOpen) {
         this.openUrl(urlToOpen);
       }
@@ -291,7 +325,7 @@ export default class Application extends EventEmitter {
     }
   }
 
-  openWindowsForTokenState() {
+  ensureWindowsForTokenState(behavior?: { preserveHiddenOrMinimized: boolean }) {
     // user may trigger this using the application menu / by focusing the app
     // before migration has completed and the config has been loaded.
     if (!this.config || !this.windowManager) return;
@@ -300,11 +334,10 @@ export default class Application extends EventEmitter {
     const hasAccount = accounts && accounts.length > 0;
 
     if (hasAccount) {
-      this.windowManager.ensureWindow(WindowManager.MAIN_WINDOW);
+      this.windowManager.ensureWindow(WindowManager.MAIN_WINDOW, {}, behavior);
     } else {
-      this.windowManager.ensureWindow(WindowManager.ONBOARDING_WINDOW, {
-        title: localized('Welcome to Mailspring'),
-      });
+      const title = localized('Welcome to Mailspring');
+      this.windowManager.ensureWindow(WindowManager.ONBOARDING_WINDOW, { title }, behavior);
     }
   }
 
@@ -467,7 +500,7 @@ export default class Application extends EventEmitter {
 
 
     this.on('application:show-main-window', () => {
-      this.openWindowsForTokenState();
+      this.ensureWindowsForTokenState();
     });
 
     this.on('application:check-for-update', () => {
@@ -573,8 +606,8 @@ export default class Application extends EventEmitter {
     });
 
     // System Tray
-    ipcMain.on('update-system-tray', (event, iconPath, unreadString, isTemplateImg) => {
-      this.systemTrayManager.updateTraySettings(iconPath, unreadString, isTemplateImg);
+    ipcMain.on('update-system-tray', (event, iconPath, unreadString) => {
+      this.systemTrayManager.updateTraySettings(iconPath, unreadString);
     });
 
     ipcMain.on('set-badge-value', (event, value) => {
@@ -621,8 +654,26 @@ export default class Application extends EventEmitter {
 
     let userResetTheme = false;
 
+    ipcMain.handle('get-system-accent-color', () => {
+      return this.systemAccentWatcher ? this.systemAccentWatcher.getCurrent() : null;
+    });
+
+    // Synchronous because ThemeManager needs the value during its constructor to
+    // pick the initial ui-light / ui-dark variant without a flash.
+    ipcMain.on('get-system-dark-mode-sync', event => {
+      event.returnValue = this.systemAccentWatcher ? this.systemAccentWatcher.getDarkMode() : false;
+    });
+
     ipcMain.on('encountered-theme-error', (event, { message, detail }) => {
       if (userResetTheme) return;
+
+      // showMessageBoxSync blocks the main process indefinitely in headless
+      // test environments (xvfb can't render or accept input), hanging the
+      // spec suite until the 20 minute CI timeout.
+      if (this.specMode) {
+        console.error(`${message}\n${detail}`);
+        return;
+      }
 
       const buttonIndex = dialog.showMessageBoxSync({
         type: 'warning',
@@ -659,7 +710,7 @@ export default class Application extends EventEmitter {
 
     app.on('activate', (event, hasVisibleWindows) => {
       if (!hasVisibleWindows) {
-        this.openWindowsForTokenState();
+        this.ensureWindowsForTokenState();
       }
       event.preventDefault();
     });
@@ -785,6 +836,23 @@ export default class Application extends EventEmitter {
       try {
         const errorParams = JSON.parse(params.errorJSON || '{}');
         const extra = JSON.parse(params.extra || '{}');
+
+        // LESS compilation errors from custom themes/plugins are already handled
+        // by the theme error dialog (encountered-theme-error IPC handler). These
+        // errors have no useful stack trace when reported to Sentry because
+        // LessError objects don't carry a JS stack, so the Sentry report only
+        // shows the IPC handler call site. Skip reporting them.
+        if (
+          errorParams &&
+          typeof errorParams === 'object' &&
+          typeof errorParams.line === 'number' &&
+          Array.isArray(errorParams.extract) &&
+          (errorParams.type === 'Parse' || errorParams.type === 'Syntax')
+        ) {
+          event.returnValue = true;
+          return;
+        }
+
         // Use new Error(message) to ensure the message is set as a proper Error property,
         // since Object.assign on an Error with no initial message may not propagate it
         // correctly to error reporting tools like Sentry/Raven.
@@ -899,6 +967,11 @@ export default class Application extends EventEmitter {
   // Open a mailto:// url.
   //
   openUrl(urlToOpen) {
+    if (!this._initialized) {
+      this._pendingUrls.push(urlToOpen);
+      return;
+    }
+
     const parts = url.parse(urlToOpen, true);
     const main = this.windowManager.get(WindowManager.MAIN_WINDOW);
 

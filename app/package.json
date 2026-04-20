@@ -1,7 +1,8 @@
 {
   "name": "mailspring",
   "productName": "Mailspring",
-  "version": "1.19.1",
+  "desktopName": "Mailspring.desktop",
+  "version": "1.20.0",
   "repository": {
     "type": "git",
     "url": "git://github.com/NiButCrazy/mailspring.git"
@@ -70,13 +71,12 @@
     "tld": "^0.0.2",
     "underscore": "^1.13.7",
     "underscore.string": "^3.3.5",
-    "utf7": "^1.0.1",
     "vcf": "^2.0.5",
     "windows-iana": "^4.2.1",
     "xml2js": "^0.6.2"
   },
   "resolutions": {
-    "electron": "41.0.2",
+    "electron": "41.2.1",
     "@types/react": "^16.9.0",
     "@types/react-dom": "^16.9.0"
   },

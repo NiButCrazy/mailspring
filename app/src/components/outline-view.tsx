@@ -27,6 +27,8 @@ export interface IOutlineViewItem {
   onSelect?: (...args: any[]) => any;
   onDelete?: (...args: any[]) => any;
   onEdited?: (...args: any[]) => any;
+  onExport?: (...args: any[]) => any;
+  onCreateChild?: (...args: any[]) => any;
 }
 
 interface OutlineViewProps {
@@ -242,7 +244,7 @@ export class OutlineView extends Component<OutlineViewProps, OutlineViewState> {
   }
 
   _renderItems(sectionTitle?: string) {
-    const noneSelected = !this.props.items.some(item => item.selected);
+    const noneSelected = !this.props.items.some((item) => item.selected);
     return this.props.items.map((item, idx) => (
       <OutlineViewItem
         key={item.id}
@@ -254,10 +256,13 @@ export class OutlineView extends Component<OutlineViewProps, OutlineViewState> {
   }
 
   _onTreeKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    // Don't intercept keyboard events when typing in an input (e.g. rename or new folder)
+    if ((event.target as HTMLElement).tagName === 'INPUT') return;
+
     const tree = event.currentTarget;
-    const items = Array.from(
-      tree.querySelectorAll<HTMLElement>('[role="treeitem"]')
-    ).filter(el => !el.closest('[aria-expanded="false"] [role="treeitem"]'));
+    const items = Array.from(tree.querySelectorAll<HTMLElement>('[role="treeitem"]')).filter(
+      (el) => !el.closest('[aria-expanded="false"] [role="treeitem"]')
+    );
 
     const focused = document.activeElement as HTMLElement;
     const currentIndex = items.indexOf(focused);

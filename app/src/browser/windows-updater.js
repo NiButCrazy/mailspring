@@ -231,12 +231,13 @@ exports.registerAppUserModelId = registerAppUserModelId;
 // Windows can display a branded tile. Errors are ignored — these are optional.
 function copyVisualElements() {
   try {
-    const files = ['mailspring-75px.png', 'mailspring-150px.png', 'mailspring.VisualElementsManifest.xml'];
+    const files = [
+      'mailspring-75px.png',
+      'mailspring-150px.png',
+      'mailspring.VisualElementsManifest.xml',
+    ];
     for (const file of files) {
-      fs.copyFileSync(
-        path.join(appFolder, 'resources', file),
-        path.join(rootAppDataFolder, file)
-      );
+      fs.copyFileSync(path.join(appFolder, 'resources', file), path.join(rootAppDataFolder, file));
     }
   } catch (err) {
     // Ignore errors - visual elements are optional
@@ -300,6 +301,7 @@ exports.handleSquirrelInstall = app => {
     iconIndex: 0,
     description: 'The best email app for people and teams at work',
     appUserModelId: 'com.squirrel.mailspring.mailspring',
+    toastActivatorClsid: '{E6AD16B0-2830-48E7-9DB7-439152FA917B}',
   };
 
   try {

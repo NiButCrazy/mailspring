@@ -33,6 +33,7 @@ const isTextInput = (node: EventTarget) => {
 export default class WindowEventHandler {
   unloadCallbacks = [];
   unloadCompleteCallbacks = [];
+  _openExternalErrorShown = false;
 
   constructor() {
     setTimeout(() => this.showDevModeMessages(), 1);
@@ -373,7 +374,20 @@ export default class WindowEventHandler {
         .getGlobal('application')
         .openUrl(sanitized);
     } else if (['http:', 'https:', 'tel:'].includes(protocol)) {
-      shell.openExternal(resolved, { activate: !metaKey });
+      shell.openExternal(resolved, { activate: !metaKey }).catch(err => {
+        if (!this._openExternalErrorShown) {
+          this._openExternalErrorShown = true;
+          AppEnv.showErrorDialog({
+            title: localized('Failed to Open Link'),
+            message: localized(
+              'Mailspring was unable to open the link in your browser.\n\n%@',
+              err.message
+            ),
+          });
+        } else {
+          console.error(`Failed to open link: ${err.message}`);
+        }
+      });
     }
     return;
   }

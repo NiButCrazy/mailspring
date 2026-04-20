@@ -297,7 +297,7 @@ export default class MessageItem extends React.Component<MessageItemProps, Messa
     return (
       <div className="header-row">
         <div className="header-label">{localized('Folder')}:&nbsp;</div>
-        <div className="header-name">{folder.displayName}</div>
+        <div className="header-name">{localized(folder.displayName)}</div>
       </div>
     );
   }

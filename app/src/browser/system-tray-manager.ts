@@ -47,6 +47,13 @@ function _getIcon(iconPath) {
   return nativeImage.createFromPath(iconPath);
 }
 
+function is_dark() {
+  if (nativeTheme.shouldUseDarkColors && process.platform === 'win32') {
+    return "-dark";
+  }
+  return "";
+}
+
 class SystemTrayManager {
   _loadingIcon = path.join(__dirname, "..", '..', `/internal_packages/system-tray/assets/win32/ic-refresh@2x${is_dark()}.png`)
   _iconPath = this._loadingIcon;

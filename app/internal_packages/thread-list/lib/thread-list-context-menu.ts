@@ -18,9 +18,9 @@ import {
 
 type TemplateItem =
   | {
-      label: string;
-      click: () => void;
-    }
+    label: string;
+    click: () => void;
+  }
   | { type: 'separator' };
 
 export default class ThreadListContextMenu {
@@ -163,7 +163,7 @@ export default class ThreadListContextMenu {
       return null;
     }
     return {
-      label: localized('Forward as Attachment'),
+      label: localized('作为附件转发'),
       click: async () => {
         const thread = this.threads[0];
         const messages = await DatabaseStore.findAll<Message>(Message, { threadId: thread.id })
@@ -198,7 +198,7 @@ export default class ThreadListContextMenu {
 
         const account = AccountStore.accountForId(message.accountId);
         const draft = await DraftFactory.createDraft({
-          subject: `Fwd: ${message.subject || ''}`,
+          subject: `转发: ${message.subject || ''}`,
           from: [account.defaultMe()],
           accountId: message.accountId,
         });
@@ -281,13 +281,13 @@ export default class ThreadListContextMenu {
         Actions.queueTasks(
           allInSpam
             ? TaskFactory.tasksForMarkingNotSpam({
-                source: 'Context Menu: Thread List',
-                threads: this.threads,
-              })
+              source: 'Context Menu: Thread List',
+              threads: this.threads,
+            })
             : TaskFactory.tasksForMarkingAsSpam({
-                source: 'Context Menu: Thread List',
-                threads: this.threads,
-              })
+              source: 'Context Menu: Thread List',
+              threads: this.threads,
+            })
         );
       },
     };

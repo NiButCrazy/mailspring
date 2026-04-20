@@ -47,7 +47,7 @@ class ThreadListEmptyFolderBar extends React.Component<ThreadListEmptyFolderBarP
         <div className="notice">
           {count > 1
             ? localized(`Showing %@ threads with %@ messages`, (count / 1).toLocaleString(), term)
-            : localized(`Showing 1 thread with %@ messages`, term)}
+            : localized(`Showing 1 thread with %@ messages`, localized(term))}
         </div>
         {busy ? (
           <div className="btn">

@@ -1,5 +1,11 @@
 # Mailspring Changelog
 
+## 1.20.1 (4/20/2026)
+
+Fixes:
+
+- Resolves an issue with the inline composer's key handling that could cause Gmail-style shortcuts to activate while you were typing into the subject line or recipients.
+
 ## 1.20.0 (4/18/2026)
 
 Features:

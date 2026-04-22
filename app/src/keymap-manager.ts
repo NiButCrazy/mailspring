@@ -34,24 +34,6 @@ mousetrap.prototype.stopCallback = (e, element, combo) => {
   if (e.isPropagationStopped()) {
     return true;
   }
-  // Stop mousetrap from firing global commands when focus is within a tree widget
-  // (e.g. the mailbox outline view), so the tree's own arrow-key navigation works.
-  const withinTree =
-    !!element.closest('[role="tree"]') ||
-    !!element.closest('[data-usesarrowkeys]:has(:focus-visible)');
-  if (withinTree) {
-    const isPlainKey = !/(mod|command|ctrl)/.test(combo);
-    const isArrowKey = /(left|right|up|down)/.test(combo);
-    // Only block plain arrow keys within tree / arrow-key widgets so the
-    // widget's own navigation works. All other keys (Escape, letter keys
-    // for Gmail-style shortcuts, etc.) must pass through – returning false
-    // explicitly so the withinTextInput check below is skipped. Without
-    // the explicit return, non-arrow keys fall through to withinTextInput
-    // and get blocked when focus is on a contentEditable element inside
-    // the widget (e.g. the reply composer within the message list).
-    return isPlainKey && isArrowKey;
-  }
-
   const withinTextInput =
     element.tagName === 'INPUT' ||
     element.tagName === 'SELECT' ||
@@ -63,6 +45,19 @@ mousetrap.prototype.stopCallback = (e, element, combo) => {
     if (isPlainKey || isReservedTextEditingShortcut) {
       return true;
     }
+  }
+
+  // Stop mousetrap from firing global commands when focus is within a tree widget
+  // (e.g. the mailbox outline view), so the tree's own arrow-key navigation works.
+  // withinTextInput runs first so that typing in an inline composer inside the tree
+  // is handled correctly before we apply tree-specific logic.
+  const withinTree =
+    !!element.closest('[role="tree"]') ||
+    !!element.closest('[data-usesarrowkeys]:has(:focus-visible)');
+  if (withinTree) {
+    const isPlainKey = !/(mod|command|ctrl)/.test(combo);
+    const isArrowKey = /(left|right|up|down)/.test(combo);
+    return isPlainKey && isArrowKey;
   }
   return false;
 };

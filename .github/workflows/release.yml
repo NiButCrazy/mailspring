@@ -21,14 +21,10 @@ jobs:
         with:
           fetch-depth: 0
       
-      - uses: pnpm/action-setup@v3
+      - uses: pnpm/action-setup@v6
         with:
-          version: 8
-      
-      - name: 设置 Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
+          version: 10
+          cache: true
 
       - name: 下载依赖库
         run: pnpm install

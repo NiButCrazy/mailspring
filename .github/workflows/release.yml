@@ -20,12 +20,21 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 8
+      
+      - name: 设置 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
 
       - name: 下载依赖库
-        run: npm install
+        run: pnpm install
 
       - name: 下载 nbc-auto-changelog
-        run: npm install -g nbc-auto-changelog
+        run: pnpm install -g nbc-auto-changelog
 
       - name: 获取 CHANGELOG.md
         id: changelog
@@ -33,19 +42,23 @@ jobs:
         run: |
           nbc-auto-changelog --stdout --ending-version "${{ github.ref_name }}" --starting-version "${{ github.ref_name }}" | Out-File -FilePath changelog_new.md -Encoding utf8
 
+      - name: 构建应用
+        run: pnpm build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: 使用 7-Zip 压缩文件夹
+        run: 7z a Mailspring-win32-x64.zip ./app/dist/Mailspring-win32-x64/
+
       - name: 创建发布流
         id: create_release
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          files: Mailspring-win32-x64.zip
           tag_name: ${{ github.ref_name }}
-          name: 太极AI ${{ github.ref_name }}
+          name: MailSpring ${{ github.ref_name }}
           body_path: changelog_new.md
-
-      - name: 构建并上传应用
-        run: npm run build
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 

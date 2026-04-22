@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+      
+  workflow_dispatch:
+
+permissions:
+  contents: write  # 必须有写权限才能创建 release
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 下载依赖库
+        run: npm install
+
+      - name: 下载 nbc-auto-changelog
+        run: npm install -g nbc-auto-changelog
+
+      - name: 获取 CHANGELOG.md
+        id: changelog
+        shell: pwsh
+        run: |
+          nbc-auto-changelog --stdout --ending-version "${{ github.ref_name }}" --starting-version "${{ github.ref_name }}" | Out-File -FilePath changelog_new.md -Encoding utf8
+
+      - name: 创建发布流
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: 太极AI ${{ github.ref_name }}
+          body_path: changelog_new.md
+
+      - name: 构建并上传应用
+        run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+

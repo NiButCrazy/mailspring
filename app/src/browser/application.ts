@@ -66,30 +66,27 @@ export default class Application extends EventEmitter {
   async start(options) {
     const { resourcePath, configDirPath, version, devMode, specMode, safeMode } = options;
 
-
-
     nativeTheme.on('updated', () => {
       if (nativeTheme.shouldUseDarkColors) {
-        if (this.theme_dark) { return }
+        if (this.theme_dark) return;
         this.theme_dark = true;
         console.log('切换到深色模式');
         // TODO: 这里写你切换深色主题的逻辑
         const main = this.windowManager.get(WindowManager.MAIN_WINDOW);
         if (main) {
-          main.sendMessage('change-theme', "ui-dark");
+          main.sendMessage('change-theme', 'ui-dark');
         }
       } else {
-        if (!this.theme_dark) { return }
+        if (!this.theme_dark) return;
         this.theme_dark = false;
         console.log('切换到浅色模式');
         // TODO: 这里写你切换浅色主题的逻辑
         const main = this.windowManager.get(WindowManager.MAIN_WINDOW);
         if (main) {
-          main.sendMessage('change-theme', "ui-light");
+          main.sendMessage('change-theme', 'ui-light');
         }
       }
     });
-
 
     initializeLocalization({ configDirPath });
 
@@ -174,9 +171,7 @@ export default class Application extends EventEmitter {
     this.systemAccentWatcher.on('change', color => {
       this.windowManager.sendToAllWindows('system-accent-color-changed', {}, color);
     });
-    this.systemAccentWatcher.on('dark-mode-change', darkMode => {
-      this.windowManager.sendToAllWindows('system-dark-mode-changed', {}, darkMode);
-    });
+
     if (process.platform === 'darwin') {
       this.touchBar = new ApplicationTouchBar(resourcePath);
     }
@@ -627,12 +622,11 @@ export default class Application extends EventEmitter {
     ]);
 
     app.whenReady().then(() => {
+      const main = this.windowManager.get(WindowManager.MAIN_WINDOW);
       if (nativeTheme.shouldUseDarkColors) {
-        const main = this.windowManager.get(WindowManager.MAIN_WINDOW);
         main.sendMessage('change-theme', "ui-dark");
         console.log('启动时自动深色模式');
       } else {
-        const main = this.windowManager.get(WindowManager.MAIN_WINDOW);
         main.sendMessage('change-theme', "ui-light");
         console.log('启动时自动浅色模式');
       }

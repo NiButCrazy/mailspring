@@ -13,7 +13,6 @@ import WindowManager from './window-manager';
 import FileListCache from './file-list-cache';
 import ConfigMigrator from './config-migrator';
 import ApplicationMenu from './application-menu';
-import ApplicationTouchBar from './application-touch-bar';
 import AutoUpdateManager from './autoupdate-manager';
 import SystemAccentWatcher from './system-accent-watcher';
 import SystemTrayManager from './system-tray-manager';
@@ -46,7 +45,6 @@ export default class Application extends EventEmitter {
 
   configMigrator: ConfigMigrator;
   configPersistenceManager: ConfigPersistenceManager;
-  touchBar: ApplicationTouchBar;
   fileListCache: FileListCache;
   applicationMenu: ApplicationMenu;
   mailspringProtocolHandler: MailspringProtocolHandler;
@@ -59,7 +57,7 @@ export default class Application extends EventEmitter {
 
   _sourceWindows: { [taskId: string]: BrowserWindow } = {};
   _resettingAndRelaunching: boolean;
-  _initialized: boolean = false;
+  _initialized = false;
   _pendingLaunchOptions: any[] = [];
   _pendingUrls: string[] = [];
 
@@ -168,7 +166,7 @@ export default class Application extends EventEmitter {
     });
     this.systemTrayManager = new SystemTrayManager(process.platform, this);
     this.systemAccentWatcher = new SystemAccentWatcher();
-    this.systemAccentWatcher.on('change', color => {
+    this.systemAccentWatcher.on('change', (color: string) => {
       this.windowManager.sendToAllWindows('system-accent-color-changed', {}, color);
     });
 
@@ -297,8 +295,8 @@ export default class Application extends EventEmitter {
   // we close windows and log out, we need to wait for these processes to completely
   // exit and then delete the file. It's hard to tell when this happens, so we just
   // retry the deletion a few times.
-  deleteFileWithRetry(filePath, callback = () => { }, retries = 5) {
-    const callbackWithRetry = err => {
+  deleteFileWithRetry(filePath, callback = () => {}, retries = 5) {
+    const callbackWithRetry = (err: NodeJS.ErrnoException | null) => {
       if (err && err.message.indexOf('no such file') === -1) {
         console.log(`File Error: ${err.message} - retrying in 150msec`);
         setTimeout(() => {
@@ -360,7 +358,7 @@ export default class Application extends EventEmitter {
     this._deleteDatabase(done);
   };
 
-  _deleteDatabase = callback => {
+  _deleteDatabase = (callback) => {
     this.deleteFileWithRetry(path.join(this.configDirPath, 'edgehill.db'), callback);
     this.deleteFileWithRetry(path.join(this.configDirPath, 'edgehill.db-wal'));
     this.deleteFileWithRetry(path.join(this.configDirPath, 'edgehill.db-shm'));
@@ -512,7 +510,7 @@ export default class Application extends EventEmitter {
     this.on('application:toggle-dev', () => {
       let args = process.argv.slice(1);
       if (args.includes('--dev')) {
-        args = args.filter(a => a !== '--dev');
+        args = args.filter((a) => a !== '--dev');
       } else {
         args.push('--dev');
       }
@@ -655,7 +653,7 @@ export default class Application extends EventEmitter {
 
     // Synchronous because ThemeManager needs the value during its constructor to
     // pick the initial ui-light / ui-dark variant without a flash.
-    ipcMain.on('get-system-dark-mode-sync', event => {
+    ipcMain.on('get-system-dark-mode-sync', (event: Electron.IpcMainEvent) => {
       event.returnValue = this.systemAccentWatcher ? this.systemAccentWatcher.getDarkMode() : false;
     });
 
@@ -713,9 +711,6 @@ export default class Application extends EventEmitter {
     ipcMain.on('update-application-menu', (event, template, keystrokesByCommand) => {
       const win = BrowserWindow.fromWebContents(event.sender);
       this.applicationMenu.update(win, template, keystrokesByCommand);
-      if (win === this.getMainWindow() && process.platform === 'darwin') {
-        this.touchBar.update(template);
-      }
     });
 
     ipcMain.on('command', (event, command, ...args) => {
@@ -727,24 +722,56 @@ export default class Application extends EventEmitter {
       win.emit(command, ...args);
     });
 
+    const ALLOWED_WINDOW_METHODS = new Set([
+      'setPosition',
+      'center',
+      'focus',
+      'show',
+      'hide',
+      'maximize',
+      'minimize',
+      'setFullScreen',
+    ]);
+    const ALLOWED_WEBCONTENTS_METHODS = new Set(['reload', 'openDevTools', 'toggleDevTools']);
+    const ALLOWED_DEVTOOLS_WEBCONTENTS_METHODS = new Set(['executeJavaScript']);
+
     ipcMain.on('call-window-method', (event, method, ...args) => {
+      if (!ALLOWED_WINDOW_METHODS.has(method)) {
+        console.error(`Method ${method} is not permitted on BrowserWindow!`);
+        return;
+      }
       const win = BrowserWindow.fromWebContents(event.sender);
       if (!win[method]) {
         console.error(`Method ${method} does not exist on BrowserWindow!`);
+        return;
       }
       win[method](...args);
     });
 
     ipcMain.on('call-devtools-webcontents-method', (event, method, ...args) => {
-      // If devtools aren't open the `webContents::devToolsWebContents` will be null
-      if (event.sender.devToolsWebContents) {
-        event.sender.devToolsWebContents[method](...args);
+      if (!ALLOWED_DEVTOOLS_WEBCONTENTS_METHODS.has(method)) {
+        console.error(`Method ${method} is not permitted on devToolsWebContents!`);
+        return;
       }
+      // If devtools aren't open the `webContents::devToolsWebContents` will be null
+      if (!event.sender.devToolsWebContents) {
+        return;
+      }
+      if (!event.sender.devToolsWebContents[method]) {
+        console.error(`Method ${method} does not exist on devToolsWebContents!`);
+        return;
+      }
+      event.sender.devToolsWebContents[method](...args);
     });
 
     ipcMain.on('call-webcontents-method', (event, method, ...args) => {
+      if (!ALLOWED_WEBCONTENTS_METHODS.has(method)) {
+        console.error(`Method ${method} is not permitted on WebContents!`);
+        return;
+      }
       if (!event.sender[method]) {
         console.error(`Method ${method} does not exist on WebContents!`);
+        return;
       }
       event.sender[method](...args);
     });
@@ -938,7 +965,7 @@ export default class Application extends EventEmitter {
 
   // Translates the command into OS X action and sends it to application's first
   // responder.
-  sendCommandToFirstResponder = command => {
+  sendCommandToFirstResponder = (command) => {
     if (process.platform !== 'darwin') {
       return false;
     }

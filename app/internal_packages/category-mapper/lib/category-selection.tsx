@@ -5,7 +5,7 @@ import {
   LabelColorizer,
   BoldedSearchResult,
 } from 'mailspring-component-kit';
-import { localized, Label, Utils, PropTypes, imapUtf7 } from 'mailspring-exports';
+import { localized, Label, Utils, imapUtf7 } from 'mailspring-exports';
 
 interface CategorySelectionProps {
   allowLabels: boolean;
@@ -29,13 +29,6 @@ export default class CategorySelection extends React.Component<
   CategorySelectionProps,
   CategorySelectionState
 > {
-  static propTypes = {
-    allowLabels: PropTypes.bool,
-    all: PropTypes.array,
-    current: PropTypes.object,
-    onSelect: PropTypes.func,
-  };
-
   _categories = [];
 
   state = {
@@ -55,14 +48,14 @@ export default class CategorySelection extends React.Component<
         }
         return 0;
       })
-      .filter(c => Utils.wordSearchRegExp(this.state.searchValue).test(imapUtf7.decode(c.path)))
-      .map(c => {
+      .filter((c) => Utils.wordSearchRegExp(this.state.searchValue).test(imapUtf7.decode(c.path)))
+      .map((c) => {
         c.backgroundColor = LabelColorizer.backgroundColorDark(c);
         return c;
       });
   }
 
-  _onSearchValueChange = event => {
+  _onSearchValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ searchValue: event.target.value });
   };
 
@@ -117,7 +110,7 @@ export default class CategorySelection extends React.Component<
           headerComponents={headerComponents}
           footerComponents={[]}
           items={this._itemsForCategories()}
-          itemKey={item => item.id}
+          itemKey={(item) => item.id}
           itemContent={this._renderItem}
           defaultSelectedIndex={this.state.searchValue === '' ? -1 : 0}
           {...this.props}

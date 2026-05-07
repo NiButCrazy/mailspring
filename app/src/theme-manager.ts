@@ -3,7 +3,7 @@ import { Emitter, Disposable } from 'event-kit';
 import path from 'path';
 import fs from 'fs';
 import { localized } from './intl';
-import LessCompileCache from './less-compile-cache';
+import LessCompileCache from './compile-cache-less';
 import PackageManager from './package-manager';
 
 const CONFIG_THEME_KEY = 'core.theme';
@@ -126,11 +126,11 @@ export default class ThemeManager {
 
   reloadCoreStyles() {
     console.log('Reloading /static and /internal_packages to incorporate LESS changes');
-    const reloadStylesIn = folder => {
+    const reloadStylesIn = (folder: string) => {
       (fs.readdirSync(folder, { recursive: true }) as string[])
-        .map(f => path.join(folder, f))
-        .filter(stylePath => stylePath.endsWith('.less'))
-        .forEach(stylePath => {
+        .map((f) => path.join(folder, f))
+        .filter((stylePath) => stylePath.endsWith('.less'))
+        .forEach((stylePath) => {
           const styleEl = document.head.querySelector(`[source-path="${stylePath}"]`);
           if (styleEl) styleEl.textContent = this.cssContentsOfStylesheet(stylePath);
         });
@@ -175,7 +175,7 @@ export default class ThemeManager {
   }
 
   getAvailableThemes() {
-    return this.packageManager.getAvailablePackages().filter(p => p.isTheme());
+    return this.packageManager.getAvailablePackages().filter((p) => p.isTheme());
   }
 
   // Set the active theme.

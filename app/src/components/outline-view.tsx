@@ -3,7 +3,6 @@ import React, { Component, CSSProperties } from 'react';
 import { DropZone } from './drop-zone';
 import { RetinaImg } from './retina-img';
 import OutlineViewItem from './outline-view-item';
-import PropTypes from 'prop-types';
 
 export interface IOutlineViewItem {
   id?: string;
@@ -85,16 +84,6 @@ export class OutlineView extends Component<OutlineViewProps, OutlineViewState> {
    * @callback props.onCollapseToggled
    * @param {object} props - The entire props object for this OutlineView
    */
-  static propTypes = {
-    title: PropTypes.string,
-    titleColor: PropTypes.string,
-    iconName: PropTypes.string,
-    items: PropTypes.array,
-    collapsed: PropTypes.bool,
-    onItemCreated: PropTypes.func,
-    onCollapseToggled: PropTypes.func,
-  };
-
   static defaultProps = {
     title: '',
     items: [],
@@ -107,7 +96,7 @@ export class OutlineView extends Component<OutlineViewProps, OutlineViewState> {
   _clickingCreateButton: boolean;
   _expandTimeout?: ReturnType<typeof setTimeout>;
 
-  shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate(nextProps: OutlineViewProps, nextState: OutlineViewState) {
     return !Utils.isEqualReact(nextProps, this.props) || !Utils.isEqualReact(nextState, this.state);
   }
 
@@ -141,7 +130,7 @@ export class OutlineView extends Component<OutlineViewProps, OutlineViewState> {
     }
   };
 
-  _onItemCreated = (item, value) => {
+  _onItemCreated = (item: IOutlineViewItem, value: string) => {
     this.setState({ showCreateInput: false });
     this.props.onItemCreated(value);
   };
@@ -154,7 +143,7 @@ export class OutlineView extends Component<OutlineViewProps, OutlineViewState> {
 
   // Renderers
 
-  _renderCreateInput(props = this.props) {
+  _renderCreateInput(props: OutlineViewProps = this.props) {
     const item = {
       id: `add-item-${props.title}`,
       name: '',
@@ -194,7 +183,11 @@ export class OutlineView extends Component<OutlineViewProps, OutlineViewState> {
     );
   }
 
-  _renderHeading(allowCreate, collapsed, collapsible) {
+  _renderHeading(
+    allowCreate: boolean,
+    collapsed: boolean,
+    collapsible: ((props: OutlineViewProps) => void) | undefined
+  ) {
     const collapseLabel = collapsed ? localized('Show') : localized('Hide');
     let style: CSSProperties = {};
     if (this.props.titleColor) {
@@ -350,7 +343,7 @@ export class OutlineView extends Component<OutlineViewProps, OutlineViewState> {
     }
   };
 
-  _renderOutline(allowCreate, collapsed) {
+  _renderOutline(allowCreate: boolean, collapsed: boolean) {
     if (collapsed) {
       return <span />;
     }

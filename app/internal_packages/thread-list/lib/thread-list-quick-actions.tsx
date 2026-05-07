@@ -2,7 +2,6 @@ import React from 'react';
 import {
   localized,
   Actions,
-  PropTypes,
   Thread,
   TaskFactory,
   FocusedPerspectiveStore,
@@ -10,7 +9,6 @@ import {
 
 export class ThreadArchiveQuickAction extends React.Component<{ thread: Thread }> {
   static displayName = 'ThreadArchiveQuickAction';
-  static propTypes = { thread: PropTypes.object };
 
   render() {
     const allowed = FocusedPerspectiveStore.current().canArchiveThreads([this.props.thread]);
@@ -28,7 +26,7 @@ export class ThreadArchiveQuickAction extends React.Component<{ thread: Thread }
         style={{ order: 100 }}
         className="btn action action-archive"
         onClick={this._onArchive}
-        onKeyDown={e => {
+        onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             this._onArchive(e as any);
@@ -38,11 +36,11 @@ export class ThreadArchiveQuickAction extends React.Component<{ thread: Thread }
     );
   }
 
-  shouldComponentUpdate(newProps, newState) {
+  shouldComponentUpdate(newProps: { thread: Thread }, newState) {
     return newProps.thread.id !== (this.props != null ? this.props.thread.id : undefined);
   }
 
-  _onArchive = event => {
+  _onArchive = (event: React.MouseEvent) => {
     const tasks = TaskFactory.tasksForArchiving({
       source: 'Quick Actions: Thread List',
       threads: [this.props.thread],
@@ -56,7 +54,6 @@ export class ThreadArchiveQuickAction extends React.Component<{ thread: Thread }
 
 export class ThreadTrashQuickAction extends React.Component<{ thread: Thread }> {
   static displayName = 'ThreadTrashQuickAction';
-  static propTypes = { thread: PropTypes.object };
 
   render() {
     const allowed = FocusedPerspectiveStore.current().canMoveThreadsTo(
@@ -77,7 +74,7 @@ export class ThreadTrashQuickAction extends React.Component<{ thread: Thread }> 
         style={{ order: 110 }}
         className="btn action action-trash"
         onClick={this._onRemove}
-        onKeyDown={e => {
+        onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             this._onRemove(e as any);
@@ -87,11 +84,11 @@ export class ThreadTrashQuickAction extends React.Component<{ thread: Thread }> 
     );
   }
 
-  shouldComponentUpdate(newProps, newState) {
+  shouldComponentUpdate(newProps: { thread: Thread }, newState) {
     return newProps.thread.id !== (this.props != null ? this.props.thread.id : undefined);
   }
 
-  _onRemove = event => {
+  _onRemove = (event: React.MouseEvent) => {
     const tasks = TaskFactory.tasksForMovingToTrash({
       source: 'Quick Actions: Thread List',
       threads: [this.props.thread],

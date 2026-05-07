@@ -18,7 +18,6 @@ class MovePicker extends React.Component<{ items: Thread[] }> {
   static displayName = 'MovePicker';
   static containerRequired = false;
 
-  static propTypes = { items: PropTypes.array };
   static contextTypes = { sheetDepth: PropTypes.number };
 
   _account: Account;
@@ -89,7 +88,7 @@ class MovePicker extends React.Component<{ items: Thread[] }> {
         <KeyCommandsRegion globalHandlers={handlers}>
           <button
             tabIndex={-1}
-            ref={el => (this._moveEl = el)}
+            ref={(el) => (this._moveEl = el)}
             title={localized('Move to Folder')}
             aria-label={localized('Move to Folder')}
             onClick={this._onOpenMovePopover}
@@ -104,7 +103,7 @@ class MovePicker extends React.Component<{ items: Thread[] }> {
           {this._account.usesLabels() && (
             <button
               tabIndex={-1}
-              ref={el => (this._labelEl = el)}
+              ref={(el) => (this._labelEl = el)}
               title={localized('Apply Label')}
               aria-label={localized('Apply Label')}
               onClick={this._onOpenLabelsPopover}

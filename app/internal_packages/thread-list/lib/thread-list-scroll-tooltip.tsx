@@ -1,5 +1,5 @@
 import React from 'react';
-import { localized, PropTypes, DateUtils, Thread } from 'mailspring-exports';
+import { localized, DateUtils, Thread } from 'mailspring-exports';
 import { ScrollRegionTooltipComponentProps } from 'mailspring-component-kit';
 import ThreadListStore from './thread-list-store';
 
@@ -8,10 +8,6 @@ class ThreadListScrollTooltip extends React.Component<
   { item?: Thread; idx: number }
 > {
   static displayName = 'ThreadListScrollTooltip';
-  static propTypes = {
-    viewportCenter: PropTypes.number.isRequired,
-    totalHeight: PropTypes.number.isRequired,
-  };
 
   state = { idx: 0, item: undefined as Thread | undefined };
 
@@ -28,11 +24,14 @@ class ThreadListScrollTooltip extends React.Component<
     }
   }
 
-  shouldComponentUpdate(newProps, newState) {
+  shouldComponentUpdate(
+    newProps: ScrollRegionTooltipComponentProps,
+    newState: { item?: Thread; idx: number }
+  ) {
     return (this.state != null ? this.state.idx : undefined) !== newState.idx;
   }
 
-  setupForProps(props) {
+  setupForProps(props: ScrollRegionTooltipComponentProps) {
     const idx = Math.floor(
       (ThreadListStore.dataSource().count() / this.props.totalHeight) * this.props.viewportCenter
     );

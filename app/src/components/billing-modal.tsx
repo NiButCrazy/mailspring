@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { webFrame } from 'electron';
 import Webview from './webview';
 import * as Actions from '../flux/actions';
@@ -28,7 +27,7 @@ export default class BillingModal extends React.Component<BillingModalProps, Bil
 
   componentWillMount() {
     if (!this.state.src) {
-      IdentityStore.fetchSingleSignOnURL('/payment?embedded=true').then(url => {
+      IdentityStore.fetchSingleSignOnURL('/payment?embedded=true').then((url) => {
         if (!this._mounted) return;
         this.setState({ src: url });
       });
@@ -88,7 +87,7 @@ export default class BillingModal extends React.Component<BillingModalProps, Bil
         if (el) {el.addEventListener('click', function(event) {console.log("continue clicked")})}
       `;
     webview.executeJavaScript(listenForContinue);
-    webview.addEventListener('console-message', e => {
+    webview.addEventListener('console-message', (e) => {
       if (e.message === 'continue clicked') {
         // See comment on componentWillUnmount
         Actions.closeModal();

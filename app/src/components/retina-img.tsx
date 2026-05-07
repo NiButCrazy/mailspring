@@ -1,6 +1,6 @@
 import _ from 'underscore';
 import React from 'react';
-import { Utils, PropTypes } from 'mailspring-exports';
+import { Utils } from 'mailspring-exports';
 
 const StylesImpactedByZoom = [
   'top',
@@ -94,22 +94,22 @@ export class RetinaImg extends React.Component<RetinaImgProps & React.HTMLProps<
   static displayName = 'RetinaImg';
   static Mode = Mode;
 
-  static propTypes = {
-    mode: PropTypes.string.isRequired,
-    name: PropTypes.string,
-    url: PropTypes.string,
-    className: PropTypes.string,
-    style: PropTypes.object,
-    fallback: PropTypes.string,
-    selected: PropTypes.bool,
-    active: PropTypes.bool,
-  };
+  static ownPropKeys = [
+    'mode',
+    'name',
+    'url',
+    'className',
+    'style',
+    'fallback',
+    'selected',
+    'active',
+  ];
 
-  shouldComponentUpdate = nextProps => {
+  shouldComponentUpdate = (nextProps) => {
     return !_.isEqual(this.props, nextProps);
   };
 
-  _pathFor = name => {
+  _pathFor = (name) => {
     if (!name || typeof name !== 'string') return null;
     let pathName = name;
 
@@ -170,9 +170,7 @@ export class RetinaImg extends React.Component<RetinaImgProps & React.HTMLProps<
       }
     }
 
-    const otherProps = Utils.fastOmit(this.props, Object.keys(RetinaImg.propTypes));
-    return (
-      <img alt={''} className={className} src={path} style={style} {...otherProps} />
-    );
+    const otherProps = Utils.fastOmit(this.props, RetinaImg.ownPropKeys);
+    return <img alt={''} className={className} src={path} style={style} {...otherProps} />;
   }
 }

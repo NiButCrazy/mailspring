@@ -93,10 +93,10 @@ const CrossplatformStrategies = {
 
 const CrossplatformStrategiesBetterThanQuicklook = ['snarkdown', 'prism'];
 
-function strategyForPreviewing(ext) {
+function strategyForPreviewing(ext: string) {
   if (ext.startsWith('.')) ext = ext.substr(1);
 
-  const strategy = Object.keys(CrossplatformStrategies).find(strategy =>
+  const strategy = Object.keys(CrossplatformStrategies).find((strategy) =>
     CrossplatformStrategies[strategy].includes(ext)
   );
 
@@ -170,27 +170,27 @@ const PreviewWindowMenuTemplate: Electron.MenuItemConstructorOptions[] = [
       {
         label: 'Reload',
         accelerator: 'CmdOrCtrl+R',
-        click: function(item, focusedWindow) {
+        click: function (item, focusedWindow) {
           if (focusedWindow) (focusedWindow as Electron.BrowserWindow).reload();
         },
       },
       {
         label: 'Toggle Full Screen',
-        accelerator: (function() {
+        accelerator: (function () {
           if (process.platform === 'darwin') return 'Ctrl+Command+F';
           else return 'F11';
         })(),
-        click: function(item, focusedWindow) {
+        click: function (item, focusedWindow) {
           if (focusedWindow) focusedWindow.setFullScreen(!focusedWindow.isFullScreen());
         },
       },
       {
         label: 'Toggle Developer Tools',
-        accelerator: (function() {
+        accelerator: (function () {
           if (process.platform === 'darwin') return 'Alt+Command+I';
           else return 'Ctrl+Shift+I';
         })(),
-        click: function(item, focusedWindow) {
+        click: function (item, focusedWindow) {
           if (focusedWindow) (focusedWindow as Electron.BrowserWindow).webContents.toggleDevTools();
         },
       },
@@ -198,14 +198,14 @@ const PreviewWindowMenuTemplate: Electron.MenuItemConstructorOptions[] = [
   },
 ];
 
-export function canPossiblyPreviewExtension(file) {
+export function canPossiblyPreviewExtension(file: File) {
   if (file.size > FileSizeLimit) {
     return false;
   }
   return !!strategyForPreviewing(file.displayExtension());
 }
 
-export function displayQuickPreviewWindow(filePath) {
+export function displayQuickPreviewWindow(filePath: string) {
   const isPDF = filePath.endsWith('.pdf');
   const strategy = strategyForPreviewing(path.extname(filePath));
 
@@ -294,8 +294,18 @@ export async function generatePreview({
 
 // Private
 
-async function _generateCrossplatformPreview({ file, filePath, previewPath, strategy }) {
-  return new Promise(resolve => {
+async function _generateCrossplatformPreview({
+  file,
+  filePath,
+  previewPath,
+  strategy,
+}: {
+  file: File;
+  filePath: string;
+  previewPath: string;
+  strategy: string;
+}) {
+  return new Promise((resolve) => {
     captureQueue.push({ file, filePath, previewPath, strategy, resolve });
 
     if (!captureWindow || captureWindow.isDestroyed()) {
@@ -407,7 +417,7 @@ async function _generateNextCrossplatformPreview() {
     onFinalize(true);
   };
 
-  onFinalize = success => {
+  onFinalize = (success) => {
     captureWindowInUse = false;
     clearTimeout(timer);
     if (captureWindow) {
@@ -428,7 +438,7 @@ async function _generateQuicklookPreview({ filePath }: { filePath: string }) {
   const dirQuoted = path.dirname(filePath).replace(/"/g, '\\"');
   const pathQuoted = filePath.replace(/"/g, '\\"');
 
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const cmd = '/usr/bin/qlmanage';
     const args = [
       '-t',

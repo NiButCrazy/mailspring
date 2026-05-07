@@ -78,5 +78,6 @@ client_secret.json
 .idea
 desktop.ini
 .claude/worktrees/
-
-package-lock.json
+/test-results
+/playwright-report
+/playwright/test-results/

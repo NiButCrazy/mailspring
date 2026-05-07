@@ -76,12 +76,15 @@ class DraftStore extends MailspringStore {
       AppEnv.mailsyncBridge.sendSyncMailNow()
     });
 
-    setInterval(() => {
-      // Slate is unable to properly clear it's caches, so we help it out
-      // by flushing them periodically. We care about this a lot because
-      // the app is on the same "web page" forever.
-      require('slate').resetMemoization();
-    }, 5 * 60 * 1000); // 5 min
+    setInterval(
+      () => {
+        // Slate is unable to properly clear it's caches, so we help it out
+        // by flushing them periodically. We care about this a lot because
+        // the app is on the same "web page" forever.
+        require('slate').resetMemoization();
+      },
+      5 * 60 * 1000
+    ); // 5 min
   }
 
   /**
@@ -91,7 +94,7 @@ class DraftStore extends MailspringStore {
   @param {String} headerMessageId - The headerMessageId of the draft.
   @returns {Promise} - Resolves to an {DraftEditingSession} for the draft once it has been prepared
   */
-  async sessionForClientId(headerMessageId) {
+  async sessionForClientId(headerMessageId: string) {
     if (!headerMessageId) {
       throw new Error('DraftStore::sessionForClientId requires a headerMessageId');
     }
@@ -114,7 +117,7 @@ class DraftStore extends MailspringStore {
   }
 
   _cleanupAllSessions() {
-    Object.values(this._draftSessions).forEach(session => {
+    Object.values(this._draftSessions).forEach((session) => {
       this._doneWithSession(session);
     });
   }
@@ -126,7 +129,7 @@ class DraftStore extends MailspringStore {
     // fulfilled (nothing to save), but in this case we only want to
     // block window closing if we have to do real work. Calling
     // window.close() within on onbeforeunload could do weird things.
-    Object.values(this._draftSessions).forEach(session => {
+    Object.values(this._draftSessions).forEach((session) => {
       const draft = session.draft();
       if (!draft || !draft.id) {
         return;
@@ -176,7 +179,7 @@ class DraftStore extends MailspringStore {
     if (change.objectClass !== Message.name) {
       return;
     }
-    const drafts = change.objects.filter(msg => msg.draft);
+    const drafts = change.objects.filter((msg) => msg.draft);
     if (drafts.length === 0) {
       return;
     }
@@ -245,7 +248,7 @@ class DraftStore extends MailspringStore {
       threadId: threadId,
       message: message,
       messageId: messageId,
-      popout: popout
+      popout: popout,
     });
   };
 
@@ -254,33 +257,38 @@ class DraftStore extends MailspringStore {
     threadId,
     message,
     messageId,
-    to
-  }) => {
-    const { headerMessageId, draft } = await this._composeForward({
-      thread: thread,
-      threadId: threadId,
-      message: message,
-      messageId: messageId,
-    }, to);
+    to,
+  }: IThreadMessageModelOrId & { to?: Contact[] }) => {
+    const { headerMessageId, draft } = await this._composeForward(
+      {
+        thread: thread,
+        threadId: threadId,
+        message: message,
+        messageId: messageId,
+      },
+      to
+    );
     Actions.sendDraft(headerMessageId);
-  }
+  };
 
-  _composeForward = async ({
-    thread,
-    threadId,
-    message,
-    messageId,
-    popout,
-  }: IThreadMessageModelOrId & { popout?: boolean }, to?: Contact[]) => {
+  _composeForward = async (
+    {
+      thread,
+      threadId,
+      message,
+      messageId,
+      popout,
+    }: IThreadMessageModelOrId & { popout?: boolean },
+    to?: Contact[]
+  ) => {
     const resolved = await this._modelifyContext({ thread, threadId, message, messageId });
     if (!resolved.message || !resolved.thread) return;
     const draft = await DraftFactory.createDraftForForward(resolved);
     if (to) {
-      draft.to = to
+      draft.to = to;
     }
     return this._finalizeAndPersistNewMessage(draft, { popout });
   };
-
 
   _modelifyContext({
     thread,
@@ -322,15 +330,15 @@ class DraftStore extends MailspringStore {
         .order(Message.attributes.date.descending())
         .include(Message.attributes.body)
         .limit(10)
-        .then(messages => messages.find(m => !m.isHidden()));
+        .then((messages) => messages.find((m) => !m.isHidden()));
     }
 
     return Promise.props(queries);
   }
 
-  async _finalizeAndPersistNewMessage(draft, { popout }: { popout?: boolean } = {}) {
+  async _finalizeAndPersistNewMessage(draft: Message, { popout }: { popout?: boolean } = {}) {
     // Give extensions an opportunity to perform additional setup to the draft
-    ExtensionRegistry.Composer.extensions().forEach(extension => {
+    ExtensionRegistry.Composer.extensions().forEach((extension) => {
       if (!extension.prepareNewDraft) {
         return;
       }
@@ -356,7 +364,7 @@ class DraftStore extends MailspringStore {
     return this._draftSessions[headerMessageId];
   }
 
-  _onPopoutNewDraftToRecipient = async contact => {
+  _onPopoutNewDraftToRecipient = async (contact: Contact) => {
     const draft = await DraftFactory.createDraft({ to: [contact] });
     await this._finalizeAndPersistNewMessage(draft, { popout: true });
   };
@@ -367,7 +375,7 @@ class DraftStore extends MailspringStore {
     await this._onPopoutDraft(headerMessageId, { newDraft: true });
   };
 
-  _onPopoutDraft = async (headerMessageId, options: { newDraft?: boolean } = {}) => {
+  _onPopoutDraft = async (headerMessageId: string, options: { newDraft?: boolean } = {}) => {
     if (headerMessageId == null) {
       throw new Error('DraftStore::onPopoutDraftId - You must provide a headerMessageId');
     }
@@ -390,7 +398,7 @@ class DraftStore extends MailspringStore {
     });
   };
 
-  _onHandleMailtoLink = async (event, urlString) => {
+  _onHandleMailtoLink = async (event: Electron.IpcRendererEvent, urlString: string) => {
     // returned promise is just used for specs
     const draft = await DraftFactory.createDraftForMailto(urlString);
     try {
@@ -400,7 +408,7 @@ class DraftStore extends MailspringStore {
     }
   };
 
-  _onHandleMailFiles = async (event, paths) => {
+  _onHandleMailFiles = async (event: Electron.IpcRendererEvent, paths: string[]) => {
     // returned promise is just used for specs
     const draft = await DraftFactory.createDraft();
     const { headerMessageId } = await this._finalizeAndPersistNewMessage(draft);
@@ -413,7 +421,7 @@ class DraftStore extends MailspringStore {
       }
     };
 
-    paths.forEach(path => {
+    paths.forEach((path) => {
       Actions.addAttachment({
         filePath: path,
         headerMessageId: headerMessageId,
@@ -422,7 +430,15 @@ class DraftStore extends MailspringStore {
     });
   };
 
-  _onDestroyDraft = ({ accountId, headerMessageId, id }) => {
+  _onDestroyDraft = ({
+    accountId,
+    headerMessageId,
+    id,
+  }: {
+    accountId: string;
+    headerMessageId: string;
+    id?: string;
+  }) => {
     const session = this._draftSessions[headerMessageId];
 
     // Immediately reset any pending changes so no saves occur
@@ -431,7 +447,7 @@ class DraftStore extends MailspringStore {
     }
 
     // Stop any pending tasks related to the draft
-    TaskQueue.queue().forEach(task => {
+    TaskQueue.queue().forEach((task) => {
       if (task instanceof SyncbackDraftTask && task.headerMessageId === headerMessageId) {
         Actions.cancelTask(task);
       }
@@ -451,11 +467,9 @@ class DraftStore extends MailspringStore {
     }
   };
 
-  _onSendDraft = async (headerMessageId, options: { delay?: number; actionKey?: string } = {}) => {
-    const {
-      delay = AppEnv.config.get('core.sending.undoSend'),
-      actionKey = DefaultSendActionKey,
-    } = options;
+  _onSendDraft = async (headerMessageId: string, options: { delay?: number; actionKey?: string } = {}) => {
+    const { delay = AppEnv.config.get('core.sending.undoSend'), actionKey = DefaultSendActionKey } =
+      options;
 
     this._draftsSending[headerMessageId] = true;
 
@@ -484,7 +498,7 @@ class DraftStore extends MailspringStore {
     }
 
     // remove inline attachments that are no longer in the body
-    const files = draft.files.filter(f => {
+    const files = draft.files.filter((f) => {
       return !(f.contentId && !draft.body.includes(`cid:${f.contentId}`));
     });
     if (files.length !== draft.files.length) {

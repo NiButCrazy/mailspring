@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import Rx, { Disposable } from 'rx-lite';
 import { Flexbox } from 'mailspring-component-kit';
 
@@ -22,11 +21,6 @@ type SourceSelectState = {
 
 class SourceSelect extends React.Component<SourceSelectProps, SourceSelectState> {
   static displayName = 'SourceSelect';
-  static propTypes = {
-    value: PropTypes.string,
-    onChange: PropTypes.func.isRequired,
-    options: PropTypes.oneOfType([PropTypes.object, PropTypes.array]).isRequired,
-  };
 
   _subscription?: Disposable;
 
@@ -68,7 +62,7 @@ class SourceSelect extends React.Component<SourceSelectProps, SourceSelectState>
     }
   }
 
-  _onChange = (event) => {
+  _onChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     this.props.onChange({
       target: {
         value: event.target.value === SOURCE_SELECT_NULL ? null : event.target.value,
@@ -110,28 +104,20 @@ interface ScenarioEditorRowProps {
 }
 export default class ScenarioEditorRow extends React.Component<ScenarioEditorRowProps> {
   static displayName = 'ScenarioEditorRow';
-  static propTypes = {
-    instance: PropTypes.object.isRequired,
-    removable: PropTypes.bool,
-    templates: PropTypes.array.isRequired,
-    onChange: PropTypes.func,
-    onInsert: PropTypes.func,
-    onRemove: PropTypes.func,
-  };
 
-  _onChangeValue = (event) => {
+  _onChangeValue = (event: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
     const instance = JSON.parse(JSON.stringify(this.props.instance));
     instance.value = event.target.value;
     this.props.onChange(instance);
   };
 
-  _onChangeComparator = (event) => {
+  _onChangeComparator = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const instance = JSON.parse(JSON.stringify(this.props.instance));
     instance.comparatorKey = event.target.value;
     this.props.onChange(instance);
   };
 
-  _onChangeTemplate = (event) => {
+  _onChangeTemplate = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const instance = JSON.parse(JSON.stringify(this.props.instance));
     const newTemplate = this.props.templates.find((t) => t.key === event.target.value);
     this.props.onChange(newTemplate.coerceInstance(instance));

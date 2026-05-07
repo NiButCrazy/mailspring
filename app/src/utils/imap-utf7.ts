@@ -43,9 +43,7 @@ export const imapUtf7 = {
    * Runs of non-representable characters become '&<ModifiedBase64>-'.
    */
   encode(str: string): string {
-    return str
-      .replace(/&/g, '&-')
-      .replace(/[^\x20-\x7e]+/g, chunk => `&${encodeChunk(chunk)}-`);
+    return str.replace(/&/g, '&-').replace(/[^\x20-\x7e]+/g, (chunk) => `&${encodeChunk(chunk)}-`);
   },
 
   /**

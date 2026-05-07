@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {
-  PropTypes,
   localized,
   Actions,
   Message,
@@ -19,21 +18,13 @@ export class TranslateComposerButton extends React.Component<{
   // Adding a `displayName` makes debugging React easier
   static displayName = 'TranslateComposerButton';
 
-  // Since our button is being injected into the Composer Footer,
-  // we receive the local id of the current draft as a `prop` (a read-only
-  // property). Since our code depends on this prop, we mark it as a requirement.
-  static propTypes = {
-    draft: PropTypes.object.isRequired,
-    session: PropTypes.object.isRequired,
-  };
-
-  shouldComponentUpdate(nextProps) {
+  shouldComponentUpdate(nextProps: { draft: Message; session: DraftEditingSession }) {
     // Our render method doesn't use the provided `draft`, and the draft changes
     // constantly (on every keystroke!) `shouldComponentUpdate` helps keep Mailspring fast.
     return nextProps.session !== this.props.session;
   }
 
-  _onTranslate = async langName => {
+  _onTranslate = async (langName: string) => {
     Actions.closePopover();
 
     try {
@@ -68,8 +59,8 @@ export class TranslateComposerButton extends React.Component<{
       <Menu
         className="translate-language-picker"
         items={Object.keys(TranslatePopupOptions)}
-        itemKey={item => item}
-        itemContent={item => item}
+        itemKey={(item) => item}
+        itemContent={(item) => item}
         headerComponents={headerComponents}
         defaultSelectedIndex={-1}
         onSelect={this._onTranslate}

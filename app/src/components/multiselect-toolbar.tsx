@@ -1,15 +1,13 @@
 import { Utils, localized } from 'mailspring-exports';
 import React, { Component } from 'react';
 import { CSSTransitionGroup } from 'react-transition-group';
-import PropTypes from 'prop-types';
 
 type MultiselectToolbarProps = {
-  toolbarElement: JSX.Element,
-  collection: string,
-  onClearSelection: (...args: any[]) => any,
-  selectionCount: number
+  toolbarElement: JSX.Element;
+  collection: string;
+  onClearSelection: (...args: any[]) => any;
+  selectionCount: number;
 };
-
 
 /*
  * MultiselectToolbar renders a toolbar inside a horizontal bar and displays
@@ -23,14 +21,7 @@ type MultiselectToolbarProps = {
 class MultiselectToolbar extends Component<MultiselectToolbarProps> {
   static displayName = 'MultiselectToolbar';
 
-  static propTypes = {
-    toolbarElement: PropTypes.element.isRequired,
-    collection: PropTypes.string.isRequired,
-    onClearSelection: PropTypes.func.isRequired,
-    selectionCount: PropTypes.node,
-  };
-
-  shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate(nextProps: MultiselectToolbarProps, nextState: Record<string, unknown>) {
     return !Utils.isEqualReact(nextProps, this.props) || !Utils.isEqualReact(nextState, this.state);
   }
 

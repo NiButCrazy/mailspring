@@ -1,14 +1,13 @@
 import React from 'react';
-import { localized, PropTypes, Actions, TaskFactory, ExtensionRegistry } from 'mailspring-exports';
+import { localized, Actions, TaskFactory, ExtensionRegistry } from 'mailspring-exports';
 import { ThreadWithMessagesMetadata } from './types';
 
 class ThreadListIcon extends React.Component<{ thread: ThreadWithMessagesMetadata }> {
   static displayName = 'ThreadListIcon';
-  static propTypes = { thread: PropTypes.object };
 
   _extensionsIconClassNames = () => {
     return ExtensionRegistry.ThreadList.extensions()
-      .filter(ext => ext.cssClassNamesForThreadListIcon != null)
+      .filter((ext) => ext.cssClassNamesForThreadListIcon != null)
       .reduce((prev, ext) => prev + ' ' + ext.cssClassNamesForThreadListIcon(this.props.thread), '')
       .trim();
   };
@@ -50,11 +49,11 @@ class ThreadListIcon extends React.Component<{ thread: ThreadWithMessagesMetadat
     if (!msgs || !(msgs instanceof Array)) {
       return [];
     }
-    msgs = msgs.filter(m => m.id && !m.draft);
+    msgs = msgs.filter((m) => m.id && !m.draft);
     return msgs;
   }
 
-  shouldComponentUpdate(nextProps) {
+  shouldComponentUpdate(nextProps: { thread: ThreadWithMessagesMetadata }) {
     if (nextProps.thread === this.props.thread) {
       return false;
     }
@@ -85,7 +84,7 @@ class ThreadListIcon extends React.Component<{ thread: ThreadWithMessagesMetadat
     }
   };
 
-  _onToggleStar = event => {
+  _onToggleStar = (event: React.MouseEvent | React.KeyboardEvent) => {
     Actions.queueTask(
       TaskFactory.taskForInvertingStarred({
         threads: [this.props.thread],

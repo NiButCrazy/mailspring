@@ -18,9 +18,6 @@ let FocusedPerspectiveStore = null;
 
 class ToolbarSpacer extends React.Component<{ order: number }> {
   static displayName = 'ToolbarSpacer';
-  static propTypes = {
-    order: PropTypes.number,
-  };
 
   render() {
     return <div className="item-spacer" style={{ flex: 1, order: this.props.order || 0 }} />;
@@ -132,7 +129,7 @@ class ToolbarWindowControls extends React.Component<Record<string, unknown>, { a
     this.setState({ alt: AppEnv.keymaps.getIsAltKeyDown() });
   };
 
-  _onMaximize = event => {
+  _onMaximize = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (process.platform === 'darwin' && !event.altKey) {
       AppEnv.setFullScreen(!AppEnv.isFullScreen());
     } else {
@@ -208,8 +205,7 @@ class ToolbarMenuControl extends React.Component {
     const enabled =
       process.platform === 'win32' ||
       (process.platform === 'linux' &&
-        (AppEnv.config.get('core.workspace.menubarStyle') === 'hamburger' ||
-          isWaylandSession()));
+        (AppEnv.config.get('core.workspace.menubarStyle') === 'hamburger' || isWaylandSession()));
 
     if (!enabled) {
       return <span />;
@@ -281,11 +277,6 @@ let lastReportedToolbarHeight = 0;
 export default class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
   static displayName = 'Toolbar';
 
-  static propTypes = {
-    data: PropTypes.object,
-    depth: PropTypes.number,
-  };
-
   static childContextTypes = {
     sheetDepth: PropTypes.number,
   };
@@ -315,7 +306,7 @@ export default class Toolbar extends React.Component<ToolbarProps, ToolbarState>
     window.requestAnimationFrame(() => this.recomputeLayout());
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate(nextProps: ToolbarProps, nextState: ToolbarState) {
     // This is very important. Because toolbar uses CSSTransitionGroup,
     // repetitive unnecessary updates can break animations and cause performance issues.
     return !Utils.isEqualReact(nextProps, this.props) || !Utils.isEqualReact(nextState, this.state);
@@ -370,9 +361,7 @@ export default class Toolbar extends React.Component<ToolbarProps, ToolbarState>
     // Record our overall height for sheets
     if (el.clientHeight !== lastReportedToolbarHeight) {
       lastReportedToolbarHeight = el.clientHeight;
-      require('@electron/remote')
-        .getCurrentWindow()
-        .setSheetOffset(el.clientHeight);
+      require('@electron/remote').getCurrentWindow().setSheetOffset(el.clientHeight);
     }
   }
 
@@ -380,7 +369,7 @@ export default class Toolbar extends React.Component<ToolbarProps, ToolbarState>
     this.recomputeLayout();
   };
 
-  _getStateFromStores(props = this.props) {
+  _getStateFromStores(props: ToolbarProps = this.props) {
     const state: ToolbarState = {
       mode: WorkspaceStore.layoutMode(),
       columns: [],
@@ -434,8 +423,8 @@ export default class Toolbar extends React.Component<ToolbarProps, ToolbarState>
     return state;
   }
 
-  _flexboxForComponents(components) {
-    const elements = components.map(Component => (
+  _flexboxForComponents(components: Array<typeof React.Component & { displayName?: string }>) {
+    const elements = components.map((Component) => (
       <Component key={Component.displayName} {...this.props} />
     ));
     return (

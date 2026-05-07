@@ -1,5 +1,4 @@
 /* eslint global-require: 0*/
-import _ from 'underscore';
 import {
   localized,
   Thread,
@@ -60,7 +59,7 @@ export default class ThreadListContextMenu {
         ]);
       })
       .then((menuItems) => {
-        const compacted = _.compact(menuItems);
+        const compacted = menuItems.filter(Boolean);
         return compacted.filter((item, index) => {
           if ((item as any).type !== 'separator') return true;
           // Remove leading, trailing, and consecutive separators
@@ -351,7 +350,7 @@ export default class ThreadListContextMenu {
           const message = messages[0];
           const defaultFilename = EmlUtils.defaultEmlFilename(message.subject);
 
-          AppEnv.showSaveDialog({ defaultPath: defaultFilename }, async (savePath) => {
+          AppEnv.showSaveDialog({ defaultPath: defaultFilename }, async (savePath: string) => {
             if (!savePath) return;
             const task = new GetMessageRFC2822Task({
               messageId: message.id,
@@ -367,7 +366,7 @@ export default class ThreadListContextMenu {
               buttonLabel: localized('Save All'),
               properties: ['openDirectory', 'createDirectory'],
             },
-            async (selected) => {
+            async (selected: string[]) => {
               if (!selected || selected.length === 0) return;
               const outputDir = selected[0];
               const path = require('path');

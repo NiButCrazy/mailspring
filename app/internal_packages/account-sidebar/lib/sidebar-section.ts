@@ -18,7 +18,7 @@ import SidebarItem, { createCategory } from './sidebar-item';
 import * as SidebarActions from './sidebar-actions';
 import { ISidebarSection, ISidebarItem } from './types';
 
-function isSectionCollapsed(title) {
+function isSectionCollapsed(title: string) {
   if (AppEnv.savedState.sidebarKeysCollapsed[title] !== undefined) {
     return AppEnv.savedState.sidebarKeysCollapsed[title];
   } else {
@@ -26,7 +26,7 @@ function isSectionCollapsed(title) {
   }
 }
 
-function toggleSectionCollapsed(section) {
+function toggleSectionCollapsed(section: ISidebarSection) {
   if (!section) {
     return;
   }
@@ -34,14 +34,14 @@ function toggleSectionCollapsed(section) {
 }
 
 class SidebarSection {
-  static empty(title): ISidebarSection {
+  static empty(title: string): ISidebarSection {
     return {
       title,
       items: [],
     };
   }
 
-  static standardSectionForAccount(account): ISidebarSection {
+  static standardSectionForAccount(account: Account): ISidebarSection {
     if (!account) {
       throw new Error('standardSectionForAccount: You must pass an account.');
     }
@@ -111,7 +111,9 @@ class SidebarSection {
       // eslint-disable-next-line
       accounts.forEach((acc) => {
         const cat = _.first(
-          _.compact((names as string[]).map((name) => CategoryStore.getCategoryByRole(acc, name)))
+          (names as string[])
+            .map((name) => CategoryStore.getCategoryByRole(acc, name))
+            .filter(Boolean)
         );
         if (!cat) {
           return;
@@ -126,7 +128,7 @@ class SidebarSection {
       );
     }
 
-    const accountIds = _.pluck(accounts, 'id');
+    const accountIds = accounts.map((a) => a.id);
 
     const starredItem = SidebarItem.forStarred(accountIds, {
       children: accounts.map((acc) => SidebarItem.forStarred([acc.id], { name: acc.label })),
@@ -243,7 +245,7 @@ class SidebarSection {
       collapsed,
       titleColor,
       onCollapseToggled,
-      onItemCreated(displayName) {
+      onItemCreated(displayName: string) {
         createCategory(account.id, displayName);
       },
     };

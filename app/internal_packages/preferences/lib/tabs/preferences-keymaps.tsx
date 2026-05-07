@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import path from 'path';
 import fs from 'fs';
 
@@ -15,10 +14,6 @@ export default class PreferencesKeymaps extends React.Component<
   { templates: string[]; bindings: { [command: string]: [] } }
 > {
   static displayName = 'PreferencesKeymaps';
-
-  static propTypes = {
-    config: PropTypes.object,
-  };
 
   _disposable?: Disposable;
 
@@ -55,10 +50,10 @@ export default class PreferencesKeymaps extends React.Component<
     const templatesDir = path.join(AppEnv.getLoadSettings().resourcePath, 'keymaps', 'templates');
     fs.readdir(templatesDir, (err, files) => {
       if (!files || !(files instanceof Array)) return;
-      let templates = files.filter(filename => {
+      let templates = files.filter((filename) => {
         return path.extname(filename) === '.json';
       });
-      templates = templates.map(filename => {
+      templates = templates.map((filename) => {
         return path.parse(filename).name;
       });
       this.setState({ templates: templates });
@@ -87,7 +82,7 @@ export default class PreferencesKeymaps extends React.Component<
     }
   }
 
-  _renderBindingsSection = section => {
+  _renderBindingsSection = (section: { title: string; items: string[][] }) => {
     return (
       <section key={`section-${section.title}`}>
         <div className="shortcut-section-title">{section.title}</div>
@@ -115,9 +110,11 @@ export default class PreferencesKeymaps extends React.Component<
               <select
                 style={{ margin: 0 }}
                 value={this.props.config.get('core.keymapTemplate')}
-                onChange={event => this.props.config.set('core.keymapTemplate', event.target.value)}
+                onChange={(event) =>
+                  this.props.config.set('core.keymapTemplate', event.target.value)
+                }
               >
-                {this.state.templates.map(template => {
+                {this.state.templates.map((template) => {
                   return (
                     <option key={template} value={template}>
                       {template}

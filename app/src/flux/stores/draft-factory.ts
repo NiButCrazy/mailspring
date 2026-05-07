@@ -1,4 +1,3 @@
-import _ from 'underscore';
 import * as Actions from '../actions';
 import DatabaseStore from './database-store';
 import { AccountStore } from './account-store';
@@ -90,7 +89,7 @@ class DraftFactory {
     return new Message(merged);
   }
 
-  async createDraftForMailto(urlString) {
+  async createDraftForMailto(urlString: string) {
     try {
       urlString = decodeURI(urlString);
     } catch (err) {
@@ -158,6 +157,7 @@ class DraftFactory {
 
     if (query.body && this.useHTML()) {
       query.body = query.body.replace(/[\n\r]/g, '<br/>');
+      query.body = await SanitizeTransformer.run(query.body);
     }
 
     return this.createDraft(Object.assign(query, await Promise.props(contacts)));
@@ -185,7 +185,7 @@ class DraftFactory {
     return this.createDraftForReply({ message, thread, type });
   }
 
-  async createDraftForReply({ message, thread, type }) {
+  async createDraftForReply({ message, thread, type }: { message: Message; thread: Thread; type: ReplyType }) {
     const prevBody = await this.prepareBodyForQuoting(message);
     let participants = { to: [], cc: [] };
     if (type === 'reply') {
@@ -219,12 +219,12 @@ class DraftFactory {
     });
   }
 
-  async createDraftForForward({ thread, message }) {
+  async createDraftForForward({ thread, message }: { thread: Thread; message: Message }) {
     // Start downloading the attachments, if they haven't been already
-    message.files.forEach((f: File) => Actions.fetchFile(f));
+    message.files.forEach((f) => Actions.fetchFile(f));
 
     const formatContact = (cs: Contact[]) => {
-      const text = cs.map(c => c.toString()).join(', ');
+      const text = cs.map((c) => c.toString()).join(', ');
       return this.useHTML() ? DOMUtils.escapeHTMLCharacters(text) : text;
     };
 
@@ -263,7 +263,7 @@ class DraftFactory {
     });
   }
 
-  async createDraftForResurfacing(thread, threadMessageId, body) {
+  async createDraftForResurfacing(thread: Thread, threadMessageId: string, body: string) {
     const account = AccountStore.accountForId(thread.accountId);
     let replyToHeaderMessageId = threadMessageId;
 
@@ -298,7 +298,7 @@ class DraftFactory {
         : await DatabaseStore.findAll<Message>(Message, { threadId: message.threadId });
 
     const candidateDrafts = messages.filter(
-      other => other.replyToHeaderMessageId === message.headerMessageId && other.draft === true
+      (other) => other.replyToHeaderMessageId === message.headerMessageId && other.draft === true
     );
 
     if (candidateDrafts.length === 0) {
@@ -310,11 +310,11 @@ class DraftFactory {
     if (behavior === 'prefer-existing-if-pristine') {
       DraftStore = DraftStore || require('./draft-store').default;
       const sessions = await Promise.all(
-        candidateDrafts.map(candidateDraft =>
+        candidateDrafts.map((candidateDraft) =>
           DraftStore.sessionForClientId(candidateDraft.headerMessageId)
         )
       );
-      return sessions.map(s => s.draft()).find(d => d && d.pristine);
+      return sessions.map((s) => s.draft()).find((d) => d && d.pristine);
     }
   }
 
@@ -333,10 +333,10 @@ class DraftFactory {
 
       // Remove participants present in the reply-all set and not the reply set
       for (const key of ['to', 'cc']) {
-        updated[key] = _.reject<Contact[]>(updated[key], contact => {
-          const inReplySet = _.findWhere(replySet[key], { email: contact.email });
-          const inReplyAllSet = _.findWhere(replyAllSet[key], { email: contact.email });
-          return inReplyAllSet && !inReplySet;
+        updated[key] = updated[key].filter((contact) => {
+          const inReplySet = replySet[key]?.find((x) => x.email === contact.email);
+          const inReplyAllSet = replyAllSet[key]?.find((x) => x.email === contact.email);
+          return !(inReplyAllSet && !inReplySet);
         });
       }
     } else {
@@ -347,7 +347,7 @@ class DraftFactory {
 
     for (const key of ['to', 'cc']) {
       for (const contact of targetSet[key]) {
-        if (!_.findWhere(updated[key], { email: contact.email })) {
+        if (!updated[key]?.find((x) => x.email === contact.email)) {
           updated[key].push(contact);
         }
       }
@@ -358,7 +358,7 @@ class DraftFactory {
     return draft;
   }
 
-  _fromContactForReply(message) {
+  _fromContactForReply(message: Message) {
     const account = AccountStore.accountForId(message.accountId);
     const defaultMe = account.defaultMe();
 

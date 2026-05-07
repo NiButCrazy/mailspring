@@ -3,7 +3,7 @@ import { ListTabular, ListTabularProps, ListTabularColumn } from './list-tabular
 import { Spinner } from './spinner';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { PropTypes, Utils, WorkspaceStore, localized } from 'mailspring-exports';
+import { Utils, WorkspaceStore, localized } from 'mailspring-exports';
 import { KeyCommandsRegion } from 'mailspring-component-kit';
 
 import MultiselectListInteractionHandler from './multiselect-list-interaction-handler';
@@ -52,14 +52,14 @@ Section: Component Kit
 export class MultiselectList extends React.Component<MultiselectListProps, MultiselectListState> {
   static displayName = 'MultiselectList';
 
-  static propTypes = {
-    dataSource: PropTypes.object,
-    className: PropTypes.string.isRequired,
-    columns: PropTypes.array.isRequired,
-    itemPropsProvider: PropTypes.func.isRequired,
-    keymapHandlers: PropTypes.object,
-    onComponentDidUpdate: PropTypes.func,
-  };
+  static ownPropKeys = [
+    'dataSource',
+    'className',
+    'columns',
+    'itemPropsProvider',
+    'keymapHandlers',
+    'onComponentDidUpdate',
+  ];
 
   private listRef = React.createRef<ListTabular>();
   private unsubscribers: (() => void)[] = [];
@@ -218,7 +218,7 @@ export class MultiselectList extends React.Component<MultiselectListProps, Multi
   }
 
   render() {
-    const otherProps = Utils.fastOmit(this.props, Object.keys(MultiselectList.propTypes));
+    const otherProps = Utils.fastOmit(this.props, MultiselectList.ownPropKeys);
     let { className } = this.props;
 
     if (this.props.dataSource) {
@@ -228,12 +228,9 @@ export class MultiselectList extends React.Component<MultiselectListProps, Multi
       const activeCursorId = this.props.keyboardCursorId || this.props.focusedId;
 
       return (
-        <KeyCommandsRegion
-          globalHandlers={this._globalKeymapHandlers()}
-          className={className}
-        >
+        <KeyCommandsRegion globalHandlers={this._globalKeymapHandlers()} className={className}>
           <ListTabular
-            ref={this.listRef}
+            ref={this.listRef as any}
             columns={this.state.computedColumns}
             dataSource={this.props.dataSource}
             itemPropsProvider={this._getItemPropsProvider()}

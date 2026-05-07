@@ -1,6 +1,6 @@
 import { shell } from 'electron';
 import React from 'react';
-import { localized, localizedReactFragment, PropTypes, Account } from 'mailspring-exports';
+import { localized, localizedReactFragment, Account } from 'mailspring-exports';
 import { RetinaImg } from 'mailspring-component-kit';
 import http from 'http';
 import url from 'url';
@@ -40,6 +40,7 @@ interface OAuthSignInPageState {
   authStage: string;
   showAlternative: boolean;
   errorMessage?: string;
+  errorLog?: string;
   pressed?: boolean;
 }
 
@@ -48,20 +49,6 @@ export default class OAuthSignInPage extends React.Component<
   OAuthSignInPageState
 > {
   static displayName = 'OAuthSignInPage';
-
-  static propTypes = {
-    /**
-     * Step 1: Open a webpage in the user's browser letting them login on
-     * the native provider's website. We pass along a key and a redirect
-     * url to a Mailspring-owned server
-     */
-    providerAuthPageUrl: PropTypes.string,
-    buildAccountFromAuthResponse: PropTypes.func,
-    onSuccess: PropTypes.func,
-    onTryAgain: PropTypes.func,
-    iconName: PropTypes.string,
-    serviceName: PropTypes.string,
-  };
 
   _server?: http.Server;
   _startTimer: NodeJS.Timeout;
@@ -126,6 +113,7 @@ export default class OAuthSignInPage extends React.Component<
             'A network error occurred. Please check your internet connection and try again.'
           )
         : err.message,
+      errorLog: err.rawLog,
     });
     if (!isNetworkError) {
       AppEnv.reportError(err);
@@ -183,7 +171,7 @@ export default class OAuthSignInPage extends React.Component<
       <div>
         <h2>{localized('Sorry, we had trouble logging you in')}</h2>
         <div className="error-region">
-          <FormErrorMessage message={this.state.errorMessage} />
+          <FormErrorMessage message={this.state.errorMessage} log={this.state.errorLog} />
           {note && <div className="message empty note">{note}</div>}
           <div className="btn" style={{ marginTop: 20 }} onClick={this.props.onTryAgain}>
             {localized('Try Again')}

@@ -1,6 +1,5 @@
 import { RetinaImg, RovingTabIndexToolbar } from 'mailspring-component-kit';
 import { localized } from 'mailspring-exports';
-import PropTypes from 'prop-types';
 import React from 'react';
 import { isWaylandSession } from '../../../../src/browser/is-wayland';
 import SystemTrayIconStore from '../../../system-tray/lib/system-tray-icon-store';
@@ -12,11 +11,6 @@ class AppearanceScaleSlider extends React.Component<
   { value: string }
 > {
   static displayName = 'AppearanceScaleSlider';
-
-  static propTypes = {
-    id: PropTypes.string,
-    config: PropTypes.object.isRequired,
-  };
 
   kp = `core.workspace.interfaceZoom`;
 
@@ -54,7 +48,7 @@ class AppearanceScaleSlider extends React.Component<
           step={0.05}
           value={this.state.value}
           aria-label={localized('Interface Scale')}
-          onChange={e => this.props.config.set(this.kp, e.target.value)}
+          onChange={(e) => this.props.config.set(this.kp, e.target.value)}
         />
       </div>
     );
@@ -64,7 +58,7 @@ class AppearanceScaleSlider extends React.Component<
 class MenubarStylePicker extends React.Component<{ config: ConfigLike }> {
   kp = 'core.workspace.menubarStyle';
 
-  onChangeMenubarStyle = e => {
+  onChangeMenubarStyle = (e: React.ChangeEvent<HTMLInputElement>) => {
     this.props.config.set(this.kp, e.target.value);
   };
 
@@ -135,11 +129,6 @@ class AppearanceModeSwitch extends React.Component<
 > {
   static displayName = 'AppearanceModeSwitch';
 
-  static propTypes = {
-    id: PropTypes.string,
-    config: PropTypes.object.isRequired,
-  };
-
   constructor(props) {
     super(props);
     this.state = {
@@ -162,7 +151,7 @@ class AppearanceModeSwitch extends React.Component<
   };
 
   _renderModeOptions() {
-    return ['list', 'split', 'splitVertical'].map(mode => (
+    return ['list', 'split', 'splitVertical'].map((mode) => (
       <AppearanceModeOption
         mode={mode}
         key={mode}
@@ -197,7 +186,7 @@ class AppearanceModeSwitch extends React.Component<
 class TrayIconStylePicker extends React.Component<{ config: ConfigLike }> {
   kp = 'core.workspace.trayIconStyle';
 
-  onChangeTrayIconStyle = e => {
+  onChangeTrayIconStyle = (e: React.ChangeEvent<HTMLInputElement>) => {
     this.props.config.set(this.kp, e.target.value);
   };
 
@@ -260,7 +249,7 @@ class TrayIconStylePicker extends React.Component<{ config: ConfigLike }> {
 class TrayIconThemePicker extends React.Component<{ config: ConfigLike }> {
   kp = 'core.workspace.traySystemTheme';
 
-  onChangeTrayIconTheme = e => {
+  onChangeTrayIconTheme = (e: React.ChangeEvent<HTMLInputElement>) => {
     this.props.config.set(this.kp, e.target.value);
   };
 
@@ -309,7 +298,11 @@ class TrayIconThemePicker extends React.Component<{ config: ConfigLike }> {
   }
 }
 
-const AppearanceModeOption = function AppearanceModeOption(props) {
+const AppearanceModeOption = function AppearanceModeOption(props: {
+  mode: string;
+  active?: boolean;
+  onClick?: (...args: any[]) => any;
+}) {
   let classname = 'appearance-mode';
   if (props.active) classname += ' active';
 
@@ -341,19 +334,9 @@ const AppearanceModeOption = function AppearanceModeOption(props) {
     </div>
   );
 };
-AppearanceModeOption.propTypes = {
-  mode: PropTypes.string.isRequired,
-  active: PropTypes.bool,
-  onClick: PropTypes.func,
-};
 
 class PreferencesAppearance extends React.Component<{ config: ConfigLike; configSchema: any }> {
   static displayName = 'PreferencesAppearance';
-
-  static propTypes = {
-    config: PropTypes.object,
-    configSchema: PropTypes.object,
-  };
 
   onPickTheme = () => {
     AppEnv.commands.dispatch('window:launch-theme-picker');
@@ -369,11 +352,7 @@ class PreferencesAppearance extends React.Component<{ config: ConfigLike; config
         <section>
           <h6 style={{ marginTop: 10 }}>{localized('Theme and Style')}</h6>
           <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-            <button
-              className="btn btn-large"
-              style={{ flexShrink: 0 }}
-              onClick={this.onPickTheme}
-            >
+            <button className="btn btn-large" style={{ flexShrink: 0 }} onClick={this.onPickTheme}>
               {localized('Change Theme...')}
             </button>
             <ConfigSchemaItem

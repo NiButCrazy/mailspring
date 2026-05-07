@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { shell } from 'electron';
 import { localized } from 'mailspring-exports';
 import * as Actions from '../flux/actions';
@@ -13,13 +12,6 @@ export default class FeatureUsedUpModal extends React.Component<{
   rechargeText: string;
   headerText: string;
 }> {
-  static propTypes = {
-    modalClass: PropTypes.string.isRequired,
-    headerText: PropTypes.string.isRequired,
-    rechargeText: PropTypes.string.isRequired,
-    iconUrl: PropTypes.string.isRequired,
-  };
-
   private _fetchPromise: Promise<string>;
 
   componentDidMount() {
@@ -30,7 +22,7 @@ export default class FeatureUsedUpModal extends React.Component<{
     shell.openExternal('https://getmailspring.com/pro');
   };
 
-  onUpgrade = async e => {
+  onUpgrade = async (e: React.MouseEvent<HTMLElement>) => {
     // Retrieve the SSO URL for the billing modal or wait for it to be retrieved
     // before opening the modal.
     const upgradeUrl = await this._fetchPromise;

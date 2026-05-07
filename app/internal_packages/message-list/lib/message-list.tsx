@@ -34,6 +34,13 @@ import MessageItemContainer from './message-item-container';
 import { MessageListScrollTooltip } from './message-list-scroll-tooltip';
 import { SubjectLineIcons } from './subject-line-icons';
 
+type MinifiedBundle = { type: 'minifiedBundle'; messages: Message[] };
+type MessageOrBundle = Message | MinifiedBundle;
+
+function isMinifiedBundle(item: MessageOrBundle): item is MinifiedBundle {
+  return 'type' in item && item.type === 'minifiedBundle';
+}
+
 interface MessageListState {
   messages: Message[];
   messagesExpandedState: {
@@ -79,7 +86,7 @@ class MessageList extends React.Component<Record<string, unknown>, MessageListSt
     this._unsubscribers.push(MessageStore.listen(this._onChange));
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate(nextProps: Record<string, unknown>, nextState: MessageListState) {
     return !Utils.isEqualReact(nextProps, this.props) || !Utils.isEqualReact(nextState, this.state);
   }
 
@@ -124,7 +131,7 @@ class MessageList extends React.Component<Record<string, unknown>, MessageListSt
     return handlers;
   }
 
-  _getMessageContainer(headerMessageId) {
+  _getMessageContainer(headerMessageId: string) {
     return this.refs[`message-container-${headerMessageId}`];
   }
 
@@ -201,7 +208,7 @@ class MessageList extends React.Component<Record<string, unknown>, MessageListSt
 
     AppEnv.showSaveDialog(
       { defaultPath: defaultFilename, title: localized('Save Email') },
-      async (savePath) => {
+      async (savePath: string) => {
         if (!savePath) return;
         const task = new GetMessageRFC2822Task({
           messageId: message.id,
@@ -310,7 +317,7 @@ class MessageList extends React.Component<Record<string, unknown>, MessageListSt
       const item = allItems[this.state.focusedMessageIndex];
       if (!item) return;
 
-      if (item.type === 'minifiedBundle') {
+      if (isMinifiedBundle(item)) {
         this.setState({ minified: false });
       } else {
         // Click the MessageItem root to toggle collapsed state
@@ -326,7 +333,8 @@ class MessageList extends React.Component<Record<string, unknown>, MessageListSt
 
     let messages = this._messagesWithMinification(this.state.messages);
     const mostRecentMessage = messages[messages.length - 1];
-    const hasReplyArea = mostRecentMessage && !mostRecentMessage.draft;
+    const hasReplyArea =
+      mostRecentMessage && !isMinifiedBundle(mostRecentMessage) && !mostRecentMessage.draft;
 
     // Invert the message list if the descending option is set
     if (AppEnv.config.get(PREF_DESCENDING_ORDER)) {
@@ -337,7 +345,7 @@ class MessageList extends React.Component<Record<string, unknown>, MessageListSt
     let itemIndex = 0;
 
     messages.forEach((message) => {
-      if (message.type === 'minifiedBundle') {
+      if (isMinifiedBundle(message)) {
         elements.push(this._renderMinifiedBundle(message, itemIndex++));
         return;
       }
@@ -374,7 +382,7 @@ class MessageList extends React.Component<Record<string, unknown>, MessageListSt
             ref={`message-container-${message.headerMessageId}`}
             thread={currentThread}
             message={message}
-            messages={messages}
+            messages={this.state.messages}
             collapsed={collapsed}
             isMostRecent={isMostRecent}
             isBeforeReplyArea={isBeforeReplyArea}
@@ -397,16 +405,16 @@ class MessageList extends React.Component<Record<string, unknown>, MessageListSt
     return elements;
   }
 
-  _messagesWithMinification(allMessages = []) {
+  _messagesWithMinification(allMessages: Message[] = []): MessageOrBundle[] {
     if (!this.state.minified) {
       return allMessages;
     }
 
-    const messages = [...allMessages];
+    const messages: MessageOrBundle[] = [...allMessages];
     const minifyRanges = [];
     let consecutiveCollapsed = 0;
 
-    messages.forEach((message, idx) => {
+    allMessages.forEach((message, idx) => {
       // Never minify the 1st message
       if (idx === 0) {
         return;
@@ -435,9 +443,9 @@ class MessageList extends React.Component<Record<string, unknown>, MessageListSt
     let indexOffset = 0;
     for (const range of minifyRanges) {
       const start = range.start - indexOffset;
-      const minified = {
+      const minified: MinifiedBundle = {
         type: 'minifiedBundle',
-        messages: messages.slice(start, start + range.length),
+        messages: messages.slice(start, start + range.length) as Message[],
       };
       messages.splice(start, range.length, minified);
 
@@ -481,7 +489,7 @@ class MessageList extends React.Component<Record<string, unknown>, MessageListSt
     }
   };
 
-  _onScrollByPage = (direction) => {
+  _onScrollByPage = (direction: number) => {
     const height = (ReactDOM.findDOMNode(this._messageWrapEl) as HTMLElement).clientHeight;
     this._messageWrapEl.scrollTop += height * direction;
   };
@@ -548,7 +556,10 @@ class MessageList extends React.Component<Record<string, unknown>, MessageListSt
     }
   }
 
-  _renderMinifiedBundle(bundle, bundleIndex: number) {
+  _renderMinifiedBundle(
+    bundle: { type: 'minifiedBundle'; messages: Message[] },
+    bundleIndex: number
+  ) {
     const isFocused = bundleIndex === this.state.focusedMessageIndex;
     const BUNDLE_HEIGHT = 36;
     const lines = bundle.messages.slice(0, 10);
@@ -665,6 +676,14 @@ class MessageListReplyArea extends React.Component<{ onClick: () => void; replyT
     }
   };
 
+  // Prevent the click from moving focus to this placeholder. Otherwise focus
+  // briefly lands here, the placeholder unmounts when the composer mounts in
+  // its place, and the first keystrokes hit `<body>` before the composer's
+  // requestAnimationFrame focus restore can run — firing global shortcuts.
+  _onMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+  };
+
   render() {
     return (
       <div
@@ -672,6 +691,7 @@ class MessageListReplyArea extends React.Component<{ onClick: () => void; replyT
         role="button"
         tabIndex={0}
         onClick={this.props.onClick}
+        onMouseDown={this._onMouseDown}
         onKeyDown={this._onKeyDown}
       >
         <div className="footer-reply-area">

@@ -275,7 +275,7 @@ class OutlineViewItem extends Component<OutlineViewItemProps, OutlineViewItemSta
     if (this.props.item.onEdited) {
       menu.append(
         new MenuItem({
-          label: `${localized(`Rename`)} ${contextMenuLabel}`,
+          label: `${localized(`Rename`)}${localized(contextMenuLabel)}`,
           click: this._onEdit,
         })
       );
@@ -284,7 +284,7 @@ class OutlineViewItem extends Component<OutlineViewItemProps, OutlineViewItemSta
     if (this.props.item.onDelete) {
       menu.append(
         new MenuItem({
-          label: `${localized(`Delete`)} ${contextMenuLabel}`,
+          label: `${localized(`Delete`)}${localized(contextMenuLabel)}`,
           click: this._onDelete,
         })
       );

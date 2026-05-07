@@ -78,7 +78,7 @@ export default class ThreadListContextMenu {
     const from = first.participants.find((p) => !p.isMe()) || first.participants[0];
 
     return {
-      label: localized(`Search for`) + ' ' + from.email,
+      label: localized(`Search for`) + '' + from.email,
       click: () => {
         Actions.searchQuerySubmitted(`"${from.email.replace('"', '""')}"`);
       },
@@ -94,7 +94,7 @@ export default class ThreadListContextMenu {
     return {
       label:
         localized(`Search for`) +
-        ' ' +
+        '' +
         (subject.length > 35 ? `${subject.substr(0, 35)}...` : subject),
       click: () => {
         Actions.searchQuerySubmitted(`subject:"${subject}"`);

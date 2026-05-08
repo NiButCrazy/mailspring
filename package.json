@@ -1,6 +1,6 @@
 {
   "name": "mailspring-root",
-  "version": "1.21.1-cn",
+  "version": "1.21.2-cn",
   "description": "Packages required to develop and build Mailspring",
   "author": "Mailspring",
   "license": "GPL-3.0",

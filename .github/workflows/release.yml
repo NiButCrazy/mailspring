@@ -34,6 +34,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: 下载日志处理器
+        run: pnpm add -g nbc-auto-changelog
+
       - name: 获取 CHANGELOG.md
         id: changelog
         shell: pwsh

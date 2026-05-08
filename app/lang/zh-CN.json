@@ -1002,5 +1002,8 @@
   "starred": "已加星标",
   "unread": "未读",
   "\"Sent Messages\"": "已发送邮件",
-  "\"Deleted Messages\"": "已删除邮件"
+  "\"Deleted Messages\"": "已删除邮件",
+  "Open Mailspring preferences": "打开 Mailspring 首选项",
+  "Open your inbox": "打开您的收件箱",
+  "Open a new email composer window": "打开一个新的电子邮件撰写窗口"
 }

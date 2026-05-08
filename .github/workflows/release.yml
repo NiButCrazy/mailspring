@@ -33,6 +33,12 @@ jobs:
         run: pnpm build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 获取 CHANGELOG.md
+        id: changelog
+        shell: pwsh
+        run: |
+          nbc-auto-changelog --stdout --ending-version "${{ github.ref_name }}" --starting-version "${{ github.ref_name }}" | Out-File -FilePath changelog_new.md -Encoding utf8
       
       - name: 使用 7-Zip 压缩文件夹
         run: 7z a Mailspring-win32-x64.zip ./app/dist/Mailspring-win32-x64/
@@ -46,5 +52,6 @@ jobs:
           files: Mailspring-win32-x64.zip
           tag_name: ${{ github.ref_name }}
           name: MailSpring ${{ github.ref_name }}
+          body_path: changelog_new.md
 
 

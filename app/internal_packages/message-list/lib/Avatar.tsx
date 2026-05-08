@@ -6,8 +6,10 @@ interface AvatarProps extends React.ComponentProps<'div'> {
   email: string;
 }
 
+const configPath = AppEnv.getLoadSettings().resourcePath as string;
+
 const ResourcePath = path.join(
-  AppEnv.getLoadSettings().resourcePath,
+  configPath.endsWith('app.asar') ? configPath + '.unpacked' : configPath,
   'static', 'avatars'
 )
 

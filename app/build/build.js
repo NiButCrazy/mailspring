@@ -242,6 +242,7 @@ function buildPackagerOptions() {
           '**/src/quickpreview/**',
           '**/static/all_licenses.html',
           '**/static/extensions/**',
+          '**/static/avatars/**',
           '**/node_modules/spellchecker/**',
         ].join(',') +
         '}',
@@ -284,43 +285,43 @@ function buildPackagerOptions() {
     prune: true,
     osxSign: process.env.SIGN_BUILD
       ? {
-          platform: 'darwin',
-          // The provisioning profile is embedded once into the app bundle at
-          // Contents/embedded.provisionprofile. It must be set here at the
-          // top level — it is not a per-file option.
-          provisioningProfile: process.env.APPLE_PROVISIONING_PROFILE_PATH,
-          optionsForFile: filePath => {
-            // Only the main app bundle gets the full entitlements plist,
-            // which includes restricted entitlements (keychain-access-groups,
-            // com.apple.developer.*) that are validated against the embedded
-            // provisioning profile. All helper binaries (Electron helpers,
-            // mailsync, chrome_crashpad_handler, ShipIt, etc.) must be signed
-            // with only the basic com.apple.security.* entitlements — amfid
-            // will reject any helper that carries restricted entitlements it
-            // cannot match to a profile scoped to that binary.
-            // Note: electron-osx-sign passes the .app bundle path (not the
-            // inner executable path) when signing the top-level app bundle.
-            const isMainExecutable = filePath.endsWith('/Mailspring.app');
-            return {
-              hardenedRuntime: true,
-              entitlements: path.resolve(
-                appDir,
-                'build',
-                'resources',
-                'mac',
-                isMainExecutable ? 'entitlements.plist' : 'entitlements.child.plist'
-              ),
-            };
-          },
-        }
+        platform: 'darwin',
+        // The provisioning profile is embedded once into the app bundle at
+        // Contents/embedded.provisionprofile. It must be set here at the
+        // top level — it is not a per-file option.
+        provisioningProfile: process.env.APPLE_PROVISIONING_PROFILE_PATH,
+        optionsForFile: filePath => {
+          // Only the main app bundle gets the full entitlements plist,
+          // which includes restricted entitlements (keychain-access-groups,
+          // com.apple.developer.*) that are validated against the embedded
+          // provisioning profile. All helper binaries (Electron helpers,
+          // mailsync, chrome_crashpad_handler, ShipIt, etc.) must be signed
+          // with only the basic com.apple.security.* entitlements — amfid
+          // will reject any helper that carries restricted entitlements it
+          // cannot match to a profile scoped to that binary.
+          // Note: electron-osx-sign passes the .app bundle path (not the
+          // inner executable path) when signing the top-level app bundle.
+          const isMainExecutable = filePath.endsWith('/Mailspring.app');
+          return {
+            hardenedRuntime: true,
+            entitlements: path.resolve(
+              appDir,
+              'build',
+              'resources',
+              'mac',
+              isMainExecutable ? 'entitlements.plist' : 'entitlements.child.plist'
+            ),
+          };
+        },
+      }
       : undefined,
     osxNotarize: process.env.APPLE_ID
       ? {
-          appleId: process.env.APPLE_ID,
-          appleIdPassword: process.env.APPLE_ID_PASSWORD,
-          ascProvider: process.env.APPLE_ID_ASC_PROVIDER,
-          teamId: process.env.APPLE_TEAM_ID,
-        }
+        appleId: process.env.APPLE_ID,
+        appleIdPassword: process.env.APPLE_ID_PASSWORD,
+        ascProvider: process.env.APPLE_ID_ASC_PROVIDER,
+        teamId: process.env.APPLE_TEAM_ID,
+      }
       : undefined,
     win32metadata: {
       CompanyName: 'Foundry 376, LLC',

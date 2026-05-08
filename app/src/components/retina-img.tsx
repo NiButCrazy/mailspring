@@ -127,7 +127,7 @@ export class RetinaImg extends React.Component<RetinaImgProps & React.HTMLProps<
   render() {
     let path =
       this.props.url || this._pathFor(this.props.name) || this._pathFor(this.props.fallback) || '';
-    const pathIsRetina = path.indexOf('@2x') > 0;
+    const pathIsRetina = path.indexOf('@2x') > 0;   
     switch (this.props.name) {
       case 'ic-emptystate-已加星标.png':
         path = 'images/empty-state/ic-emptystate-starred@1x.png'

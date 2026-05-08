@@ -14,6 +14,7 @@ import MessageParticipants from './message-participants';
 import MessageItemBody from './message-item-body';
 import MessageTimestamp from './message-timestamp';
 import MessageControls from './message-controls';
+import { Avatar } from './Avatar';
 
 interface MessageItemProps {
   thread: Thread;
@@ -202,19 +203,24 @@ export default class MessageItem extends React.Component<MessageItemProps, Messa
           />
           <MessageControls thread={thread} message={message} />
         </div>
-        <MessageParticipants
-          from={message.from}
-          onClick={this._onClickParticipants}
-          isDetailed={this.state.detailedHeaders}
-        />
-        <MessageParticipants
-          to={message.to}
-          cc={message.cc}
-          bcc={message.bcc}
-          replyTo={message.replyTo.filter((c) => !message.from.find((fc) => fc.email === c.email))}
-          onClick={this._onClickParticipants}
-          isDetailed={this.state.detailedHeaders}
-        />
+        <div style={{ display: 'flex' }}>
+          <Avatar name={message.from[0].name} email={message.from[0].email} />
+          <div style={{ flexGrow: 1, flexDirection: 'column', paddingLeft: '14px' }}>
+            <MessageParticipants
+              from={message.from}
+              onClick={this._onClickParticipants}
+              isDetailed={this.state.detailedHeaders}
+            />
+            <MessageParticipants
+              to={message.to}
+              cc={message.cc}
+              bcc={message.bcc}
+              replyTo={message.replyTo.filter((c) => !message.from.find((fc) => fc.email === c.email))}
+              onClick={this._onClickParticipants}
+              isDetailed={this.state.detailedHeaders}
+            />
+          </div>
+        </div>
         {this._renderSubject()}
         {this._renderFolder()}
         {this._renderHeaderDetailToggle()}

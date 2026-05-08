@@ -19,27 +19,34 @@ body.platform-win32 {
       margin: 0 0 0 1px;
       padding: 0 5px;
       .windows-btn-bg;
+
       &:hover {
         background: #e5e5e5;
       }
+
       &.btn-icon:hover {
         color: @text-color;
+
         img.content-mask {
           background: rgba(35, 31, 32, 0.8);
         }
       }
     }
+
     .message-toolbar-arrow.up {
       margin: 0 0 0 1px;
       padding: 0 5px;
       .windows-btn-bg;
+
       &.btn-icon:hover {
         color: @text-color;
+
         img.content-mask {
           background: rgba(35, 31, 32, 0.8);
         }
       }
     }
+
     .message-toolbar-arrow.disabled {
       &:hover {
         background: transparent;
@@ -53,14 +60,17 @@ body.platform-win32 {
         border-radius: 0;
       }
     }
+
     .minified-bundle {
       .num-messages {
         border-radius: 0;
       }
+
       .msg-line {
         border-radius: 0;
       }
     }
+
     .footer-reply-area-wrap {
       border-radius: 0;
     }
@@ -72,6 +82,7 @@ body.platform-win32 {
 }
 
 .sheet-toolbar {
+
   // This class wraps the items that appear above the message list in the
   // toolbar. We want the toolbar items to sit right above the centered
   // content, so we need another 800px-wide container in the toolbar...
@@ -86,11 +97,13 @@ body.platform-win32 {
     margin-right: 0;
     margin-left: @spacing-standard * 1.5;
   }
+
   .message-toolbar-arrow.up {
     order: 202;
     // <1 because of hit region padding on the button
     margin-right: @spacing-standard * 0.75;
   }
+
   .message-toolbar-arrow.disabled {
     opacity: 0.3;
   }
@@ -108,11 +121,13 @@ body.platform-win32 {
   margin-left: @spacing-standard;
   cursor: default;
   user-select: none;
+
   .img-wrap {
     margin-right: @spacing-half;
     position: relative;
     top: -1px;
   }
+
   img {
     background: @text-color-subtle;
   }
@@ -140,21 +155,27 @@ body.platform-win32 {
     .message-subject-wrap {
       max-width: @message-max-width;
     }
+
     .message-list-headers {
       max-width: @message-max-width;
     }
+
     .message-item-wrap {
       max-width: @message-max-width;
     }
+
     .msg-lines {
       max-width: @message-max-width;
     }
+
     .message-item-area {
       max-width: @message-max-width;
     }
+
     .footer-reply-area-wrap {
       max-width: @message-max-width;
     }
+
     .footer-reply-area {
       max-width: @message-max-width;
     }
@@ -165,6 +186,7 @@ body.platform-win32 {
     background: @text-color-search-match;
     border-radius: @border-radius-base;
     box-shadow: 0 0.5px 0.5px rgba(0, 0, 0, 0.25);
+
     &.current-match {
       background: @text-color-search-current-match;
     }
@@ -178,6 +200,7 @@ body.platform-win32 {
     margin-bottom: @padding-large-vertical;
     cursor: default;
     padding: @padding-base-vertical @padding-base-horizontal;
+
     a {
       float: right;
     }
@@ -190,6 +213,7 @@ body.platform-win32 {
     margin-top: @padding-large-vertical;
     cursor: default;
     padding: @padding-base-vertical @padding-base-horizontal;
+
     a {
       float: right;
     }
@@ -210,17 +234,20 @@ body.platform-win32 {
     align-items: center;
     padding: 0 @padding-base-horizontal;
   }
+
   .mail-important-icon {
     margin-right: @spacing-half;
     margin-bottom: 1px;
     flex-shrink: 0;
   }
+
   .message-subject {
     font-size: @font-size-large;
     color: @text-color;
     margin-right: @spacing-standard;
     overflow-wrap: anywhere;
   }
+
   .message-icons-wrap {
     flex-shrink: 0;
     cursor: pointer;
@@ -232,10 +259,12 @@ body.platform-win32 {
     img {
       background: @text-color-subtle;
     }
-    div + div {
+
+    div+div {
       margin-left: @padding-small-horizontal;
     }
   }
+
   .thread-injected-mail-labels {
     vertical-align: top;
     margin-top: 3px;
@@ -269,7 +298,7 @@ body.platform-win32 {
     }
   }
 
-  .minified-bundle + .message-item-wrap {
+  .minified-bundle+.message-item-wrap {
     margin-top: -5px;
   }
 
@@ -287,6 +316,7 @@ body.platform-win32 {
     }
 
     padding-bottom: @message-spacing * 2;
+
     &.before-reply-area {
       padding-bottom: 0;
     }
@@ -299,7 +329,7 @@ body.platform-win32 {
         margin-bottom: 0;
       }
 
-      & + .minified-bundle {
+      &+.minified-bundle {
         margin-top: -@message-spacing;
       }
     }
@@ -362,6 +392,7 @@ body.platform-win32 {
 
   .minified-bundle {
     position: relative;
+
     .num-messages {
       position: absolute;
       top: 50%;
@@ -376,15 +407,18 @@ body.platform-win32 {
       color: @text-color-very-subtle;
       z-index: 2;
       background: @background-primary;
+
       &:hover {
         cursor: default;
       }
     }
+
     .msg-lines {
       margin: 0 auto;
       width: 100%;
       margin-top: -13px;
     }
+
     .msg-line {
       border-radius: 4px 4px 0 0;
       position: relative;
@@ -407,6 +441,7 @@ body.platform-win32 {
         opacity: 0;
         position: absolute;
       }
+
       .pending-spinner {
         opacity: 1;
       }
@@ -463,10 +498,13 @@ body.platform-win32 {
         line-height: 10px;
         border-radius: 0;
         border-right: 1px solid lighten(@border-color-divider, 6%);
+
         &:last-child {
           border-right: 0;
         }
+
         margin: 0;
+
         &:active {
           background: transparent;
         }
@@ -480,6 +518,7 @@ body.platform-win32 {
       min-width: 125px;
       cursor: default;
     }
+
     .msg-actions-tooltip {
       display: inline-block;
       margin-left: 1em;
@@ -531,14 +570,17 @@ body.platform-win32 {
     &.inactive {
       display: none;
     }
+
     z-index: 3;
     position: absolute;
     top: 0;
     left: -1 * 13px;
+
     img {
       background: @text-color-very-subtle;
     }
   }
+
   .message-item-wrap:hover {
     .header-toggle-control.inactive {
       display: block;
@@ -560,6 +602,7 @@ body.platform-win32 {
     background: @background-primary;
 
     color: @text-color-very-subtle;
+
     img.content-mask {
       background-color: @text-color-very-subtle;
     }
@@ -574,6 +617,7 @@ body.platform-win32 {
       margin: 0 auto;
       padding: 12px @spacing-standard * 1.5;
     }
+
     .reply-text {
       display: inline-block;
       vertical-align: middle;
@@ -610,6 +654,7 @@ body.platform-win32 {
 
   .download-all-action:hover {
     color: @download-hover-color;
+
     img {
       background-color: @download-hover-color;
     }
@@ -635,6 +680,7 @@ body.platform-win32 {
     padding-left: 27px;
   }
 }
+
 .message-participants {
   z-index: 1;
   display: flex;
@@ -649,6 +695,7 @@ body.platform-win32 {
     font-weight: @font-weight-semi-bold;
     color: @text-color;
   }
+
   .from-label,
   .to-label,
   .reply-to-label,
@@ -656,6 +703,7 @@ body.platform-win32 {
   .bcc-label {
     color: @text-color-very-subtle;
   }
+
   .to-contact,
   .reply-to-contact,
   .cc-contact,
@@ -723,11 +771,11 @@ body.platform-win32 {
     }
 
     // .from-label { margin-right: 1em; }
-    .to-label,
     .reply-to-label,
     .cc-label {
       margin-right: 0.5em;
     }
+
     .bcc-label {
       margin-right: 0;
     }
@@ -737,6 +785,7 @@ body.platform-win32 {
       margin-right: 0.15em;
       display: inline-block;
     }
+
     .participant-secondary {
       color: @text-color-very-subtle;
       display: inline-block;
@@ -746,6 +795,7 @@ body.platform-win32 {
       .participant-primary {
         color: @text-color;
       }
+
       .participant-secondary {
         color: @text-color;
       }
@@ -790,14 +840,17 @@ body.platform-win32 {
       width: calc(~'100% + 30px');
       height: 3px;
     }
+
     &:first-child {
       margin-top: 0;
     }
   }
 }
+
 .sidebar-participant-picker {
   padding: 10px 5px 20px 5px;
   text-align: right;
+
   select {
     max-width: 100%;
     width: 100%;
@@ -809,6 +862,7 @@ body.platform-win32 {
   overflow: auto;
   border-left: 1px solid @border-color-divider;
   color: @text-color-subtle;
+
   .flexbox-handle-horizontal div {
     border-right: 0;
     width: 1px;

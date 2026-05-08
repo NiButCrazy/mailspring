@@ -73,9 +73,9 @@ export default class MessageParticipants extends React.Component<MessageParticip
       window.getSelection()?.type == 'Range'
         ? new MenuItem({ role: 'copy' })
         : new MenuItem({
-            label: `${localized(`Copy`)} "${contact.email}"`,
-            click: () => navigator.clipboard.writeText(contact.email),
-          })
+          label: `${localized(`Copy`)} "${contact.email}"`,
+          click: () => navigator.clipboard.writeText(contact.email),
+        })
     );
     menu.append(
       new MenuItem({
@@ -138,7 +138,7 @@ export default class MessageParticipants extends React.Component<MessageParticip
     return (
       <div className="participant-type" key={`participant-type-${name}`}>
         {includeLabel ? (
-          <div className={`participant-label ${name}-label`}>{label}:&nbsp;</div>
+          <div className={`participant-label ${name}-label`}>{label}：</div>
         ) : null}
         <div className={`participant-name ${name}-contact`}>{this._renderFullContacts(field)}</div>
       </div>
@@ -190,7 +190,7 @@ export default class MessageParticipants extends React.Component<MessageParticip
     if (toParticipants.length > 0) {
       childSpans.push(
         <span className="participant-label to-label" key="to-label">
-          {localized('To')}:&nbsp;
+          {localized('To')}：
         </span>,
         <span className="participant-name to-contact" key="to-value">
           {this._shortNames(toParticipants)}

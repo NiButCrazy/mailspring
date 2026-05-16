@@ -8,7 +8,7 @@
     "production": "https://link.getmailspring.com"
   },
 
-  "title": "Open Tracking",
+  "title": "打开追踪",
   "description": "Track when email messages have been opened by recipients.",
   "icon": "./icon.png",
   "isOptional": true,

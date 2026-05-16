@@ -972,7 +972,7 @@ export class TokenizingTextField<T> extends React.Component<
       >
         {this.props.label && (
           <label htmlFor={this._inputId} className="tokenizing-field-label">
-            {`${this.props.label}:`}
+            {`${this.props.label}：`}
           </label>
         )}
         {/* Visually hidden span read by screen readers via aria-describedby on the input.

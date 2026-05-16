@@ -8,7 +8,7 @@
     "production": "https://link.getmailspring.com"
   },
 
-  "title": "Link Tracking",
+  "title": "链接追踪",
   "description": "Track when links in an email have been clicked by recipients.",
   "icon": "./icon.png",
   "isOptional": true,

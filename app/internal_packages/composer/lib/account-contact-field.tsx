@@ -81,8 +81,7 @@ export default class AccountContactField extends React.Component<AccountContactF
     style = {
       ...style,
       position: 'relative',
-      top: 13,
-      left: '0.5em',
+      top: 13
     };
 
     return (
@@ -147,7 +146,7 @@ export default class AccountContactField extends React.Component<AccountContactF
   render() {
     return (
       <div className="composer-participant-field from-field">
-        <div className="composer-field-label">{localized('From')}:</div>
+        <div className="composer-field-label">{localized('From')}：</div>
         {this._renderAccountSelector()}
         {this._renderFromFieldComponents()}
       </div>

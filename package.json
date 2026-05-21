@@ -1,6 +1,6 @@
 {
   "name": "mailspring-root",
-  "version": "1.21.3-cn",
+  "version": "1.21.4-cn",
   "description": "Packages required to develop and build Mailspring",
   "author": "Mailspring",
   "license": "GPL-3.0",
@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@electron/packager": "18.3.6",
+    "@playwright/test": "^1.59.1",
     "@sentry/cli": "^2.43.0",
     "@types/better-sqlite3": "^7.6.3",
     "@types/debug": "^4.1.2",
@@ -46,9 +47,11 @@
     "@types/uuid": "^3.4.4",
     "@typescript-eslint/eslint-plugin": "^4.7.0",
     "@typescript-eslint/parser": "^4.7.0",
+    "better-sqlite3": "^12.8.0",
     "chalk": "1.x.x",
     "devtron": "^1.4.0",
     "electron": "41.6.1",
+    "electron-playwright-helpers": "^2.1.0",
     "electron-winstaller": "5.4.0",
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^9.0.0",
@@ -73,10 +76,7 @@
     "targz": "^1.0.1",
     "temp": "0.8.x",
     "typescript": "5.7.3",
-    "underscore": "^1.13.1",
-    "@playwright/test": "^1.59.1",
-    "electron-playwright-helpers": "^2.1.0",
-    "better-sqlite3": "^12.8.0"
+    "underscore": "^1.13.1"
   },
   "scripts": {
     "postinstall": "chcp 65001 && node scripts/postinstall.js",

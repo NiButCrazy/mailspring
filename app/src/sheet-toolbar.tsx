@@ -1,7 +1,6 @@
 /* eslint react/prefer-stateless-function: 0 */
 /* eslint global-require: 0 */
 import React from 'react';
-import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 
 import { localized, isRTL, Actions, ComponentRegistry, WorkspaceStore } from 'mailspring-exports';
@@ -12,6 +11,7 @@ import { RovingTabIndexToolbar } from './components/roving-tab-index-toolbar';
 import * as Utils from './flux/models/utils';
 import { Disposable } from 'rx-core';
 import { isWaylandSession } from './browser/is-wayland';
+import { SheetDepthContext } from './sheet-context';
 
 let Category = null;
 let FocusedPerspectiveStore = null;
@@ -277,22 +277,12 @@ let lastReportedToolbarHeight = 0;
 export default class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
   static displayName = 'Toolbar';
 
-  static childContextTypes = {
-    sheetDepth: PropTypes.number,
-  };
-
   mounted = false;
   unlisteners: Array<() => void> = [];
 
   constructor(props) {
     super(props);
     this.state = this._getStateFromStores();
-  }
-
-  getChildContext() {
-    return {
-      sheetDepth: this.props.depth,
-    };
   }
 
   componentDidMount() {
@@ -307,7 +297,7 @@ export default class Toolbar extends React.Component<ToolbarProps, ToolbarState>
   }
 
   shouldComponentUpdate(nextProps: ToolbarProps, nextState: ToolbarState) {
-    // This is very important. Because toolbar uses CSSTransitionGroup,
+    // This is very important. Because toolbar uses TransitionGroup,
     // repetitive unnecessary updates can break animations and cause performance issues.
     return !Utils.isEqualReact(nextProps, this.props) || !Utils.isEqualReact(nextState, this.state);
   }
@@ -451,18 +441,20 @@ export default class Toolbar extends React.Component<ToolbarProps, ToolbarState>
     ));
 
     return (
-      <div
-        style={{
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          zIndex: 1,
-        }}
-        className={`sheet-toolbar-container mode-${this.state.mode}`}
-        data-id={this.props.data.id}
-      >
-        {toolbars}
-      </div>
+      <SheetDepthContext.Provider value={this.props.depth}>
+        <div
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            zIndex: 1,
+          }}
+          className={`sheet-toolbar-container mode-${this.state.mode}`}
+          data-id={this.props.data.id}
+        >
+          {toolbars}
+        </div>
+      </SheetDepthContext.Provider>
     );
   }
 }

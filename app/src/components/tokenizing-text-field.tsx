@@ -424,8 +424,20 @@ export class TokenizingTextField<T> extends React.Component<
   _onClick = (event: React.MouseEvent<HTMLDivElement>) => {
     // Don't focus if the focus is already on an input within our field,
     // like an editable token's input
-    if (event.target instanceof HTMLElement && event.target.tagName === 'INPUT' && ReactDOM.findDOMNode(this).contains(event.target)) {
+    if (
+      event.target instanceof HTMLElement &&
+      event.target.tagName === 'INPUT' &&
+      ReactDOM.findDOMNode(this).contains(event.target)
+    ) {
+      this.setState({ selectedKeys: [] });
       return;
+    }
+
+    // Clicking a token is handled by _onClickToken which manages selectedKeys.
+    // For clicks on empty space, clear the token selection.
+    const isTokenClick = event.target instanceof HTMLElement && event.target.closest('.token');
+    if (!isTokenClick) {
+      this.setState({ selectedKeys: [] });
     }
 
     // We will focus on the field when they type the first character,

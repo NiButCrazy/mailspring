@@ -12,8 +12,7 @@ import {
 describe('parseListUnsubscribeHeader', function () {
   describe('standard valid headers', () => {
     it('parses a header with both mailto and https URIs', () => {
-      const header =
-        '<mailto:unsubscribe@example.com>, <https://example.com/unsub>';
+      const header = '<mailto:unsubscribe@example.com>, <https://example.com/unsub>';
       const result = parseListUnsubscribeHeader(header);
       expect(result.length).toBe(2);
       expect(result[0]).toEqual({ type: 'mailto', uri: 'mailto:unsubscribe@example.com' });
@@ -35,9 +34,7 @@ describe('parseListUnsubscribeHeader', function () {
       const result = parseListUnsubscribeHeader(header);
       expect(result.length).toBe(1);
       expect(result[0].type).toBe('mailto');
-      expect(result[0].uri).toBe(
-        'mailto:list-unsub@newsletter.example.com?subject=unsubscribe'
-      );
+      expect(result[0].uri).toBe('mailto:list-unsub@newsletter.example.com?subject=unsubscribe');
     });
 
     it('parses a header with an http URI', () => {
@@ -196,22 +193,22 @@ describe('getBestUnsubscribeOption', function () {
     it('returns the https option with method one-click when one-click is supported', () => {
       const result = getBestUnsubscribeOption([httpsOption, mailtoOption], true);
       expect(result).not.toBeNull();
-      expect(result!.option).toBe(httpsOption);
-      expect(result!.method).toBe('one-click');
+      expect(result?.option).toBe(httpsOption);
+      expect(result?.method).toBe('one-click');
     });
 
     it('falls through to mailto when there is no https option but one-click is claimed', () => {
       const result = getBestUnsubscribeOption([mailtoOption], true);
       expect(result).not.toBeNull();
-      expect(result!.option).toBe(mailtoOption);
-      expect(result!.method).toBe('mailto');
+      expect(result?.option).toBe(mailtoOption);
+      expect(result?.method).toBe('mailto');
     });
 
     it('falls through to http web option when no https and no mailto under one-click', () => {
       const result = getBestUnsubscribeOption([httpOption], true);
       expect(result).not.toBeNull();
-      expect(result!.option).toBe(httpOption);
-      expect(result!.method).toBe('web');
+      expect(result?.option).toBe(httpOption);
+      expect(result?.method).toBe('web');
     });
   });
 
@@ -219,36 +216,36 @@ describe('getBestUnsubscribeOption', function () {
     it('prefers mailto over https when one-click is not supported', () => {
       const result = getBestUnsubscribeOption([httpsOption, mailtoOption], false);
       expect(result).not.toBeNull();
-      expect(result!.option).toBe(mailtoOption);
-      expect(result!.method).toBe('mailto');
+      expect(result?.option).toBe(mailtoOption);
+      expect(result?.method).toBe('mailto');
     });
 
     it('prefers mailto over http when one-click is not supported', () => {
       const result = getBestUnsubscribeOption([httpOption, mailtoOption], false);
       expect(result).not.toBeNull();
-      expect(result!.option).toBe(mailtoOption);
-      expect(result!.method).toBe('mailto');
+      expect(result?.option).toBe(mailtoOption);
+      expect(result?.method).toBe('mailto');
     });
 
     it('returns https as web fallback when only https is available', () => {
       const result = getBestUnsubscribeOption([httpsOption], false);
       expect(result).not.toBeNull();
-      expect(result!.option).toBe(httpsOption);
-      expect(result!.method).toBe('web');
+      expect(result?.option).toBe(httpsOption);
+      expect(result?.method).toBe('web');
     });
 
     it('returns http as web fallback when only http is available', () => {
       const result = getBestUnsubscribeOption([httpOption], false);
       expect(result).not.toBeNull();
-      expect(result!.option).toBe(httpOption);
-      expect(result!.method).toBe('web');
+      expect(result?.option).toBe(httpOption);
+      expect(result?.method).toBe('web');
     });
 
     it('returns mailto method when only mailto is available', () => {
       const result = getBestUnsubscribeOption([mailtoOption], false);
       expect(result).not.toBeNull();
-      expect(result!.option).toBe(mailtoOption);
-      expect(result!.method).toBe('mailto');
+      expect(result?.option).toBe(mailtoOption);
+      expect(result?.method).toBe('mailto');
     });
   });
 
@@ -259,7 +256,7 @@ describe('getBestUnsubscribeOption', function () {
         uri: 'https://other.example.com/unsub',
       };
       const result = getBestUnsubscribeOption([httpsOption, httpsOption2], true);
-      expect(result!.option).toBe(httpsOption);
+      expect(result?.option).toBe(httpsOption);
     });
 
     it('picks the first mailto option when multiple mailto options exist', () => {
@@ -268,7 +265,7 @@ describe('getBestUnsubscribeOption', function () {
         uri: 'mailto:other@example.com',
       };
       const result = getBestUnsubscribeOption([mailtoOption, mailtoOption2], false);
-      expect(result!.option).toBe(mailtoOption);
+      expect(result?.option).toBe(mailtoOption);
     });
   });
 });

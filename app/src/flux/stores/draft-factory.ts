@@ -185,7 +185,15 @@ class DraftFactory {
     return this.createDraftForReply({ message, thread, type });
   }
 
-  async createDraftForReply({ message, thread, type }: { message: Message; thread: Thread; type: ReplyType }) {
+  async createDraftForReply({
+    message,
+    thread,
+    type,
+  }: {
+    message: Message;
+    thread: Thread;
+    type: ReplyType;
+  }) {
     const prevBody = await this.prepareBodyForQuoting(message);
     let participants = { to: [], cc: [] };
     if (type === 'reply') {
@@ -289,6 +297,14 @@ class DraftFactory {
 
   async candidateDraftForUpdating(message: Message, behavior: ReplyBehavior) {
     if (!['prefer-existing-if-pristine', 'prefer-existing'].includes(behavior)) {
+      return null;
+    }
+
+    // In Playwright E2E tests, mailsync is not running so drafts are never
+    // persisted to the database. Synthetic drafts in MessageStore._items may
+    // linger due to async race conditions with _fetchFromCache, so always
+    // create a fresh draft to avoid reusing a stale/destroyed one.
+    if (process.env.PLAYWRIGHT) {
       return null;
     }
 

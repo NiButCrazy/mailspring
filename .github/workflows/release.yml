@@ -27,7 +27,7 @@ jobs:
           cache: true
 
       - name: 下载依赖库
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: 构建应用
         run: pnpm build

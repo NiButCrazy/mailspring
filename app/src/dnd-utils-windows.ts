@@ -26,16 +26,16 @@ export async function getDoNotDisturb(): Promise<boolean> {
   }
 
   let dnd = false;
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { getFocusAssist } = require('windows-focus-assist');
-    const { value } = getFocusAssist();
-    // PRIORITY_ONLY (1) and ALARMS_ONLY (2) both mean DnD is active.
-    // OFF (0), FAILED (-1), and NOT_SUPPORTED (-2) are all treated as inactive.
-    dnd = value === 1 || value === 2;
-  } catch (e) {
-    console.warn('Failed to check Windows Focus Assist status:', e);
-  }
+  // try {
+  //   // eslint-disable-next-line @typescript-eslint/no-var-requires
+  //   const { getFocusAssist } = require('windows-focus-assist');
+  //   const { value } = getFocusAssist();
+  //   // PRIORITY_ONLY (1) and ALARMS_ONLY (2) both mean DnD is active.
+  //   // OFF (0), FAILED (-1), and NOT_SUPPORTED (-2) are all treated as inactive.
+  //   dnd = value === 1 || value === 2;
+  // } catch (e) {
+  //   console.warn('Failed to check Windows Focus Assist status:', e);
+  // }
 
   cache = { value: dnd, timestamp: Date.now() };
   return dnd;

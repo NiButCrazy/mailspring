@@ -4,3 +4,4 @@ allowBuilds:
   electron: true
   electron-winstaller: true
   highlight.js: true
+  windows-focus-assist: true

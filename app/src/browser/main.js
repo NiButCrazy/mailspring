@@ -402,7 +402,7 @@ const start = () => {
         responseHeaders: {
           ...details.responseHeaders,
           'Content-Security-Policy': [
-            "default-src * mailspring:; script-src 'self' 'unsafe-inline' chrome-extension://react-developer-tools; style-src * 'unsafe-inline' mailspring:; img-src * data: mailspring: file:; object-src none; media-src mailspring:; manifest-src none;",
+            "default-src * mailspring:; script-src 'self' 'unsafe-inline' chrome-extension://react-developer-tools; style-src * 'unsafe-inline' mailspring: data:; img-src * data: mailspring: file:; object-src none; media-src mailspring:; manifest-src none;",
           ],
         },
       });
@@ -415,8 +415,7 @@ const start = () => {
     global.application.start(options);
 
     if (!options.specMode) {
-      console.log(`App load time: ${Date.now() - global.shellStartTime}ms`);
-      console.log('应用已加载完成')
+      console.log(`应用已加载完成: ${Date.now() - global.shellStartTime}ms`);
     }
   });
 };
